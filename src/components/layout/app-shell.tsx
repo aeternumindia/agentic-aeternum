@@ -1,25 +1,35 @@
+"use client";
+
+import { MessageSquareText, Eye, Sparkles, Cpu } from "lucide-react";
+import { useShopifyCart } from "@/contexts/shopify-cart";
+import { CartDrawer } from "@/components/cart/cart-drawer";
+import { FloatingNav } from "@/components/ui/floating-navbar";
+
 type AppShellProps = {
   children: React.ReactNode;
-  context: React.ReactNode;
-  input: React.ReactNode;
 };
 
-export function AppShell({ children, context, input }: AppShellProps) {
+const navItems = [
+  { name: "AI Shopping", link: "/ai-shopping", icon: <MessageSquareText className="h-4 w-4" /> },
+  { name: "UCP Shopping", link: "/ai-shopping/ucp", icon: <Cpu className="h-4 w-4" /> },
+  { name: "Virtual Try-On", link: "/virtual-try-on", icon: <Eye className="h-4 w-4" /> },
+  { name: "Color Analysis", link: "/color-analysis", icon: <Sparkles className="h-4 w-4" /> },
+];
+
+export function AppShell({ children }: AppShellProps) {
+  const { itemCount, openCart } = useShopifyCart();
+
   return (
-    <main className="h-screen bg-background text-foreground">
-      <div className="flex h-full flex-col">
-        <header className="border-b border-border">Navbar</header>
-
-        <div className="flex flex-1 overflow-hidden">
-          <section className="flex-1 border-r border-border">
-            {children}
-          </section>
-
-          <aside className="hidden w-[420px] lg:block">{context}</aside>
-        </div>
-
-        <footer className="border-t border-border">{input}</footer>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <FloatingNav
+        navItems={navItems}
+        onCartClick={openCart}
+        cartItemCount={itemCount}
+      />
+      <div className="relative flex-1 pt-16">
+        {children}
       </div>
-    </main>
+      <CartDrawer />
+    </div>
   );
 }
