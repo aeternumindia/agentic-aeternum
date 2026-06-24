@@ -160,7 +160,7 @@ export default function ColorAnalysisPage() {
   }
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="mx-auto max-w-2xl animate-fade-in space-y-6 px-4 py-8 sm:px-6">
       <div>
         <h1 className="text-lg font-medium text-foreground">
           Personal Color Analysis
@@ -172,10 +172,11 @@ export default function ColorAnalysisPage() {
       </div>
 
       {status === "idle" && (
-        <div
-          onClick={() => inputRef.current?.click()}
-          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-card p-16 transition-colors hover:border-muted-foreground"
-        >
+        <>
+          <div
+            onClick={() => inputRef.current?.click()}
+            className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-card p-16 transition-colors hover:border-muted-foreground"
+          >
           <div className="rounded-full bg-accent/10 p-4">
             <svg
               className="h-6 w-6 text-accent"
@@ -198,6 +199,32 @@ export default function ColorAnalysisPage() {
             JPG, PNG, or WEBP
           </span>
         </div>
+
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h3 className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              How it works
+            </h3>
+            <ol className="space-y-3">
+              {[
+                "Upload a clear photo of your face",
+                "AI analyzes your skin tone & undertone",
+                "Discover your seasonal color palette",
+                "Get personalized color recommendations",
+              ].map((step, i) => (
+                <li key={i} className="flex gap-3 text-sm text-muted-foreground">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-medium text-accent">
+                    {i + 1}
+                  </span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <p className="text-xs leading-relaxed text-muted-foreground/60">
+              Aeternum AI uses Gemini to analyze your skin tone and recommend
+              colors that complement your natural complexion.
+            </p>
+          </div>
+      </>
       )}
 
       {(status === "uploading" || status === "analyzing") && previewUrl && (

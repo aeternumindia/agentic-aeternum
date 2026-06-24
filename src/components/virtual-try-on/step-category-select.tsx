@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Shirt, Check } from "lucide-react";
+import { Sparkles, Shirt, Check, Split } from "lucide-react";
 
 type StepCategorySelectProps = {
   onSelect: (choice: "top" | "bottom") => void;
@@ -56,7 +56,7 @@ export function StepCategorySelect({
               <Check className="h-3 w-3" />
             </span>
           )}
-          <Shirt className="mx-auto h-10 w-10 -rotate-90 text-muted-foreground group-hover:text-accent transition-colors" />
+          <Split className="mx-auto h-10 w-10 text-muted-foreground group-hover:text-accent transition-colors" />
           <p className="mt-3 text-sm font-medium text-foreground">
             {hasBottom ? "Change Bottom" : "Pick a Bottom"}
           </p>

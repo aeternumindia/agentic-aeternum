@@ -20,9 +20,9 @@ export const SHOPPING_GOALS = [
     description: "Find the perfect outfit for a wedding celebration",
   },
   {
-    id: "festive",
-    label: "Festive Collection",
-    description: "Celebrate with traditional elegance",
+    id: "date-night",
+    label: "Date Night",
+    description: "Smart casual fits for a night out",
   },
   {
     id: "casual",

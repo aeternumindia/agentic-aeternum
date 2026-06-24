@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Shirt, Check, RotateCcw } from "lucide-react";
+import { ArrowLeft, Shirt, Check, RotateCcw, Split } from "lucide-react";
 import { useOutfitBuilder } from "@/contexts/outfit-builder";
 import { getUniqueColors } from "@/services/outfit-api";
 import { Button } from "@/components/ui/button";
@@ -145,7 +145,7 @@ export function OutfitCard({ onContinue, onBack, onChangeTop, onChangeBottom }: 
 
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Shirt className="h-4 w-4 text-muted-foreground" />
+            <Split className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Bottom</span>
             {hasBottom && <Check className="h-3 w-3 text-green-500" />}
           </div>

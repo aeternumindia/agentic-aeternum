@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import type { TryOnSession, TryOnResult } from "@/types/virtual-try-on";
-import { calculateFitScore, findRecommendedSize } from "@/services/virtual-try-on";
+import { calculateFitScore } from "@/services/virtual-try-on";
 
 type VirtualTryOnContextValue = {
   session: TryOnSession | null;
@@ -17,6 +17,7 @@ type VirtualTryOnContextValue = {
   clearTryOn: () => void;
   updateSize: (size: string) => void;
   updateMeasurements: (measurements: Record<string, number>) => void;
+  computeFitScore: (sessionOverride?: TryOnSession) => void;
 };
 
 const VirtualTryOnContext = createContext<VirtualTryOnContextValue | null>(null);
@@ -25,16 +26,17 @@ export function VirtualTryOnProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<TryOnSession | null>(null);
   const [result, setResult] = useState<TryOnResult | null>(null);
 
-  const computeResult = useCallback((s: TryOnSession) => {
+  const computeFitScore = useCallback((sessionOverride?: TryOnSession) => {
+    const s = sessionOverride ?? session;
+    if (!s) return;
     setResult(calculateFitScore(s));
-  }, []);
+  }, [session]);
 
   const startTryOn = useCallback(
     (newSession: TryOnSession) => {
       setSession(newSession);
-      computeResult(newSession);
     },
-    [computeResult]
+    []
   );
 
   const clearTryOn = useCallback(() => {
@@ -46,9 +48,7 @@ export function VirtualTryOnProvider({ children }: { children: ReactNode }) {
     (size: string) => {
       setSession((prev) => {
         if (!prev) return prev;
-        const updated = { ...prev, selectedSize: size };
-        setResult(calculateFitScore(updated));
-        return updated;
+        return { ...prev, selectedSize: size };
       });
     },
     []
@@ -58,14 +58,7 @@ export function VirtualTryOnProvider({ children }: { children: ReactNode }) {
     (measurements: Record<string, number>) => {
       setSession((prev) => {
         if (!prev) return prev;
-        const recommendedSize = findRecommendedSize(measurements);
-        const updated = {
-          ...prev,
-          measurements,
-          selectedSize: recommendedSize,
-        };
-        setResult(calculateFitScore(updated));
-        return updated;
+        return { ...prev, measurements };
       });
     },
     []
@@ -80,6 +73,7 @@ export function VirtualTryOnProvider({ children }: { children: ReactNode }) {
         clearTryOn,
         updateSize,
         updateMeasurements,
+        computeFitScore,
       }}
     >
       {children}

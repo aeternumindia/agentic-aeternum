@@ -20,7 +20,7 @@ import { getSizeChart } from "@/services/api";
 import { FitScoreGauge } from "./fit-score-gauge";
 import { SilhouetteView } from "./silhouette-view";
 import { AiPreviewPanel } from "./ai-preview-panel";
-import apiClient from "@/services/api";
+import apiClient, { getTryOnStatus, type TryOnStatus } from "@/services/api";
 import type { TryOnSession, TryOnResult, ProductSizeChart, SizeChartData } from "@/types/virtual-try-on";
 
 type Variant = {
@@ -59,6 +59,11 @@ export function StepTryOnPreview({
   }>({ top: null, bottom: null });
   const [calculating, setCalculating] = useState(false);
   const [expandedChart, setExpandedChart] = useState<"top" | "bottom" | null>(null);
+  const [tryOnStatus, setTryOnStatus] = useState<TryOnStatus | null>(null);
+
+  useEffect(() => {
+    getTryOnStatus().then(setTryOnStatus).catch(() => {});
+  }, []);
 
   const toCm = (v: number, u: "cm" | "in") => (u === "in" ? Math.round(v * 2.54) : v);
 
@@ -283,6 +288,13 @@ export function StepTryOnPreview({
           Fit Scores
         </button>
       </div>
+
+      {tryOnStatus && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
+          {tryOnStatus.remaining} of {tryOnStatus.limit} free try-ons remaining today
+        </div>
+      )}
 
       <div className={tab === "ai" ? "block" : "hidden"}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

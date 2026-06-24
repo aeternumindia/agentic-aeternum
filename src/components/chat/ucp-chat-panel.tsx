@@ -11,7 +11,7 @@ import { MessageList } from "./message-list";
 import { ChatInput } from "./chat-input";
 import { LandingScreen } from "@/components/screens/landing-screen";
 import { CheckoutScreen } from "@/components/screens/checkout-screen";
-import { VirtualTryOnScreen } from "@/components/screens/virtual-try-on-screen";
+import { TryOnDrawer } from "@/components/virtual-try-on/try-on-drawer";
 import apiClient from "@/services/api";
 import type { CartItem } from "@/types/product";
 
@@ -98,6 +98,8 @@ export function UcpChatPanel() {
 
   const isEmpty = messages.length === 0;
 
+  const isTryOnActive = state === APP_STATES.VIRTUAL_TRY_ON && session;
+
   return (
     <div className="absolute inset-0 overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent,black_4%,black_100%)]">
       <div className="min-h-full flex flex-col">
@@ -121,14 +123,6 @@ export function UcpChatPanel() {
                 </div>
               )}
 
-              {state === APP_STATES.VIRTUAL_TRY_ON && session && (
-                <VirtualTryOnScreen
-                  onAddToCart={handleAddToCartFromTryOn}
-                  onBack={handleBackFromTryOn}
-                  productSizes={["XS", "S", "M", "L", "XL", "XXL"]}
-                />
-              )}
-
               {state === APP_STATES.CHECKOUT && (
                 <CheckoutScreen onComplete={handleStartOver} />
               )}
@@ -140,6 +134,20 @@ export function UcpChatPanel() {
           <ChatInput onSend={sendMessage} isLoading={isLoading} />
         </div>
       </div>
+
+      {isTryOnActive && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={handleBackFromTryOn} />
+          <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-background shadow-xl animate-slide-in-right overflow-y-auto">
+            <TryOnDrawer
+              productTitle={session.productTitle}
+              onAddToCart={handleAddToCartFromTryOn}
+              onBack={handleBackFromTryOn}
+              onClose={handleBackFromTryOn}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -84,11 +84,20 @@ export const FloatingNav = ({
               key={`mobile-${idx}`}
               href={navItem.link}
               onClick={() => setMobileOpen(false)}
-              className="text-lg font-medium p-4 hover:bg-muted rounded-xl transition-colors border-b border-border/50 last:border-b-0"
+              className="text-lg font-medium p-4 hover:bg-muted rounded-xl transition-colors border-b border-border/50"
             >
               {navItem.name}
             </Link>
           ))}
+          <a
+            href="https://e8j3xx-qz.myshopify.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMobileOpen(false)}
+            className="text-lg font-medium p-4 hover:bg-muted rounded-xl transition-colors text-accent"
+          >
+            Visit Shop
+          </a>
         </div>
       )}
     </div>

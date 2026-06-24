@@ -71,8 +71,21 @@ export async function getSizeChart(handle: string): Promise<{
   success: boolean;
   data: Record<string, string> | null;
 }> {
-  const { data } = await apiClient.get(`/products/${handle}/size-chart`);
+  const { data } = await apiClient.get(`/cart/products/${handle}/size-chart`);
   return data;
+}
+
+export type TryOnStatus = {
+  remaining: number;
+  limit: number;
+  used: number;
+};
+
+export async function getTryOnStatus(): Promise<TryOnStatus> {
+  const { data } = await apiClient.get<TryOnStatus & { success: boolean }>(
+    "/try-on/status"
+  );
+  return { remaining: data.remaining, limit: data.limit, used: data.used };
 }
 
 export default apiClient;

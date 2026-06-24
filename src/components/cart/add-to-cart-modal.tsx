@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { X, ShoppingBag, Loader2 } from "lucide-react";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import { cn } from "@/lib/utils";
-import apiClient from "@/services/api";
+import apiClient, { getSizeChart } from "@/services/api";
 
 type Variant = {
   id: string;
@@ -39,6 +39,7 @@ export function AddToCartModal({
   const [adding, setAdding] = useState(false);
   const [done, setDone] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [fetchedSizeChart, setFetchedSizeChart] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -66,6 +67,14 @@ export function AddToCartModal({
         setLoading(false);
       }
     })();
+    (async () => {
+      try {
+        const res = await getSizeChart(productHandle);
+        if (res?.success && res.data) {
+          setFetchedSizeChart(JSON.stringify(res.data));
+        }
+      } catch {}
+    })();
   }, [productHandle]);
 
   async function handleAdd() {
@@ -85,13 +94,14 @@ export function AddToCartModal({
   }
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
+  const effectiveSizeChart = productSizeChart || fetchedSizeChart;
 
   let sizeChartData: { headers: string[]; sizes: string[][] } | null = null;
   let sizeChartImage: string | null = null;
   let sizeChartNotes: string | null = null;
-  if (productSizeChart) {
+  if (effectiveSizeChart) {
     try {
-      const parsed = JSON.parse(productSizeChart);
+      const parsed = JSON.parse(effectiveSizeChart);
       if (typeof parsed.chart_data === "string") {
         try { sizeChartData = JSON.parse(parsed.chart_data); } catch {}
       } else {
@@ -129,7 +139,7 @@ export function AddToCartModal({
           </div>
         </div>
 
-        {showSizeChart && productSizeChart && (
+        {showSizeChart && effectiveSizeChart && (
           <div className="mb-4 rounded-lg bg-muted p-3 text-xs text-foreground space-y-3">
             {sizeChartImage && (
               <img
@@ -177,7 +187,7 @@ export function AddToCartModal({
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-medium text-foreground">Size</p>
-                {productSizeChart && (
+                {effectiveSizeChart && (
                   <button
                     onClick={() => setShowSizeChart(!showSizeChart)}
                     className="text-xs text-muted-foreground underline hover:text-foreground"
