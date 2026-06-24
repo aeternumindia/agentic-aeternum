@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 import { Sparkles, Loader2, RefreshCw, AlertCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -56,7 +58,7 @@ export function AiPreviewPanel({
       }
 
       const res = await fetch(
-        "http://localhost:3001/api/try-on/image",
+        `${API_BASE}/api/try-on/image`,
         {
           method: "POST",
           body: formData,

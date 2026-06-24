@@ -2,8 +2,10 @@ import axios from "axios";
 import type { ProductResult } from "@/types/chat";
 import type { SkinAnalysisResponse } from "@/types/color-analysis";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 const apiClient = axios.create({
-  baseURL: "http://localhost:3001/api",
+  baseURL: `${API_BASE}/api`,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

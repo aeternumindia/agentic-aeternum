@@ -23,6 +23,8 @@ import { getSizeChart } from "@/services/api";
 import type { FitQuality, ProductSizeChart, TryOnSession } from "@/types/virtual-try-on";
 import type { CartItem } from "@/types/product";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 type VirtualTryOnScreenProps = {
   onAddToCart: (item: CartItem) => void;
   onBack: () => void;
@@ -291,7 +293,7 @@ export function VirtualTryOnScreen({
       formData.append("faceImage", selfieFile);
       formData.append("garmentImage", garmentFile);
 
-      const res = await fetch("http://localhost:3001/api/try-on/image", {
+      const res = await fetch(`${API_BASE}/api/try-on/image`, {
         method: "POST",
         body: formData,
       });

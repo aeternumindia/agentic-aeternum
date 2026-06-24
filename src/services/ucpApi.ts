@@ -1,8 +1,10 @@
 import axios from "axios";
 import type { ProductResult } from "@/types/chat";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 const ucpClient = axios.create({
-  baseURL: "http://localhost:3001/api/ucp",
+  baseURL: `${API_BASE}/api/ucp`,
   timeout: 120000,
   headers: {
     "Content-Type": "application/json",
