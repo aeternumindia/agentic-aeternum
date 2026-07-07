@@ -9,7 +9,7 @@ export function CartDrawer() {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[5001]">
           <div className="absolute inset-0 bg-black/40" onClick={closeCart} />
           <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-background border-l border-border shadow-xl flex flex-col animate-message-in">
             <div className="flex items-center justify-between px-5 h-14 border-b border-border shrink-0">
@@ -21,7 +21,8 @@ export function CartDrawer() {
               </div>
               <button
                 onClick={closeCart}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/10 transition-colors"
+                aria-label="Close cart"
               >
                 <X className="h-5 w-5" />
               </button>
