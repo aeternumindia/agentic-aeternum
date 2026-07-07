@@ -30,7 +30,11 @@ export async function fetchAllProducts(): Promise<OutfitProduct[]> {
   const raw: ShopifyRawProduct[] = json.products ?? [];
 
   return raw
-    .filter((p) => ALL_TYPES.includes(p.product_type as typeof ALL_TYPES[number]))
+    .filter((p) => {
+      const type = p.product_type.trim();
+      if (type === "Shirt") return true;
+      return ALL_TYPES.includes(type as typeof ALL_TYPES[number]);
+    })
     .map(mapProduct);
 }
 
