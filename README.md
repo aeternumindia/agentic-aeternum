@@ -1,5 +1,5 @@
 # Aeternum AI
-
+ 
 A conversational AI shopping assistant for Aeternum India — a personal stylist that helps customers discover products, receive sizing recommendations, customize garments, and complete purchases.
 
 ## Tech Stack
