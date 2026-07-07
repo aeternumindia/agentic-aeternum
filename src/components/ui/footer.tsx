@@ -21,8 +21,8 @@ export function Footer() {
               <h4 className="text-sm font-semibold text-foreground mb-3">Features</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/ai-shopping" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    AI Shopping
+                  <Link href="/ai-shopping/ucp" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    Shop with Aura
                   </Link>
                 </li>
                 <li>

@@ -56,7 +56,7 @@ export const ImagesSlider = ({
       <img
         src={images[currentIndex]}
         alt={`Slide ${currentIndex + 1}`}
-        className="h-full w-full absolute inset-0 object-cover object-center"
+        className="h-full w-full absolute inset-0 object-cover object-top"
       />
 
       {children}

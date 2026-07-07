@@ -10,8 +10,7 @@ type AppShellProps = {
 };
 
 const navItems = [
-  { name: "AI Shopping", link: "/ai-shopping", icon: <MessageSquareText className="h-4 w-4" /> },
-  { name: "UCP Shopping", link: "/ai-shopping/ucp", icon: <Cpu className="h-4 w-4" /> },
+  { name: "Shop with Aura", link: "/ai-shopping/ucp", icon: <Cpu className="h-4 w-4" /> },
   { name: "Virtual Try-On", link: "/virtual-try-on", icon: <Eye className="h-4 w-4" /> },
   { name: "Color Analysis", link: "/color-analysis", icon: <Sparkles className="h-4 w-4" /> },
 ];

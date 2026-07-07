@@ -8,20 +8,20 @@ const steps = [
   {
     title: "Tell us your style",
     description: "Describe your occasion, preferences, and fit requirements in plain language.",
-    link: "/ai-shopping",
-    image: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&h=600&auto=format&fit=crop&crop=face",
+    link: "/ai-shopping/ucp",
+    image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/25-10-2025-vika-igor00200-_5.jpg?v=1780746870",
   },
   {
     title: "Get recommendations",
     description: "Our AI curates products tailored to your body type, style, and occasion.",
-    link: "/ai-shopping",
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=600&h=600&auto=format&fit=crop&crop=face",
+    link: "/ai-shopping/ucp",
+    image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/aeternum-signature-formals.webp?v=1780747830",
   },
   {
     title: "Try before you buy",
     description: "Virtual try-on shows you exactly how each garment will look and fit.",
     link: "/virtual-try-on",
-    image: "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?q=80&w=600&h=600&auto=format&fit=crop&crop=face",
+    image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/Neutral_Linen_25-10-2025--vika_igor00694.jpg?v=1780747636",
   },
 ];
 

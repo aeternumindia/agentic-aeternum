@@ -13,19 +13,19 @@ const features = [
     title: "AI Shopping Assistant",
     description: "Get personalized product recommendations, sizing guidance, and style advice through natural conversation.",
     icon: <MessageSquareText className="h-4 w-4 text-accent" />,
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop",
+    image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/Black_Shirt_25-10-2025--vika_igor00608.jpg?v=1769685733",
   },
   {
     title: "Virtual Try-On",
     description: "See how any garment looks on you with AI-powered virtual try-on. Upload a photo and preview outfits instantly.",
     icon: <Eye className="h-4 w-4 text-accent" />,
-    image: "https://images.unsplash.com/photo-1520006403909-838d6b92c22e?q=80&w=800&auto=format&fit=crop",
+    image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/Neutral_Linen_25-10-2025--vika_igor00694.jpg?v=1780747636",
   },
   {
     title: "Color Analysis",
     description: "Discover your perfect color palette with AI-driven skin tone and seasonal analysis tailored to you.",
     icon: <Sparkles className="h-4 w-4 text-accent" />,
-    image: "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=800&auto=format&fit=crop",
+    image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/aeternum-signature-formals.webp?v=1780747830",
   },
 ];
 
@@ -67,14 +67,14 @@ export default function HomePage() {
         <div className="w-full md:flex-1 h-[20rem] md:h-[28rem] rounded-[2rem] overflow-hidden shadow-lg border border-border">
           <ImagesSlider
             images={[
-              "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1200&auto=format&fit=crop",
+              "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/25-10-2025--vika_igor00101_81f7128c-653a-4364-a358-8769b40166fc.jpg?v=1769685731",
+              "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/25-10-2025--vika_igor00249_43506855-a030-45c2-a991-2d6ac05199e0.jpg?v=1769685736",
+              "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/25-10-2025--vika_igor00025.jpg?v=1780747287",
             ]}
             direction="up"
             overlay={false}
             className="h-full w-full"
-          />
+       />
         </div>
       </div>
 
@@ -92,7 +92,7 @@ export default function HomePage() {
           {features.map((feature, i) => {
             const href =
               i === 0
-                ? "/ai-shopping"
+                ? "/ai-shopping/ucp"
                 : i === 1
                   ? "/virtual-try-on"
                   : "/color-analysis";
@@ -110,7 +110,7 @@ export default function HomePage() {
                       <img
                         src={feature.image}
                         alt={feature.title}
-                        className="w-full aspect-[4/3] object-cover"
+                        className="w-full aspect-[3/4] object-cover"
                       />
                     </CardItem>
                     <div className="p-4">
@@ -156,7 +156,7 @@ export default function HomePage() {
       {/* Bottom CTA */}
       <div className="w-full mb-16 flex justify-center">
         <Link
-          href="/ai-shopping"
+          href="/ai-shopping/ucp"
           className="inline-flex items-center justify-center bg-primary text-primary-foreground rounded-full px-10 py-4 font-bold text-lg hover:bg-primary/90 transition-colors"
         >
           Get Started <ArrowRight className="ml-2 w-5 h-5" />
