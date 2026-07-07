@@ -101,18 +101,18 @@ export function UcpChatPanel() {
   const isTryOnActive = state === APP_STATES.VIRTUAL_TRY_ON && session;
 
   return (
-    <div className="absolute inset-0 overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent,black_4%,black_100%)]">
-      <div className="min-h-full flex flex-col">
-        <div className="flex-1">
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <div className="min-h-full flex flex-col">
           {isEmpty ? (
-            <div className="max-w-4xl mx-auto flex flex-col items-center justify-center gap-8 px-4 pt-[20vh]">
+            <div className="flex-1 flex flex-col items-center justify-center gap-8 px-4 pt-[20dvh] pb-8">
               <LandingScreen
                 onSelectGoal={handleSelectGoal}
                 disabled={isLoading}
               />
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="max-w-4xl mx-auto w-full px-4 sm:px-6">
               <MessageList messages={messages} isLoading={isLoading} />
 
               {error && (
@@ -129,10 +129,10 @@ export function UcpChatPanel() {
             </div>
           )}
         </div>
+      </div>
 
-        <div className="sticky bottom-0 bg-background">
-          <ChatInput onSend={sendMessage} isLoading={isLoading} />
-        </div>
+      <div className="bg-background border-t border-border pb-safe-bottom">
+        <ChatInput onSend={sendMessage} isLoading={isLoading} />
       </div>
 
       {isTryOnActive && (

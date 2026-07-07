@@ -19,15 +19,15 @@ export function AppShell({ children }: AppShellProps) {
   const { itemCount, openCart } = useShopifyCart();
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-dvh bg-background text-foreground flex flex-col">
       <FloatingNav
         navItems={navItems}
         onCartClick={openCart}
         cartItemCount={itemCount}
       />
-      <div className="relative flex-1 pt-16">
+      <main className="flex-1 flex flex-col pt-16 overflow-hidden">
         {children}
-      </div>
+      </main>
       <CartDrawer />
     </div>
   );
