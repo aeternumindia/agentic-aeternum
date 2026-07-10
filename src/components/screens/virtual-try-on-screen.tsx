@@ -266,7 +266,7 @@ export function VirtualTryOnScreen({
     // Accept images by MIME type (image/jpeg, image/png, image/heic, etc.)
     // OR by file extension (.heic/.HEIC — iOS sometimes reports HEIC as
     // application/octet-stream in drag-and-drop).
-    if (file && (file.type.startsWith("image/") || /\.heic$/i.test(file.name))) {
+    if (file && (file.type.startsWith("image/") || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name))) {
       if (target === "fullBody") handleFullBody(file);
       else handleSelfie(file);
     }

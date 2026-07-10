@@ -54,13 +54,13 @@ export function OutfitCard({ onContinue, onBack, onChangeTop, onChangeBottom }: 
       </button>
 
       <div>
-        <h2 className="text-lg font-medium text-foreground">Review Your Outfit</h2>
+        <h2 className="text-xl font-semibold text-foreground">Review Your Outfit</h2>
         <p className="text-xs text-muted-foreground mt-1">
           Choose sizes and colors for each piece
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-3 md:gap-6">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Shirt className="h-4 w-4 text-muted-foreground" />
@@ -226,20 +226,14 @@ export function OutfitCard({ onContinue, onBack, onChangeTop, onChangeBottom }: 
         </div>
       </div>
 
-      <div className="flex gap-3 pt-2">
-        <Button variant="outline" size="sm" className="flex-1" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-3 w-3" />
-          Back
-        </Button>
-        <Button
-          size="sm"
-          className="flex-1"
-          disabled={!hasTop || !hasBottom}
-          onClick={onContinue}
-        >
-          Continue to Measurements
-        </Button>
-      </div>
+      <Button
+        size="default"
+        className="w-full"
+        disabled={!hasTop || !hasBottom}
+        onClick={onContinue}
+      >
+        Continue
+      </Button>
     </div>
   );
 }

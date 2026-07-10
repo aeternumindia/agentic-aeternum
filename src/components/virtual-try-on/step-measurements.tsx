@@ -54,9 +54,9 @@ export function StepMeasurements({ onSubmit, onBack }: StepMeasurementsProps) {
       </button>
 
       <div className="flex items-center gap-2">
-        <Ruler className="h-5 w-5 text-muted-foreground" />
+        <Ruler className="h-5 w-5 text-muted-foreground shrink-0" />
         <div>
-          <h2 className="text-lg font-medium text-foreground">
+          <h2 className="text-xl font-semibold text-foreground">
             Your Measurements
           </h2>
           <p className="text-xs text-muted-foreground">
@@ -94,7 +94,7 @@ export function StepMeasurements({ onSubmit, onBack }: StepMeasurementsProps) {
           </div>
         ))}
 
-        <Button type="submit" size="sm" className="w-full">
+        <Button type="submit" size="default" className="w-full">
           See My Fit Scores
         </Button>
       </form>

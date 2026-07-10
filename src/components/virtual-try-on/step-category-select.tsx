@@ -14,7 +14,7 @@ export function StepCategorySelect({
   hasBottom,
 }: StepCategorySelectProps) {
   return (
-    <div className="animate-fade-in space-y-8">
+    <div className="animate-fade-in space-y-6">
       <div className="text-center">
         <Sparkles className="mx-auto h-8 w-8 text-accent mb-3" />
         <h1 className="text-2xl font-semibold text-foreground">
@@ -26,7 +26,7 @@ export function StepCategorySelect({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-md mx-auto">
         <button
           type="button"
           onClick={() => onSelect("top")}

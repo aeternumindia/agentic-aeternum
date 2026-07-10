@@ -256,7 +256,7 @@ export function StepTryOnPreview({
       </button>
 
       <div>
-        <h2 className="text-lg font-medium text-foreground">AI Try-On Preview</h2>
+        <h2 className="text-xl font-semibold text-foreground">AI Try-On Preview</h2>
         <p className="text-xs text-muted-foreground mt-1">
           See yourself wearing your outfit
         </p>
@@ -442,7 +442,7 @@ export function StepTryOnPreview({
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {["height", "chest", "waist", "hips"].map((key) => (
                   <div key={key}>
                     <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
