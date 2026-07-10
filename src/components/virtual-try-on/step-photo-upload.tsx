@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { ArrowLeft, Camera, Upload, Check } from "lucide-react";
+import { ArrowLeft, Camera, Upload, Check, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type StepPhotoUploadProps = {
@@ -14,8 +14,13 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
   const [selfie, setSelfie] = useState<File | null>(null);
   const [fullBodyPreview, setFullBodyPreview] = useState<string | null>(null);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
-  const fullBodyRef = useRef<HTMLInputElement>(null);
-  const selfieRef = useRef<HTMLInputElement>(null);
+
+  // Camera-triggered file inputs
+  const fullBodyCameraRef = useRef<HTMLInputElement>(null);
+  const selfieCameraRef = useRef<HTMLInputElement>(null);
+  // Gallery / choose-files inputs (no capture — shows file picker on all devices)
+  const fullBodyFileRef = useRef<HTMLInputElement>(null);
+  const selfieFileRef = useRef<HTMLInputElement>(null);
 
   const handleFullBody = useCallback((file: File) => {
     setFullBody(file);
@@ -33,9 +38,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
   ) {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    // Accept images by MIME type (image/jpeg, image/png, image/heic, etc.)
-    // OR by file extension (.heic/.HEIC — iOS sometimes reports HEIC as
-    // application/octet-stream in drag-and-drop).
+    // Accept images by MIME type OR by .heic extension (iOS drag-and-drop quirk)
     if (file && (file.type.startsWith("image/") || /\.heic$/i.test(file.name))) {
       if (target === "fullBody") handleFullBody(file);
       else handleSelfie(file);
@@ -73,17 +76,19 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* ----- Full Body ----- */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Camera className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Full Body Photo</span>
             {fullBody && <Check className="h-3 w-3 text-green-500" />}
           </div>
+
+          {/* Drop zone */}
           <div
             onDrop={(e) => handleDrop(e, "fullBody")}
             onDragOver={(e) => e.preventDefault()}
-            onClick={() => fullBodyRef.current?.click()}
-            className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all overflow-hidden"
+            className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center overflow-hidden mb-3"
           >
             {fullBodyPreview ? (
               <img
@@ -92,38 +97,69 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <>
+              <div className="flex flex-col items-center px-4 text-center">
                 <Upload className="h-8 w-8 text-muted-foreground/40 mb-2" />
-                <p className="text-xs text-muted-foreground text-center px-4">
-                  Tap to take a photo or choose from gallery
+                <p className="text-xs text-muted-foreground">
+                  Drag & drop or use the buttons below
                 </p>
-                <p className="text-xs text-muted-foreground/50 mt-1">
-                  Standing full-length
-                </p>
-              </>
+              </div>
             )}
           </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => fullBodyCameraRef.current?.click()}
+            >
+              <Camera className="mr-1.5 h-3.5 w-3.5" />
+              Camera
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => fullBodyFileRef.current?.click()}
+            >
+              <ImageIcon className="mr-1.5 h-3.5 w-3.5" />
+              Choose File
+            </Button>
+          </div>
+
+          {/* Hidden camera input */}
           <input
-            ref={fullBodyRef}
+            ref={fullBodyCameraRef}
             type="file"
             accept="image/*"
             capture="environment"
             className="hidden"
             onChange={(e) => handleFileSelect(e, "fullBody")}
           />
+          {/* Hidden gallery/file input */}
+          <input
+            ref={fullBodyFileRef}
+            type="file"
+            accept="image/*,.heic,.heif"
+            className="hidden"
+            onChange={(e) => handleFileSelect(e, "fullBody")}
+          />
         </div>
 
+        {/* ----- Selfie ----- */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Camera className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Selfie</span>
             {selfie && <Check className="h-3 w-3 text-green-500" />}
           </div>
+
+          {/* Drop zone */}
           <div
             onDrop={(e) => handleDrop(e, "selfie")}
             onDragOver={(e) => e.preventDefault()}
-            onClick={() => selfieRef.current?.click()}
-            className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all overflow-hidden"
+            className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center overflow-hidden mb-3"
           >
             {selfiePreview ? (
               <img
@@ -132,22 +168,51 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <>
+              <div className="flex flex-col items-center px-4 text-center">
                 <Upload className="h-8 w-8 text-muted-foreground/40 mb-2" />
-                <p className="text-xs text-muted-foreground text-center px-4">
-                  Tap to take a selfie or choose from gallery
+                <p className="text-xs text-muted-foreground">
+                  Drag & drop or use the buttons below
                 </p>
-                <p className="text-xs text-muted-foreground/50 mt-1">
-                  Front-facing, good lighting
-                </p>
-              </>
+              </div>
             )}
           </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => selfieCameraRef.current?.click()}
+            >
+              <Camera className="mr-1.5 h-3.5 w-3.5" />
+              Camera
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => selfieFileRef.current?.click()}
+            >
+              <ImageIcon className="mr-1.5 h-3.5 w-3.5" />
+              Choose File
+            </Button>
+          </div>
+
+          {/* Hidden camera input */}
           <input
-            ref={selfieRef}
+            ref={selfieCameraRef}
             type="file"
             accept="image/*"
             capture="user"
+            className="hidden"
+            onChange={(e) => handleFileSelect(e, "selfie")}
+          />
+          {/* Hidden gallery/file input */}
+          <input
+            ref={selfieFileRef}
+            type="file"
+            accept="image/*,.heic,.heif"
             className="hidden"
             onChange={(e) => handleFileSelect(e, "selfie")}
           />
