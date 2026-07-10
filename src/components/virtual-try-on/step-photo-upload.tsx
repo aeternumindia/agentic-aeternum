@@ -33,7 +33,10 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
   ) {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
+    // Accept images by MIME type (image/jpeg, image/png, image/heic, etc.)
+    // OR by file extension (.heic/.HEIC — iOS sometimes reports HEIC as
+    // application/octet-stream in drag-and-drop).
+    if (file && (file.type.startsWith("image/") || /\.heic$/i.test(file.name))) {
       if (target === "fullBody") handleFullBody(file);
       else handleSelfie(file);
     }
@@ -92,7 +95,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
               <>
                 <Upload className="h-8 w-8 text-muted-foreground/40 mb-2" />
                 <p className="text-xs text-muted-foreground text-center px-4">
-                  Drop or click to upload
+                  Tap to take a photo or choose from gallery
                 </p>
                 <p className="text-xs text-muted-foreground/50 mt-1">
                   Standing full-length
@@ -104,6 +107,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
             ref={fullBodyRef}
             type="file"
             accept="image/*"
+            capture="environment"
             className="hidden"
             onChange={(e) => handleFileSelect(e, "fullBody")}
           />
@@ -131,7 +135,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
               <>
                 <Upload className="h-8 w-8 text-muted-foreground/40 mb-2" />
                 <p className="text-xs text-muted-foreground text-center px-4">
-                  Drop or click to upload
+                  Tap to take a selfie or choose from gallery
                 </p>
                 <p className="text-xs text-muted-foreground/50 mt-1">
                   Front-facing, good lighting
@@ -143,6 +147,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
             ref={selfieRef}
             type="file"
             accept="image/*"
+            capture="user"
             className="hidden"
             onChange={(e) => handleFileSelect(e, "selfie")}
           />

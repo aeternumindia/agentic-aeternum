@@ -263,7 +263,10 @@ export function VirtualTryOnScreen({
   function handlePhotoDrop(e: React.DragEvent, target: "fullBody" | "selfie") {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
+    // Accept images by MIME type (image/jpeg, image/png, image/heic, etc.)
+    // OR by file extension (.heic/.HEIC — iOS sometimes reports HEIC as
+    // application/octet-stream in drag-and-drop).
+    if (file && (file.type.startsWith("image/") || /\.heic$/i.test(file.name))) {
       if (target === "fullBody") handleFullBody(file);
       else handleSelfie(file);
     }
@@ -371,11 +374,11 @@ export function VirtualTryOnScreen({
                 ) : (
                   <>
                     <Upload className="h-6 w-6 text-muted-foreground/40 mb-1" />
-                    <p className="text-[10px] text-muted-foreground text-center px-2">Drop or click</p>
+                    <p className="text-[10px] text-muted-foreground text-center px-2">Tap to capture</p>
                   </>
                 )}
               </div>
-              <input ref={fullBodyRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoSelect(e, "fullBody")} />
+              <input ref={fullBodyRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handlePhotoSelect(e, "fullBody")} />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -394,11 +397,11 @@ export function VirtualTryOnScreen({
                 ) : (
                   <>
                     <Upload className="h-6 w-6 text-muted-foreground/40 mb-1" />
-                    <p className="text-[10px] text-muted-foreground text-center px-2">Drop or click</p>
+                    <p className="text-[10px] text-muted-foreground text-center px-2">Tap to capture</p>
                   </>
                 )}
               </div>
-              <input ref={selfieRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoSelect(e, "selfie")} />
+              <input ref={selfieRef} type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => handlePhotoSelect(e, "selfie")} />
             </div>
           </div>
 

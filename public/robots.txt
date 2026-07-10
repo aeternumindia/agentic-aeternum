@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://ai.aeternumindia.com
+
+# Sitemaps
+Sitemap: https://ai.aeternumindia.com/sitemap.xml

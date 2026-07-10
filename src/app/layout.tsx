@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "Aeternum AI — Your Personal Stylist",
   description:
     "Discover products, receive sizing recommendations, customize garments, and complete purchases through a conversational AI shopping assistant.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export const viewport: Viewport = {
