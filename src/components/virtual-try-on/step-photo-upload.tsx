@@ -257,7 +257,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
     hasPreview: boolean,
   ): string {
     const base = [
-      "relative aspect-[3/4] rounded-xl border-2 overflow-hidden transition-all duration-200",
+      "relative aspect-[3/4] max-h-[320px] rounded-xl border-2 overflow-hidden transition-all duration-200",
       "cursor-pointer outline-none",
       "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     ];
@@ -290,254 +290,263 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
   const canContinue = fullBody && selfie;
 
   return (
-    <div className="animate-fade-in space-y-6">
-      {/* Back button (top only — bottom one removed intentionally) */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
+    <div className="animate-fade-in flex-1 flex flex-col min-h-0">
+      <div className="flex-1 relative min-h-0">
+        {/* Scrollable content */}
+        <div className="absolute inset-0 overflow-y-auto">
+          <div className="space-y-6 pb-24">
+            {/* Back button (top only — bottom one removed intentionally) */}
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
 
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">
-          Upload Your Photos
-        </h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          We need two photos to generate a realistic try-on
-        </p>
-      </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">
+                Upload Your Photos
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                We need two photos to generate a realistic try-on
+              </p>
+            </div>
 
-      {/* Tips card moved above grid — guidance before upload */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">Tips for best results:</strong>
-          <br />
-          &bull; Stand against a plain background with good lighting
-          <br />
-          &bull; Wear fitted clothing so your body shape is visible
-          <br />
-          &bull; Keep your arms slightly away from your body
-          <br />
-          &bull; Face forward in both photos
-        </p>
-      </div>
+            {/* Tips card moved above grid — guidance before upload */}
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <strong className="text-foreground">Tips for best results:</strong>
+                <br />
+                &bull; Stand against a plain background with good lighting
+                <br />
+                &bull; Wear fitted clothing so your body shape is visible
+                <br />
+                &bull; Keep your arms slightly away from your body
+                <br />
+                &bull; Face forward in both photos
+              </p>
+            </div>
 
-      {/* ── Two columns always (mobile + desktop) ── */}
-      <div className="grid grid-cols-2 gap-3 md:gap-6">
-        {/* ── Full Body ── */}
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Camera className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">
-              Full Body Photo
-            </span>
-            {fullBody && <Check className="h-3 w-3 text-green-500" />}
-          </div>
+            {/* ── Two columns always (mobile + desktop) ── */}
+            <div className="grid grid-cols-[repeat(2,minmax(0,280px))] justify-center gap-3 md:gap-6">
+              {/* ── Full Body ── */}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    Full Body Photo
+                  </span>
+                  {fullBody && <Check className="h-3 w-3 text-green-500" />}
+                </div>
 
-          <div
-            ref={fullBodyZoneRef}
-            role="button"
-            tabIndex={0}
-            className={dropZoneClasses("fullBody", !!fullBodyPreview)}
-            onClick={() => openPicker("fullBody")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") openPicker("fullBody");
-            }}
-            onDrop={(e) => handleDrop(e, "fullBody")}
-            onDragOver={(e) => e.preventDefault()}
-            onDragEnter={() => handleDragEnter("fullBody")}
-            onDragLeave={() => handleDragLeave("fullBody")}
-            aria-label={
-              fullBody
-                ? "Full body photo selected. Tap to replace."
-                : "Add full body photo"
-            }
-            aria-haspopup="dialog"
-          >
-            {fullBodyPreview ? (
-              <>
-                <img
-                  src={fullBodyPreview}
-                  alt="Full body"
-                  className="h-full w-full object-cover"
+                <div
+                  ref={fullBodyZoneRef}
+                  role="button"
+                  tabIndex={0}
+                  className={dropZoneClasses("fullBody", !!fullBodyPreview)}
+                  onClick={() => openPicker("fullBody")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openPicker("fullBody");
+                  }}
+                  onDrop={(e) => handleDrop(e, "fullBody")}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragEnter={() => handleDragEnter("fullBody")}
+                  onDragLeave={() => handleDragLeave("fullBody")}
+                  aria-label={
+                    fullBody
+                      ? "Full body photo selected. Tap to replace."
+                      : "Add full body photo"
+                  }
+                  aria-haspopup="dialog"
+                >
+                  {fullBodyPreview ? (
+                    <>
+                      <img
+                        src={fullBodyPreview}
+                        alt="Full body"
+                        className="h-full w-full object-cover"
+                      />
+
+                      {/* Persistent edit badge — visible on all devices */}
+                      <div className="absolute top-2 right-2 pointer-events-none">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
+                          <Camera className="h-3.5 w-3.5 text-foreground" />
+                        </span>
+                      </div>
+
+                      {/* Hover overlay — desktop only, replace affordance */}
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                        <span className="text-white text-xs font-medium">
+                          Tap to replace
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div
+                      className={`flex flex-col items-center justify-center h-full px-4 text-center transition-transform duration-150 ${dragOver === "fullBody" ? "scale-110" : ""}`}
+                    >
+                      <Camera className="h-9 w-9 text-muted-foreground/30 mb-2 animate-soft-breathe" />
+                      <p className="text-xs text-muted-foreground">
+                        Tap to add photo
+                      </p>
+                      <p className="text-xs text-muted-foreground/50 mt-0.5">
+                        or drag &amp; drop
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Camera cancelled hint */}
+                {cameraCancelled === "fullBody" && (
+                  <p className="text-xs text-amber-600 mt-1.5 animate-fade-in">
+                    No photo received. Tap the box to try again.
+                  </p>
+                )}
+
+                {/* Error message */}
+                {errorSlot?.slot === "fullBody" && (
+                  <p className="text-xs text-destructive mt-1.5 animate-fade-in">
+                    {errorSlot.message}
+                  </p>
+                )}
+
+                {/* Hidden camera input */}
+                <input
+                  ref={fullBodyCameraRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e, "fullBody")}
                 />
-
-                {/* Persistent edit badge — visible on all devices */}
-                <div className="absolute top-2 right-2 pointer-events-none">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
-                    <Camera className="h-3.5 w-3.5 text-foreground" />
-                  </span>
-                </div>
-
-                {/* Hover overlay — desktop only, replace affordance */}
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
-                  <span className="text-white text-xs font-medium">
-                    Tap to replace
-                  </span>
-                </div>
-              </>
-            ) : (
-              <div
-                className={`flex flex-col items-center justify-center h-full px-4 text-center transition-transform duration-150 ${dragOver === "fullBody" ? "scale-110" : ""}`}
-              >
-                <Camera className="h-9 w-9 text-muted-foreground/30 mb-2 animate-soft-breathe" />
-                <p className="text-xs text-muted-foreground">
-                  Tap to add photo
-                </p>
-                <p className="text-xs text-muted-foreground/50 mt-0.5">
-                  or drag &amp; drop
-                </p>
+                {/* Hidden gallery/file input — explicit extensions only, no image/*
+                    because iOS Safari with image/* filters out HEIC even if .heic is appended */}
+                <input
+                  ref={fullBodyFileRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.HEIC,.HEIF"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e, "fullBody")}
+                />
               </div>
-            )}
+
+              {/* ── Selfie ── */}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Selfie</span>
+                  {selfie && <Check className="h-3 w-3 text-green-500" />}
+                </div>
+
+                <div
+                  ref={selfieZoneRef}
+                  role="button"
+                  tabIndex={0}
+                  className={dropZoneClasses("selfie", !!selfiePreview)}
+                  onClick={() => openPicker("selfie")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openPicker("selfie");
+                  }}
+                  onDrop={(e) => handleDrop(e, "selfie")}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragEnter={() => handleDragEnter("selfie")}
+                  onDragLeave={() => handleDragLeave("selfie")}
+                  aria-label={
+                    selfie
+                      ? "Selfie selected. Tap to replace."
+                      : "Add selfie photo"
+                  }
+                  aria-haspopup="dialog"
+                >
+                  {selfiePreview ? (
+                    <>
+                      <img
+                        src={selfiePreview}
+                        alt="Selfie"
+                        className="h-full w-full object-cover"
+                      />
+
+                      {/* Persistent edit badge */}
+                      <div className="absolute top-2 right-2 pointer-events-none">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
+                          <Camera className="h-3.5 w-3.5 text-foreground" />
+                        </span>
+                      </div>
+
+                      {/* Hover overlay — desktop only */}
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                        <span className="text-white text-xs font-medium">
+                          Tap to replace
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div
+                      className={`flex flex-col items-center justify-center h-full px-4 text-center transition-transform duration-150 ${dragOver === "selfie" ? "scale-110" : ""}`}
+                    >
+                      <Camera className="h-9 w-9 text-muted-foreground/30 mb-2 animate-soft-breathe" />
+                      <p className="text-xs text-muted-foreground">
+                        Tap to add photo
+                      </p>
+                      <p className="text-xs text-muted-foreground/50 mt-0.5">
+                        or drag &amp; drop
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Camera cancelled hint */}
+                {cameraCancelled === "selfie" && (
+                  <p className="text-xs text-amber-600 mt-1.5 animate-fade-in">
+                    No photo received. Tap the box to try again.
+                  </p>
+                )}
+
+                {/* Error message */}
+                {errorSlot?.slot === "selfie" && (
+                  <p className="text-xs text-destructive mt-1.5 animate-fade-in">
+                    {errorSlot.message}
+                  </p>
+                )}
+
+                {/* Hidden camera input */}
+                <input
+                  ref={selfieCameraRef}
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e, "selfie")}
+                />
+                {/* Hidden gallery/file input — explicit extensions only, no image/*
+                    because iOS Safari with image/* filters out HEIC even if .heic is appended */}
+                <input
+                  ref={selfieFileRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.HEIC,.HEIF"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e, "selfie")}
+                />
+              </div>
+            </div>
           </div>
-
-          {/* Camera cancelled hint */}
-          {cameraCancelled === "fullBody" && (
-            <p className="text-xs text-amber-600 mt-1.5 animate-fade-in">
-              No photo received. Tap the box to try again.
-            </p>
-          )}
-
-          {/* Error message */}
-          {errorSlot?.slot === "fullBody" && (
-            <p className="text-xs text-destructive mt-1.5 animate-fade-in">
-              {errorSlot.message}
-            </p>
-          )}
-
-          {/* Hidden camera input */}
-          <input
-            ref={fullBodyCameraRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, "fullBody")}
-          />
-          {/* Hidden gallery/file input — explicit extensions only, no image/*
-              because iOS Safari with image/* filters out HEIC even if .heic is appended */}
-          <input
-            ref={fullBodyFileRef}
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.HEIC,.HEIF"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, "fullBody")}
-          />
         </div>
 
-        {/* ── Selfie ── */}
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 mb-2.5">
-            <Camera className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">Selfie</span>
-            {selfie && <Check className="h-3 w-3 text-green-500" />}
-          </div>
-
-          <div
-            ref={selfieZoneRef}
-            role="button"
-            tabIndex={0}
-            className={dropZoneClasses("selfie", !!selfiePreview)}
-            onClick={() => openPicker("selfie")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") openPicker("selfie");
-            }}
-            onDrop={(e) => handleDrop(e, "selfie")}
-            onDragOver={(e) => e.preventDefault()}
-            onDragEnter={() => handleDragEnter("selfie")}
-            onDragLeave={() => handleDragLeave("selfie")}
-            aria-label={
-              selfie
-                ? "Selfie selected. Tap to replace."
-                : "Add selfie photo"
+        {/* CTA bar absolutely positioned at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-background pt-4 pb-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <Button
+            size="lg"
+            className="w-full h-12"
+            disabled={!canContinue}
+            onClick={() =>
+              onComplete({ fullBody: fullBody!, selfie: selfie! })
             }
-            aria-haspopup="dialog"
           >
-            {selfiePreview ? (
-              <>
-                <img
-                  src={selfiePreview}
-                  alt="Selfie"
-                  className="h-full w-full object-cover"
-                />
-
-                {/* Persistent edit badge */}
-                <div className="absolute top-2 right-2 pointer-events-none">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5">
-                    <Camera className="h-3.5 w-3.5 text-foreground" />
-                  </span>
-                </div>
-
-                {/* Hover overlay — desktop only */}
-                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
-                  <span className="text-white text-xs font-medium">
-                    Tap to replace
-                  </span>
-                </div>
-              </>
-            ) : (
-              <div
-                className={`flex flex-col items-center justify-center h-full px-4 text-center transition-transform duration-150 ${dragOver === "selfie" ? "scale-110" : ""}`}
-              >
-                <Camera className="h-9 w-9 text-muted-foreground/30 mb-2 animate-soft-breathe" />
-                <p className="text-xs text-muted-foreground">
-                  Tap to add photo
-                </p>
-                <p className="text-xs text-muted-foreground/50 mt-0.5">
-                  or drag &amp; drop
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Camera cancelled hint */}
-          {cameraCancelled === "selfie" && (
-            <p className="text-xs text-amber-600 mt-1.5 animate-fade-in">
-              No photo received. Tap the box to try again.
-            </p>
-          )}
-
-          {/* Error message */}
-          {errorSlot?.slot === "selfie" && (
-            <p className="text-xs text-destructive mt-1.5 animate-fade-in">
-              {errorSlot.message}
-            </p>
-          )}
-
-          {/* Hidden camera input */}
-          <input
-            ref={selfieCameraRef}
-            type="file"
-            accept="image/*"
-            capture="user"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, "selfie")}
-          />
-          {/* Hidden gallery/file input — explicit extensions only, no image/*
-              because iOS Safari with image/* filters out HEIC even if .heic is appended */}
-          <input
-            ref={selfieFileRef}
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.HEIC,.HEIF"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, "selfie")}
-          />
+            Generate AI Try-On
+          </Button>
         </div>
       </div>
-
-      {/* Single CTA button (bottom Back removed — only top back arrow) */}
-      <Button
-        size="default"
-        className="w-full"
-        disabled={!canContinue}
-        onClick={() =>
-          onComplete({ fullBody: fullBody!, selfie: selfie! })
-        }
-      >
-        Generate AI Try-On
-      </Button>
 
       {/* Photo picker — opens when tapping a drop zone */}
       <PhotoPicker

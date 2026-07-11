@@ -44,196 +44,208 @@ export function OutfitCard({ onContinue, onBack, onChangeTop, onChangeBottom }: 
   );
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
+    <div className="animate-fade-in flex-1 flex flex-col min-h-0">
+      <div className="flex-1 relative min-h-0">
+        {/* Scrollable content fills the container */}
+        <div className="absolute inset-0 overflow-y-auto">
+          <div className="space-y-6 pb-24">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
 
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">Review Your Outfit</h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Choose sizes and colors for each piece
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 md:gap-6">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Shirt className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">Top</span>
-            {hasTop && <Check className="h-3 w-3 text-green-500" />}
-          </div>
-
-          {hasTop && pair.top ? (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="relative aspect-[4/5] bg-muted group">
-                <img
-                  src={pair.top.image}
-                  alt={pair.top.title}
-                  className="h-full w-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={onChangeTop}
-                  className="absolute inset-0 z-10 flex items-center justify-center gap-1.5 bg-black/0 text-white/0 transition-all group-hover:bg-black/40 group-hover:text-white text-xs font-medium"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Change
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <p className="text-xs text-foreground font-medium truncate">
-                  {pair.top.title}
-                </p>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Size</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {topSizes.map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => setTopSize(size)}
-                        className={`rounded border px-2.5 py-1 text-xs transition-all ${
-                          pair.topSize === size
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-background text-foreground hover:border-muted-foreground"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {topColors.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Color</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {topColors.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => setTopColor(color)}
-                          className={`rounded border px-2.5 py-1 text-xs transition-all ${
-                            pair.topColor === color
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-background text-foreground hover:border-muted-foreground"
-                          }`}
-                        >
-                          {color}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <p className="text-xs text-accent font-medium">
-                  ₹{Number(pair.top.price).toLocaleString("en-IN")}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
-              <p className="text-xs text-muted-foreground">
-                No top selected yet
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">
+                Review Your Outfit
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Choose sizes and colors for each piece
               </p>
             </div>
-          )}
-        </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Split className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">Bottom</span>
-            {hasBottom && <Check className="h-3 w-3 text-green-500" />}
-          </div>
-
-          {hasBottom && pair.bottom ? (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="relative aspect-[4/5] bg-muted group">
-                <img
-                  src={pair.bottom.image}
-                  alt={pair.bottom.title}
-                  className="h-full w-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={onChangeBottom}
-                  className="absolute inset-0 z-10 flex items-center justify-center gap-1.5 bg-black/0 text-white/0 transition-all group-hover:bg-black/40 group-hover:text-white text-xs font-medium"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  Change
-                </button>
-              </div>
-              <div className="p-4 space-y-3">
-                <p className="text-xs text-foreground font-medium truncate">
-                  {pair.bottom.title}
-                </p>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Size</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {bottomSizes.map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => setBottomSize(size)}
-                        className={`rounded border px-2.5 py-1 text-xs transition-all ${
-                          pair.bottomSize === size
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-background text-foreground hover:border-muted-foreground"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+            <div className="grid grid-cols-2 gap-3 md:gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Shirt className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Top</span>
+                  {hasTop && <Check className="h-3 w-3 text-green-500" />}
                 </div>
-                {bottomColors.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Color</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {bottomColors.map((color) => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => setBottomColor(color)}
-                          className={`rounded border px-2.5 py-1 text-xs transition-all ${
-                            pair.bottomColor === color
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-background text-foreground hover:border-muted-foreground"
-                          }`}
-                        >
-                          {color}
-                        </button>
-                      ))}
+
+                {hasTop && pair.top ? (
+                  <div className="rounded-xl border border-border bg-card overflow-hidden">
+                    <div className="relative aspect-[4/5] bg-muted group">
+                      <img
+                        src={pair.top.image}
+                        alt={pair.top.title}
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={onChangeTop}
+                        className="absolute inset-0 z-10 flex items-center justify-center gap-1.5 bg-black/0 text-white/0 transition-all group-hover:bg-black/40 group-hover:text-white text-xs font-medium"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Change
+                      </button>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <p className="text-xs text-foreground font-medium truncate">
+                        {pair.top.title}
+                      </p>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Size</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {topSizes.map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => setTopSize(size)}
+                              className={`rounded border px-2.5 py-1 text-xs transition-all ${
+                                pair.topSize === size
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-background text-foreground hover:border-muted-foreground"
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {topColors.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Color</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {topColors.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setTopColor(color)}
+                                className={`rounded border px-2.5 py-1 text-xs transition-all ${
+                                  pair.topColor === color
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-background text-foreground hover:border-muted-foreground"
+                                }`}
+                              >
+                                {color}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-xs text-accent font-medium">
+                        ₹{Number(pair.top.price).toLocaleString("en-IN")}
+                      </p>
                     </div>
                   </div>
+                ) : (
+                  <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
+                    <p className="text-xs text-muted-foreground">
+                      No top selected yet
+                    </p>
+                  </div>
                 )}
-                <p className="text-xs text-accent font-medium">
-                  ₹{Number(pair.bottom.price).toLocaleString("en-IN")}
-                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Split className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Bottom</span>
+                  {hasBottom && <Check className="h-3 w-3 text-green-500" />}
+                </div>
+
+                {hasBottom && pair.bottom ? (
+                  <div className="rounded-xl border border-border bg-card overflow-hidden">
+                    <div className="relative aspect-[4/5] bg-muted group">
+                      <img
+                        src={pair.bottom.image}
+                        alt={pair.bottom.title}
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={onChangeBottom}
+                        className="absolute inset-0 z-10 flex items-center justify-center gap-1.5 bg-black/0 text-white/0 transition-all group-hover:bg-black/40 group-hover:text-white text-xs font-medium"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Change
+                      </button>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <p className="text-xs text-foreground font-medium truncate">
+                        {pair.bottom.title}
+                      </p>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Size</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {bottomSizes.map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => setBottomSize(size)}
+                              className={`rounded border px-2.5 py-1 text-xs transition-all ${
+                                pair.bottomSize === size
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-background text-foreground hover:border-muted-foreground"
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {bottomColors.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Color</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {bottomColors.map((color) => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setBottomColor(color)}
+                                className={`rounded border px-2.5 py-1 text-xs transition-all ${
+                                  pair.bottomColor === color
+                                    ? "border-primary bg-primary text-primary-foreground"
+                                    : "border-border bg-background text-foreground hover:border-muted-foreground"
+                                }`}
+                              >
+                                {color}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-xs text-accent font-medium">
+                        ₹{Number(pair.bottom.price).toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
+                    <p className="text-xs text-muted-foreground">
+                      No bottom selected yet
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">
-              <p className="text-xs text-muted-foreground">
-                No bottom selected yet
-              </p>
-            </div>
-          )}
+          </div>
+        </div>
+
+        {/* CTA bar absolutely positioned at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-background pt-4 pb-4 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <Button
+            size="lg"
+            className="w-full h-12"
+            disabled={!hasTop || !hasBottom}
+            onClick={onContinue}
+          >
+            Continue
+          </Button>
         </div>
       </div>
-
-      <Button
-        size="default"
-        className="w-full"
-        disabled={!hasTop || !hasBottom}
-        onClick={onContinue}
-      >
-        Continue
-      </Button>
     </div>
   );
 }

@@ -14,19 +14,19 @@ export function StepCategorySelect({
   hasBottom,
 }: StepCategorySelectProps) {
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="animate-fade-in space-y-6 flex-1 flex flex-col justify-center">
       <div className="text-center">
         <Sparkles className="mx-auto h-8 w-8 text-accent mb-3" />
         <h1 className="text-2xl font-semibold text-foreground">
           Build Your Outfit
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+        <p className="mt-2 text-sm text-muted-foreground max-w-lg mx-auto">
           Pick a top and bottom to create the perfect pair. Get fit scores and
           see an AI preview before you buy.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-md mx-auto">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-xl mx-auto md:max-w-2xl">
         <button
           type="button"
           onClick={() => onSelect("top")}

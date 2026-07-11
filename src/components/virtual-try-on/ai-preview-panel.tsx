@@ -90,7 +90,7 @@ export function AiPreviewPanel({
   if (status === "generating") {
     return (
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="aspect-[4/5] bg-muted flex flex-col items-center justify-center gap-4">
+        <div className="aspect-[4/5] max-h-[480px] bg-muted flex flex-col items-center justify-center gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-accent" />
           <div className="text-center">
             <p className="text-sm text-foreground font-medium">
@@ -111,7 +111,7 @@ export function AiPreviewPanel({
   if (status === "done" && resultUrl) {
     return (
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="aspect-[4/5] bg-muted relative">
+        <div className="aspect-[4/5] max-h-[480px] bg-muted relative">
           <img
             src={resultUrl}
             alt={`AI try-on: ${garmentName}`}
@@ -155,7 +155,7 @@ export function AiPreviewPanel({
   if (status === "error") {
     return (
       <div className="rounded-xl border border-destructive/20 bg-destructive/5 overflow-hidden">
-        <div className="aspect-[4/5] flex flex-col items-center justify-center gap-3 p-6 text-center">
+        <div className="aspect-[4/5] max-h-[480px] flex flex-col items-center justify-center gap-3 p-6 text-center">
           <AlertCircle className="h-8 w-8 text-destructive" />
           <p className="text-xs text-destructive font-medium">
             {errorMessage || "Failed to generate preview"}
@@ -171,7 +171,7 @@ export function AiPreviewPanel({
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="aspect-[4/5] bg-muted flex flex-col items-center justify-center gap-3 p-6 text-center">
+      <div className="aspect-[4/5] max-h-[480px] bg-muted flex flex-col items-center justify-center gap-3 p-6 text-center">
         <Sparkles className="h-8 w-8 text-muted-foreground/30" />
         <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
           See yourself wearing <strong>{bottomGarmentName ? `${garmentName} + ${bottomGarmentName}` : garmentName}</strong> with AI

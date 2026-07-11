@@ -100,7 +100,10 @@ function detectUnit(sizes: string[][]): "in" | "cm" {
   }
   if (allValues.length === 0) return "cm";
   const avg = allValues.reduce((a, b) => a + b, 0) / allValues.length;
-  return avg < 30 ? "in" : "cm";
+  // Adult body measurements in cm are typically 60-130;
+  // in inches they are typically 24-48. Threshold at 50
+  // cleanly separates the two ranges.
+  return avg < 50 ? "in" : "cm";
 }
 
 function findColumnIndex(headers: string[], canonical: string): number {
@@ -256,6 +259,7 @@ function chartBasedFitScore(
   fitScore: FitScore;
   comparisonRows: ComparisonRow[];
   recommendedSize: string | null;
+  chartUnit: "cm" | "in";
 } {
   const { selectedSize, measurements, productCategory } = session;
   const { headers, sizes } = chartData;
@@ -267,7 +271,7 @@ function chartBasedFitScore(
   const sizeIdx = getSizeIndex(sizes, selectedSize);
   if (sizeIdx === -1) {
     const fallback = genericFitScore(selectedSize, measurements, productCategory);
-    return { ...fallback, recommendedSize: null };
+    return { ...fallback, recommendedSize: null, chartUnit: unit };
   }
 
   const relevantKeys = getRelevantKeys(productCategory);
@@ -324,7 +328,7 @@ function chartBasedFitScore(
 
   if (maxScore === 0) {
     const fallback = genericFitScore(selectedSize, measurements, productCategory);
-    return { ...fallback, recommendedSize: null };
+    return { ...fallback, recommendedSize: null, chartUnit: unit };
   }
 
   const overall = Math.round((totalScore / maxScore) * 100);
@@ -365,7 +369,7 @@ function chartBasedFitScore(
   }
 
   const fitScore = computeFitQuality(overall, comparisonRows, selectedSize);
-  return { fitScore, comparisonRows, recommendedSize: bestSize ?? null };
+  return { fitScore, comparisonRows, recommendedSize: bestSize ?? null, chartUnit: unit };
 }
 
 export function calculateFitScore(session: TryOnSession): TryOnResult {

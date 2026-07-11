@@ -25,7 +25,7 @@ export function AppShell({ children }: AppShellProps) {
         onCartClick={openCart}
         cartItemCount={itemCount}
       />
-      <main className="flex-1 flex flex-col pt-16 overflow-hidden">
+      <main className="flex-1 flex flex-col pt-16 min-h-0">
         {children}
       </main>
       <CartDrawer />

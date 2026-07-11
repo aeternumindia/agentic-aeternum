@@ -1,10 +1,12 @@
 "use client";
 
-import { X, ShoppingBag, ExternalLink, Trash2 } from "lucide-react";
+import { X, ShoppingBag, ExternalLink, Trash2, Percent } from "lucide-react";
 import { useShopifyCart } from "@/contexts/shopify-cart";
+import { CouponSection } from "./coupon-section";
+import { UpsellBanner } from "./upsell-banner";
 
 export function CartDrawer() {
-  const { isOpen, closeCart, cart, itemCount, updateLine } = useShopifyCart();
+  const { isOpen, closeCart, cart, itemCount, updateLine, discountSavings } = useShopifyCart();
 
   return (
     <>
@@ -81,13 +83,35 @@ export function CartDrawer() {
                   })}
                 </div>
 
-                <div className="border-t border-border p-5 space-y-3 shrink-0">
+                <div className="border-t border-border px-5 pt-4 pb-5 space-y-3 shrink-0">
+                  {/* Coupon section */}
+                  <CouponSection />
+
+                  {/* Upsell banner — reactive when error, proactive when approaching threshold */}
+                  <UpsellBanner />
+
+                  {/* Discount savings line */}
+                  {discountSavings > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-accent">
+                        <Percent className="h-3 w-3" />
+                        Discount
+                      </span>
+                      <span className="text-xs font-medium text-accent">
+                        −₹{discountSavings.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Subtotal */}
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Subtotal</span>
                     <span className="text-sm font-medium">
                       ₹{Number(cart.cost.subtotalAmount.amount).toLocaleString("en-IN")}
                     </span>
                   </div>
+
+                  {/* Checkout button */}
                   <a
                     href={cart.checkoutUrl}
                     target="_blank"

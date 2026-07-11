@@ -20,6 +20,12 @@ type CartLine = {
   };
 };
 
+export type CartDiscountCode = {
+  code: string;
+  applicable: boolean;
+  amount: { amount: string; currencyCode: string } | null;
+};
+
 type ShopifyCart = {
   id: string;
   checkoutUrl: string;
@@ -29,6 +35,28 @@ type ShopifyCart = {
     totalAmount: { amount: string; currencyCode: string };
   };
   lines: CartLine[];
+  discountCodes: CartDiscountCode[];
+};
+
+/** Structured error codes returned by the backend discount endpoints */
+export type DiscountErrorCode =
+  | "invalid_code"
+  | "expired"
+  | "min_not_met"
+  | "not_applicable"
+  | "already_used"
+  | "rate_limited"
+  | "network";
+
+export type DiscountState = {
+  /** "idle" | "applying" | "applied" | "removing" | "error" */
+  status: "idle" | "applying" | "applied" | "removing" | "error";
+  code: string;
+  error: { code: DiscountErrorCode; message: string } | null;
+  /** Minimum order amount required (from min_not_met backend response) */
+  minimumAmount?: number;
+  /** User dismissed the upsell card */
+  upsellDismissed: boolean;
 };
 
 type ShopifyCartContextValue = {
@@ -42,6 +70,18 @@ type ShopifyCartContextValue = {
   closeCart: () => void;
   refreshCart: () => Promise<void>;
   setCartId: (id: string) => void;
+  /** Apply a discount code to the cart */
+  applyDiscount: (code: string) => Promise<void>;
+  /** Remove all discount codes from the cart */
+  removeDiscount: () => Promise<void>;
+  /** Current discount state */
+  discount: DiscountState;
+  /** Compute total savings from all discount allocations (subtotal - total) */
+  discountSavings: number;
+  /** Dismiss the upsell banner */
+  dismissUpsell: () => void;
+  /** Close cart and navigate to AI shopping */
+  openAiShopping: () => void;
 };
 
 const ShopifyCartContext = createContext<ShopifyCartContextValue | null>(null);
@@ -51,10 +91,30 @@ function getStoredCartId(): string | null {
   return localStorage.getItem(CART_STORAGE_KEY);
 }
 
+/** Friendly messages for each error code, shown below the coupon input */
+export const DISCOUNT_ERROR_MESSAGES: Record<DiscountErrorCode, string> = {
+  invalid_code: "This discount code isn't valid. Please check and try again.",
+  expired: "This discount code has expired.",
+  min_not_met: "Your order doesn't meet the minimum amount for this code.",
+  not_applicable: "This discount code doesn't apply to any items in your cart.",
+  already_used: "This discount code has already been used.",
+  rate_limited: "Too many attempts. Please wait a moment and try again.",
+  network: "Unable to apply discount. Check your connection and try again.",
+};
+
+const initialDiscountState: DiscountState = {
+  status: "idle",
+  code: "",
+  error: null,
+  minimumAmount: undefined,
+  upsellDismissed: false,
+};
+
 export function ShopifyCartProvider({ children }: { children: ReactNode }) {
   const [cartId, setCartId] = useState<string | null>(getStoredCartId);
   const [cart, setCart] = useState<ShopifyCart | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [discount, setDiscount] = useState<DiscountState>(initialDiscountState);
 
   useEffect(() => {
     let cancelled = false;
@@ -189,10 +249,105 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
     setCartId(id);
   }, []);
 
+  const applyDiscount = useCallback(async (code: string) => {
+    const cartToken = cartId || getStoredCartId();
+    if (!cartToken) {
+      setDiscount({ status: "error", code, error: { code: "network", message: DISCOUNT_ERROR_MESSAGES.network }, minimumAmount: undefined, upsellDismissed: false });
+      return;
+    }
+
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed || trimmed.length < 3) {
+      setDiscount({ status: "error", code: trimmed, error: { code: "invalid_code", message: "Code must be at least 3 characters." }, minimumAmount: undefined, upsellDismissed: false });
+      return;
+    }
+
+    setDiscount({ status: "applying", code: trimmed, error: null, minimumAmount: undefined, upsellDismissed: false });
+
+    try {
+      const { data } = await apiClient.post("/cart/discount", {
+        cartId: cartToken,
+        discountCode: trimmed,
+      });
+
+      if (data.success && data.data?.cart) {
+        setCart(data.data.cart);
+        setDiscount({ status: "applied", code: trimmed, error: null, minimumAmount: undefined, upsellDismissed: false });
+      } else {
+        // Backend returned structured error
+        const code: DiscountErrorCode = data.error || "invalid_code";
+        const message = data.message || DISCOUNT_ERROR_MESSAGES[code];
+        const minimumAmount = data.minimumAmount as number | undefined;
+        setDiscount({ status: "error", code: trimmed, error: { code, message }, minimumAmount, upsellDismissed: false });
+
+        // Cache the minimum amount for proactive upsell on next cart open
+        if (code === "min_not_met" && minimumAmount && minimumAmount > 0) {
+          try {
+            localStorage.setItem(
+              "aeternum_coupon_upsell",
+              JSON.stringify({
+                code: trimmed,
+                minimumAmount,
+                timestamp: Date.now(),
+              }),
+            );
+          } catch { /* localStorage unavailable */ }
+        }
+
+        // If the backend still returned a cart (e.g., partial state), update it
+        if (data.cart) setCart(data.cart);
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; error?: string } }; message?: string };
+      const msg = axiosErr?.response?.data?.message || axiosErr?.message || DISCOUNT_ERROR_MESSAGES.network;
+      const code: DiscountErrorCode = (axiosErr?.response?.data?.error as DiscountErrorCode) || "network";
+      setDiscount({ status: "error", code: trimmed, error: { code, message: msg }, minimumAmount: undefined, upsellDismissed: false });
+    }
+  }, [cartId]);
+
+  const removeDiscount = useCallback(async () => {
+    const cartToken = cartId || getStoredCartId();
+    if (!cartToken) return;
+
+    setDiscount((prev) => ({ ...prev, status: "removing" }));
+
+    try {
+      const { data } = await apiClient.delete("/cart/discount", {
+        data: { cartId: cartToken },
+      });
+
+      if (data.success && data.data?.cart) {
+        setCart(data.data.cart);
+      }
+
+      setDiscount(initialDiscountState);
+    } catch {
+      // Even on error, reset the discount state so the user can retry
+      setDiscount(initialDiscountState);
+    }
+  }, [cartId]);
+
+  const dismissUpsell = useCallback(() => {
+    setDiscount((prev) => ({ ...prev, upsellDismissed: true }));
+  }, []);
+
+  const openAiShopping = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
   const itemCount = cart?.totalQuantity ?? 0;
+
+  /** Compute total savings: subtotal - total */
+  const discountSavings = (() => {
+    if (!cart) return 0;
+    const sub = Number.parseFloat(cart.cost.subtotalAmount.amount);
+    const total = Number.parseFloat(cart.cost.totalAmount.amount);
+    const savings = sub - total;
+    return savings > 0 ? savings : 0;
+  })();
 
   return (
     <ShopifyCartContext.Provider
@@ -207,6 +362,12 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
         closeCart,
         refreshCart,
         setCartId: handleSetCartId,
+        applyDiscount,
+        removeDiscount,
+        discount,
+        discountSavings,
+        dismissUpsell,
+        openAiShopping,
       }}
     >
       {children}

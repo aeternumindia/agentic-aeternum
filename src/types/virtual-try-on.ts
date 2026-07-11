@@ -49,4 +49,5 @@ export type TryOnResult = {
   comparisonRows: ComparisonRow[];
   sizeChart?: ProductSizeChart | null;
   recommendedSize?: string | null;
+  chartUnit?: "cm" | "in";
 };
