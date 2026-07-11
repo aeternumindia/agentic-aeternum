@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { analyzeSkinColor } from "@/services/api";
 import type { SkinAnalysisResult } from "@/types/color-analysis";
+import { convertHeicToJpegIfNeeded } from "@/utils/heic-converter";
 
 type Status = "idle" | "uploading" | "analyzing" | "done" | "error";
 
@@ -25,13 +26,16 @@ export function useColorAnalysis(): UseColorAnalysisReturn {
     setError(null);
     setStatus("uploading");
 
-    const url = URL.createObjectURL(file);
+    // Convert HEIC to JPEG before preview/upload
+    const converted = await convertHeicToJpegIfNeeded(file);
+
+    const url = URL.createObjectURL(converted);
     setPreviewUrl(url);
 
     setStatus("analyzing");
 
     try {
-      const response = await analyzeSkinColor(file);
+      const response = await analyzeSkinColor(converted);
       if (response.success) {
         setResult(response.data);
         setStatus("done");

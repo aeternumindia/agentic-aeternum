@@ -4,6 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { ArrowLeft, Camera, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PhotoPicker } from "./photo-picker";
+import { convertHeicToJpegIfNeeded } from "@/utils/heic-converter";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
@@ -89,24 +90,27 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
   const fullBodyFileRef = useRef<HTMLInputElement>(null);
   const selfieFileRef = useRef<HTMLInputElement>(null);
 
-  const handleFullBody = useCallback((file: File) => {
+  const handleFullBody = useCallback(async (file: File) => {
+    // Convert HEIC to JPEG before preview (browsers can't show HEIC previews)
+    const converted = await convertHeicToJpegIfNeeded(file);
     // Revoke previous blob URL to avoid memory leak
     if (fullBodyPreviewRef.current) {
       URL.revokeObjectURL(fullBodyPreviewRef.current);
     }
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(converted);
     fullBodyPreviewRef.current = url;
-    setFullBody(file);
+    setFullBody(converted);
     setFullBodyPreview(url);
   }, []);
 
-  const handleSelfie = useCallback((file: File) => {
+  const handleSelfie = useCallback(async (file: File) => {
+    const converted = await convertHeicToJpegIfNeeded(file);
     if (selfiePreviewRef.current) {
       URL.revokeObjectURL(selfiePreviewRef.current);
     }
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(converted);
     selfiePreviewRef.current = url;
-    setSelfie(file);
+    setSelfie(converted);
     setSelfiePreview(url);
   }, []);
 
@@ -154,7 +158,7 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
     }
   }
 
-  function handleDrop(e: React.DragEvent, target: "fullBody" | "selfie") {
+  async function handleDrop(e: React.DragEvent, target: "fullBody" | "selfie") {
     e.preventDefault();
     dragCounterRef.current[target] = 0;
     setDragOver(null);
@@ -188,11 +192,11 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
 
     clearError();
     setCameraCancelled(null);
-    if (target === "fullBody") handleFullBody(file);
-    else handleSelfie(file);
+    if (target === "fullBody") await handleFullBody(file);
+    else await handleSelfie(file);
   }
 
-  function handleFileSelect(
+  async function handleFileSelect(
     e: React.ChangeEvent<HTMLInputElement>,
     target: "fullBody" | "selfie",
   ) {
@@ -214,8 +218,8 @@ export function StepPhotoUpload({ onComplete, onBack }: StepPhotoUploadProps) {
       clearError();
       cameraPendingRef.current = null;
       setCameraCancelled(null);
-      if (target === "fullBody") handleFullBody(file);
-      else handleSelfie(file);
+      if (target === "fullBody") await handleFullBody(file);
+      else await handleSelfie(file);
     }
     // Reset value so the same file can be re-selected
     e.target.value = "";

@@ -18,6 +18,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useVirtualTryOn } from "@/contexts/virtual-try-on";
+import { convertHeicToJpegIfNeeded } from "@/utils/heic-converter";
 import { findRecommendedSize } from "@/services/virtual-try-on";
 import { getSizeChart } from "@/services/api";
 import type { FitQuality, ProductSizeChart, TryOnSession } from "@/types/virtual-try-on";
@@ -250,33 +251,35 @@ export function VirtualTryOnScreen({
     onAddToCart(item);
   }, [session, onAddToCart, productSizes]);
 
-  const handleFullBody = useCallback((file: File) => {
-    setFullBodyFile(file);
-    setFullBodyPreview(URL.createObjectURL(file));
+  const handleFullBody = useCallback(async (file: File) => {
+    const converted = await convertHeicToJpegIfNeeded(file);
+    setFullBodyFile(converted);
+    setFullBodyPreview(URL.createObjectURL(converted));
   }, []);
 
-  const handleSelfie = useCallback((file: File) => {
-    setSelfieFile(file);
-    setSelfiePreview(URL.createObjectURL(file));
+  const handleSelfie = useCallback(async (file: File) => {
+    const converted = await convertHeicToJpegIfNeeded(file);
+    setSelfieFile(converted);
+    setSelfiePreview(URL.createObjectURL(converted));
   }, []);
 
-  function handlePhotoDrop(e: React.DragEvent, target: "fullBody" | "selfie") {
+  async function handlePhotoDrop(e: React.DragEvent, target: "fullBody" | "selfie") {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     // Accept images by MIME type (image/jpeg, image/png, image/heic, etc.)
     // OR by file extension (.heic/.HEIC — iOS sometimes reports HEIC as
     // application/octet-stream in drag-and-drop).
     if (file && (file.type.startsWith("image/") || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name))) {
-      if (target === "fullBody") handleFullBody(file);
-      else handleSelfie(file);
+      if (target === "fullBody") await handleFullBody(file);
+      else await handleSelfie(file);
     }
   }
 
-  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>, target: "fullBody" | "selfie") {
+  async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>, target: "fullBody" | "selfie") {
     const file = e.target.files?.[0];
     if (file) {
-      if (target === "fullBody") handleFullBody(file);
-      else handleSelfie(file);
+      if (target === "fullBody") await handleFullBody(file);
+      else await handleSelfie(file);
     }
   }
 

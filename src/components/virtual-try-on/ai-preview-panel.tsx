@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 import { Sparkles, Loader2, RefreshCw, AlertCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { convertHeicToJpegIfNeeded } from "@/utils/heic-converter";
 
 type AiPreviewPanelProps = {
   fullBodyFile: File;
@@ -35,6 +36,12 @@ export function AiPreviewPanel({
     setResultUrl(null);
 
     try {
+      // Convert any HEIC files to JPEG before upload
+      const [personImage, faceImage] = await Promise.all([
+        convertHeicToJpegIfNeeded(fullBodyFile),
+        convertHeicToJpegIfNeeded(selfieFile),
+      ]);
+
       // Fetch top garment image from the Shopify URL
       const garmentRes = await fetch(garmentImageUrl);
       const garmentBlob = await garmentRes.blob();
@@ -43,8 +50,8 @@ export function AiPreviewPanel({
       });
 
       const formData = new FormData();
-      formData.append("personImage", fullBodyFile);
-      formData.append("faceImage", selfieFile);
+      formData.append("personImage", personImage);
+      formData.append("faceImage", faceImage);
       formData.append("garmentImage", garmentFile);
 
       // Fetch bottom garment image if provided
