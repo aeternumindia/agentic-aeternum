@@ -23,7 +23,6 @@ type CartLine = {
 export type CartDiscountCode = {
   code: string;
   applicable: boolean;
-  amount: { amount: string; currencyCode: string } | null;
 };
 
 type ShopifyCart = {

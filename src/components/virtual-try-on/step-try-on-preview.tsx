@@ -13,6 +13,8 @@ import {
   X,
   AlertCircle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOutfitBuilder } from "@/contexts/outfit-builder";
@@ -20,12 +22,14 @@ import { useShopifyCart } from "@/contexts/shopify-cart";
 import { calculateFitScore } from "@/services/virtual-try-on";
 import { getSizeChart } from "@/services/api";
 import { FitScoreGauge } from "./fit-score-gauge";
+import { SizeChartModal } from "./size-chart-modal";
 import { AiPreviewPanel } from "./ai-preview-panel";
 import apiClient, { getTryOnStatus, type TryOnStatus } from "@/services/api";
 import type { TryOnSession, TryOnResult, ProductSizeChart, SizeChartData } from "@/types/virtual-try-on";
 
 type Variant = {
   id: string;
+  available: boolean;
   options: { name: string; value: string }[];
 };
 
@@ -47,6 +51,18 @@ export function StepTryOnPreview({
   const { pair, setTopSize, setBottomSize } = useOutfitBuilder();
   const { addToCart } = useShopifyCart();
   const [tab, setTab] = useState<"ai" | "fit">("ai");
+  const [topOpen, setTopOpen] = useState(false);
+  const [bottomOpen, setBottomOpen] = useState(false);
+  const [topImageIdx, setTopImageIdx] = useState(0);
+  const [bottomImageIdx, setBottomImageIdx] = useState(0);
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const bottomScrollRef = useRef<HTMLDivElement>(null);
+
+  function scrollSlider(ref: React.RefObject<HTMLDivElement | null>, dir: "prev" | "next") {
+    if (!ref.current) return;
+    const w = ref.current.clientWidth;
+    ref.current.scrollBy({ left: dir === "next" ? w : -w, behavior: "smooth" });
+  }
 
   const [adding, setAdding] = useState(false);
   const [done, setDone] = useState(false);
@@ -90,6 +106,12 @@ export function StepTryOnPreview({
   const bottomUniqueColors = [...new Set(bottomVariants.map((v) => v.color))];
   const topCurrentColor = topVariants.find((v) => v.size === pair.topSize)?.color;
   const bottomCurrentColor = bottomVariants.find((v) => v.size === pair.bottomSize)?.color;
+  const topCurrentVariant = topVariants.find((v) => v.size === pair.topSize);
+  const bottomCurrentVariant = bottomVariants.find((v) => v.size === pair.bottomSize);
+  const topCurrentPrice = topCurrentVariant?.price ?? pair.top?.price ?? "0";
+  const bottomCurrentPrice = bottomCurrentVariant?.price ?? pair.bottom?.price ?? "0";
+  const topCompareAtPrice = topCurrentVariant?.compareAtPrice;
+  const bottomCompareAtPrice = bottomCurrentVariant?.compareAtPrice;
 
   // Auto-correct size if current selection is no longer available
   useEffect(() => {
@@ -104,6 +126,9 @@ export function StepTryOnPreview({
     }
   }, [bottomAvailableVariants, pair.bottomSize, setBottomSize]);
 
+  // Reset image index when product or panel changes
+  useEffect(() => { setTopImageIdx(0); }, [pair.top]);
+  useEffect(() => { setBottomImageIdx(0); }, [pair.bottom]);
   useEffect(() => {
     getTryOnStatus().then(setTryOnStatus).catch(() => {});
   }, []);
@@ -156,6 +181,8 @@ export function StepTryOnPreview({
             productTitle: pair.top.title,
             productImage: pair.top.image,
             productCategory: pair.top.productType,
+            price: pair.top.price ?? "0",
+            currency: pair.top.currency ?? "INR",
             selectedSize: pair.topSize,
             selectedColor: pair.topColor,
             measurements: parsed,
@@ -170,6 +197,8 @@ export function StepTryOnPreview({
             productTitle: pair.bottom.title,
             productImage: pair.bottom.image,
             productCategory: pair.bottom.productType,
+            price: pair.bottom.price ?? "0",
+            currency: pair.bottom.currency ?? "INR",
             selectedSize: pair.bottomSize,
             selectedColor: pair.bottomColor,
             measurements: parsed,
@@ -192,6 +221,8 @@ export function StepTryOnPreview({
             productTitle: pair.top.title,
             productImage: pair.top.image,
             productCategory: pair.top.productType,
+            price: pair.top.price ?? "0",
+            currency: pair.top.currency ?? "INR",
             selectedSize: pair.topSize,
             selectedColor: pair.topColor,
             measurements: parsed,
@@ -204,6 +235,8 @@ export function StepTryOnPreview({
             productTitle: pair.bottom.title,
             productImage: pair.bottom.image,
             productCategory: pair.bottom.productType,
+            price: pair.bottom.price ?? "0",
+            currency: pair.bottom.currency ?? "INR",
             selectedSize: pair.bottomSize,
             selectedColor: pair.bottomColor,
             measurements: parsed,
@@ -250,6 +283,7 @@ export function StepTryOnPreview({
           const variants = data.data.variants as Variant[];
           const match = variants.find(
             (v) =>
+              v.available &&
               v.options.some(
                 (o) => o.value.toLowerCase() === size.toLowerCase()
               ) &&
@@ -264,8 +298,18 @@ export function StepTryOnPreview({
         }
       }
       setDone(true);
-    } catch {
-      setError("Failed to add items to cart. Please try again.");
+    } catch (err) {
+      let msg = "Failed to add items to cart.";
+      if (err && typeof err === "object" && "response" in err) {
+        const axiosErr = err as { response?: { status?: number; data?: unknown } };
+        msg = `Server error (${axiosErr.response?.status ?? "?"})`;
+        if (axiosErr.response?.data) {
+          msg += `: ${JSON.stringify(axiosErr.response.data)}`;
+        }
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
+      setError(msg);
     } finally {
       setAdding(false);
     }
@@ -534,6 +578,261 @@ export function StepTryOnPreview({
           </div>
         </div>
 
+        {/* Backdrop — catches taps outside sliders to close */}
+        {(topOpen || bottomOpen) && (
+          <div
+            className="fixed inset-0 z-10 hidden max-md:block"
+            onClick={() => { setTopOpen(false); setBottomOpen(false); }}
+          />
+        )}
+
+        {/* ── Mobile size sliders (right edge, hidden on desktop) ── */}
+        <div className="hidden max-md:flex flex-col gap-2 absolute right-0 bottom-24 z-20">
+          {pair.top && topAvailableVariants.length > 0 && (
+            <div className="relative flex justify-end min-h-[48px]">
+              <button
+                onClick={() => setTopOpen(!topOpen)}
+                className={`
+                  flex items-center gap-1 bg-primary text-primary-foreground border border-primary/80 shadow-md
+                  px-2 py-3 text-[10px] font-medium
+                  hover:bg-primary/90 transition-all duration-200 min-h-[48px] shrink-0
+                  ${topOpen ? "bg-primary/80 border-r-0" : ""}
+                  [clip-path:polygon(100%_0%,100%_100%,0%_85%,0%_15%)]
+                `}
+                aria-label="Toggle top size"
+              >
+                <span className="[writing-mode:vertical-rl] rotate-180 tracking-widest uppercase">Top</span>
+              </button>
+              <div
+                className={`
+                  absolute right-full bottom-0 flex overflow-hidden
+                  transition-all duration-300 ease-out
+                  ${topOpen ? "max-w-[220px] opacity-100" : "max-w-0 opacity-0 pointer-events-none"}
+                `}
+              >
+                <div className="flex flex-col gap-1.5 bg-card border border-border shadow-lg px-2 py-2 w-[220px]">
+                  {/* Image slider */}
+                  <div className="relative w-full aspect-[4/5] bg-muted overflow-hidden group">
+                    <div
+                      ref={topScrollRef}
+                      className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full [&::-webkit-scrollbar]:hidden"
+                      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                      onScroll={(e) => {
+                        const el = e.currentTarget;
+                        const idx = Math.round(el.scrollLeft / el.clientWidth);
+                        setTopImageIdx(idx);
+                      }}
+                    >
+                      {(pair.top.images?.length ? pair.top.images : [pair.top.image]).map((src, i) => (
+                        <div key={i} className="w-full h-full shrink-0 snap-start">
+                          <img
+                            src={src}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            draggable={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {(pair.top.images?.length ?? 0) > 1 && (
+                      <>
+                        {/* Prev */}
+                        <button
+                          type="button"
+                          onClick={() => scrollSlider(topScrollRef, "prev")}
+                          className="absolute left-0.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                          aria-label="Previous image"
+                        >
+                          <ChevronLeft className="h-3 w-3" />
+                        </button>
+                        {/* Next */}
+                        <button
+                          type="button"
+                          onClick={() => scrollSlider(topScrollRef, "next")}
+                          className="absolute right-0.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                          aria-label="Next image"
+                        >
+                          <ChevronRight className="h-3 w-3" />
+                        </button>
+                        {/* Dots */}
+                        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                          {pair.top.images.map((_, i) => (
+                            <span
+                              key={i}
+                              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                i === topImageIdx ? "bg-white" : "bg-white/40"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 px-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {topUniqueColors.length > 1 && topCurrentColor && (
+                        <span
+                          className="inline-block rounded-full shrink-0 border border-border/60 w-2 h-2"
+                          style={{ backgroundColor: colorToHex(topCurrentColor) }}
+                          title={topCurrentColor}
+                          aria-label={`Top colour: ${topCurrentColor}`}
+                        />
+                      )}
+                      <p className="text-[11px] font-medium text-foreground leading-tight truncate">
+                        {pair.top.title}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-foreground">
+                        ₹{Number(topCurrentPrice).toLocaleString("en-IN")}
+                      </span>
+                      {topCompareAtPrice && Number(topCompareAtPrice) > Number(topCurrentPrice) && (
+                        <span className="text-[10px] text-muted-foreground line-through">
+                          ₹{Number(topCompareAtPrice).toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="relative inline-flex px-0.5">
+                    <select
+                      value={pair.topSize}
+                      onChange={(e) => setTopSize(e.target.value)}
+                      className="appearance-none rounded-md border border-border bg-muted/50 text-foreground pl-2 pr-5 text-[11px] font-medium leading-tight w-full min-h-[30px] focus:outline-none focus:ring-1 focus:ring-ring focus:border-foreground/30 hover:border-foreground/30 transition-colors cursor-pointer"
+                    >
+                      {topAvailableVariants.map((v) => (
+                        <option key={v.size} value={v.size}>{v.size}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {pair.bottom && bottomAvailableVariants.length > 0 && (
+            <div className="relative flex justify-end min-h-[48px]">
+              <button
+                onClick={() => setBottomOpen(!bottomOpen)}
+                className={`
+                  flex items-center gap-1 bg-primary text-primary-foreground border border-primary/80 shadow-md
+                  px-2 py-3 text-[10px] font-medium
+                  hover:bg-primary/90 transition-all duration-200 min-h-[48px] shrink-0
+                  ${bottomOpen ? "bg-primary/80 border-r-0" : ""}
+                  [clip-path:polygon(100%_0%,100%_100%,0%_85%,0%_15%)]
+                `}
+                aria-label="Toggle bottom size"
+              >
+                <span className="[writing-mode:vertical-rl] rotate-180 tracking-widest uppercase">Bottom</span>
+              </button>
+              <div
+                className={`
+                  absolute right-full bottom-0 flex overflow-hidden
+                  transition-all duration-300 ease-out
+                  ${bottomOpen ? "max-w-[220px] opacity-100" : "max-w-0 opacity-0 pointer-events-none"}
+                `}
+              >
+                <div className="flex flex-col gap-1.5 bg-card border border-border shadow-lg px-2 py-2 w-[220px]">
+                  {/* Image slider */}
+                  <div className="relative w-full aspect-[4/5] bg-muted overflow-hidden group">
+                    <div
+                      ref={bottomScrollRef}
+                      className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth h-full [&::-webkit-scrollbar]:hidden"
+                      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                      onScroll={(e) => {
+                        const el = e.currentTarget;
+                        const idx = Math.round(el.scrollLeft / el.clientWidth);
+                        setBottomImageIdx(idx);
+                      }}
+                    >
+                      {(pair.bottom.images?.length ? pair.bottom.images : [pair.bottom.image]).map((src, i) => (
+                        <div key={i} className="w-full h-full shrink-0 snap-start">
+                          <img
+                            src={src}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            draggable={false}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {(pair.bottom.images?.length ?? 0) > 1 && (
+                      <>
+                        {/* Prev */}
+                        <button
+                          type="button"
+                          onClick={() => scrollSlider(bottomScrollRef, "prev")}
+                          className="absolute left-0.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                          aria-label="Previous image"
+                        >
+                          <ChevronLeft className="h-3 w-3" />
+                        </button>
+                        {/* Next */}
+                        <button
+                          type="button"
+                          onClick={() => scrollSlider(bottomScrollRef, "next")}
+                          className="absolute right-0.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+                          aria-label="Next image"
+                        >
+                          <ChevronRight className="h-3 w-3" />
+                        </button>
+                        {/* Dots */}
+                        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
+                          {pair.bottom.images.map((_, i) => (
+                            <span
+                              key={i}
+                              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                i === bottomImageIdx ? "bg-white" : "bg-white/40"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 px-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {bottomUniqueColors.length > 1 && bottomCurrentColor && (
+                        <span
+                          className="inline-block rounded-full shrink-0 border border-border/60 w-2 h-2"
+                          style={{ backgroundColor: colorToHex(bottomCurrentColor) }}
+                          title={bottomCurrentColor}
+                          aria-label={`Bottom colour: ${bottomCurrentColor}`}
+                        />
+                      )}
+                      <p className="text-[11px] font-medium text-foreground leading-tight truncate">
+                        {pair.bottom.title}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-foreground">
+                        ₹{Number(bottomCurrentPrice).toLocaleString("en-IN")}
+                      </span>
+                      {bottomCompareAtPrice && Number(bottomCompareAtPrice) > Number(bottomCurrentPrice) && (
+                        <span className="text-[10px] text-muted-foreground line-through">
+                          ₹{Number(bottomCompareAtPrice).toLocaleString("en-IN")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="relative inline-flex px-0.5">
+                    <select
+                      value={pair.bottomSize}
+                      onChange={(e) => setBottomSize(e.target.value)}
+                      className="appearance-none rounded-md border border-border bg-muted/50 text-foreground pl-2 pr-5 text-[11px] font-medium leading-tight w-full min-h-[30px] focus:outline-none focus:ring-1 focus:ring-ring focus:border-foreground/30 hover:border-foreground/30 transition-colors cursor-pointer"
+                    >
+                      {bottomAvailableVariants.map((v) => (
+                        <option key={v.size} value={v.size}>{v.size}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Sticky bottom bar container */}
         <div className="absolute bottom-0 left-0 right-0 z-10">
           {/* Error toast — floats above the bar */}
@@ -548,9 +847,9 @@ export function StepTryOnPreview({
 
           {/* Compact bar: product size selectors + total + buttons */}
           <div className="border-t border-border bg-background shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2.5 sm:py-3 max-[420px]:gap-0.5">
-              {/* ── Zone A: Size selectors (left, grows) ── */}
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 max-[420px]:flex-col max-[420px]:gap-1">
+            <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2.5 sm:py-3 max-[420px]:gap-0.5 justify-between">
+              {/* ── Zone A: Size selectors (left, grows) — hidden on mobile, right-edge panels handle that ── */}
+              <div className="hidden md:flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                 {/* Top product slot */}
                 {pair.top && (
                   <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 max-[420px]:w-full max-[420px]:justify-between">
@@ -652,13 +951,13 @@ export function StepTryOnPreview({
               <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 <Button
                   variant="outline"
-                  size="icon"
-                  className="h-9 w-9 sm:h-10 sm:w-10"
+                  size="default"
+                  className="h-9 min-h-[36px] px-2 sm:h-11 sm:px-4 text-[11px] sm:text-sm font-medium"
                   onClick={onStartOver}
                   disabled={adding}
-                  aria-label="Start Over"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5 shrink-0" />
+                  <span>Start Over</span>
                 </Button>
                 <Button
                   size="default"
@@ -682,8 +981,8 @@ export function StepTryOnPreview({
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <ShoppingBag className="h-4 w-4 sm:mr-1.5" />
-                      <span className="sm:inline">Both</span>
+                      <ShoppingBag className="h-4 w-4 sm:mr-1.5 shrink-0" />
+                      <span>Add Both to Cart</span>
                     </>
                   )}
                 </Button>
@@ -853,92 +1152,4 @@ function FitScoreCard({
   );
 }
 
-function SizeChartModal({
-  title,
-  chartData,
-  image,
-  fitNotes,
-  onClose,
-}: {
-  title: string;
-  chartData: SizeChartData | null;
-  image: string | null;
-  fitNotes: string | null;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl bg-card border border-border p-5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-foreground">Size Chart — {title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
 
-        <div className="space-y-3">
-          {image && (
-            <img
-              src={image}
-              alt="Size chart"
-              className="w-full max-h-64 object-contain rounded bg-muted/30"
-            />
-          )}
-
-          {chartData && (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-xs">
-                <thead>
-                  <tr>
-                    {chartData.headers.map((h) => (
-                      <th
-                        key={h}
-                        className="border border-border px-2 py-1.5 text-left font-medium text-muted-foreground bg-muted/30"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {chartData.sizes.map((row, i) => (
-                    <tr key={i}>
-                      {row.map((cell, j) => (
-                        <td
-                          key={j}
-                          className={`border border-border px-2 py-1.5 ${
-                            j === 0
-                              ? "font-medium text-foreground"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {cell}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {fitNotes && (
-            <p className="text-xs text-muted-foreground leading-relaxed italic bg-muted/30 rounded-md px-3 py-2">
-              {fitNotes}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}

@@ -42,25 +42,29 @@ export function AiPreviewPanel({
         convertHeicToJpegIfNeeded(selfieFile),
       ]);
 
-      // Fetch top garment image from the Shopify URL
+      // Fetch and convert top garment image to JPEG
       const garmentRes = await fetch(garmentImageUrl);
       const garmentBlob = await garmentRes.blob();
-      const garmentFile = new File([garmentBlob], "garment.jpg", {
-        type: garmentBlob.type || "image/jpeg",
-      });
+      const garmentFile = await convertHeicToJpegIfNeeded(
+        new File([garmentBlob], "garment.jpg", {
+          type: garmentBlob.type || "image/jpeg",
+        })
+      );
 
       const formData = new FormData();
       formData.append("personImage", personImage);
       formData.append("faceImage", faceImage);
       formData.append("garmentImage", garmentFile);
 
-      // Fetch bottom garment image if provided
+      // Fetch and convert bottom garment image if provided
       if (bottomGarmentImageUrl) {
         const bottomRes = await fetch(bottomGarmentImageUrl);
         const bottomBlob = await bottomRes.blob();
-        const bottomFile = new File([bottomBlob], "bottom-garment.jpg", {
-          type: bottomBlob.type || "image/jpeg",
-        });
+        const bottomFile = await convertHeicToJpegIfNeeded(
+          new File([bottomBlob], "bottom-garment.jpg", {
+            type: bottomBlob.type || "image/jpeg",
+          })
+        );
         formData.append("bottomGarmentImage", bottomFile);
       }
 

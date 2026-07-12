@@ -16,6 +16,7 @@ type ShopifyRawProduct = {
     id: number;
     title: string;
     price: string;
+    compare_at_price?: string | null;
     available: boolean;
   }[];
   options: { name: string; values: string[] }[];
@@ -60,6 +61,7 @@ function mapProduct(raw: ShopifyRawProduct): OutfitProduct {
       size: parts[0]?.trim() ?? v.title,
       color: parts[1]?.trim() ?? "",
       price: v.price,
+      compareAtPrice: v.compare_at_price ?? undefined,
       available: v.available,
     };
   });
@@ -70,6 +72,7 @@ function mapProduct(raw: ShopifyRawProduct): OutfitProduct {
     handle: raw.handle,
     productType: raw.product_type,
     image: raw.images[0]?.src ?? "",
+    images: raw.images.map((i) => i.src),
     price: raw.variants[0]?.price ?? "0",
     currency: "INR",
     variants,

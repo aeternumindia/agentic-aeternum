@@ -37,6 +37,8 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
       productTitle: product.title,
       productImage: product.image || "",
       productCategory: product.productType || "",
+      price: product.price,
+      currency: product.currency,
       selectedSize: "",
       selectedColor: "",
       measurements: {},

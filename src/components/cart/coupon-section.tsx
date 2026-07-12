@@ -6,7 +6,7 @@ import { useShopifyCart } from "@/contexts/shopify-cart";
 import { UpsellBanner } from "./upsell-banner";
 
 export function CouponSection() {
-  const { discount, applyDiscount, removeDiscount, cart } = useShopifyCart();
+  const { discount, applyDiscount, removeDiscount, cart, discountSavings } = useShopifyCart();
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,9 +50,9 @@ export function CouponSection() {
           <span className="text-xs font-medium text-accent truncate">
             {codeText}
           </span>
-          {activeCode?.amount && (
+          {activeCode?.code && discountSavings > 0 && (
             <span className="text-xs text-accent/70 shrink-0">
-              (−₹{Number(activeCode.amount.amount).toLocaleString("en-IN")})
+              (−₹{discountSavings.toLocaleString("en-IN")})
             </span>
           )}
         </div>

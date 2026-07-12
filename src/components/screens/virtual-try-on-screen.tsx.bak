@@ -18,14 +18,12 @@ import {
   Eye,
   ShoppingBag,
   ChevronDown,
-  X,
 } from "lucide-react";
 import { useVirtualTryOn } from "@/contexts/virtual-try-on";
 import { convertHeicToJpegIfNeeded } from "@/utils/heic-converter";
+import { findRecommendedSize } from "@/services/virtual-try-on";
 import { getSizeChart } from "@/services/api";
-import { FitScoreGauge } from "@/components/virtual-try-on/fit-score-gauge";
-import { SizeChartModal } from "@/components/virtual-try-on/size-chart-modal";
-import type { TryOnSession, ProductSizeChart } from "@/types/virtual-try-on";
+import type { FitQuality, ProductSizeChart, TryOnSession } from "@/types/virtual-try-on";
 import type { CartItem } from "@/types/product";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -36,6 +34,14 @@ type VirtualTryOnScreenProps = {
   productSizes?: string[];
 };
 
+const QUALITY_COLORS: Record<FitQuality, { stroke: string; bg: string; text: string }> = {
+  perfect: { stroke: "#22c55e", bg: "bg-green-500/10", text: "text-green-600" },
+  great: { stroke: "#22c55e", bg: "bg-green-500/10", text: "text-green-600" },
+  good: { stroke: "#8b5e3a", bg: "bg-amber-500/10", text: "text-amber-700" },
+  consider_sizing_up: { stroke: "#8c3a3f", bg: "bg-red-500/10", text: "text-red-600" },
+  consider_sizing_down: { stroke: "#8c3a3f", bg: "bg-red-500/10", text: "text-red-600" },
+};
+
 type MeasurementField = {
   key: string;
   label: string;
@@ -43,16 +49,13 @@ type MeasurementField = {
   placeholder: string;
 };
 
-function getMeasurementFields(productCategory?: string, unit?: "cm" | "in"): MeasurementField[] {
-  const cmHeight = 170, cmChest = 96, cmWaist = 76, cmHips = 90;
-  const toInch = (v: number) => Math.round(v / 2.54);
-  const p = (v: number) => unit === "in" ? `e.g. ${toInch(v)}` : `e.g. ${v}`;
+function getMeasurementFields(productCategory?: string): MeasurementField[] {
   if (!productCategory) {
     return [
-      { key: "height", label: "Height", unit: unit || "cm", placeholder: p(cmHeight) },
-      { key: "chest", label: "Chest", unit: unit || "cm", placeholder: p(cmChest) },
-      { key: "waist", label: "Waist", unit: unit || "cm", placeholder: p(cmWaist) },
-      { key: "hips", label: "Hips", unit: unit || "cm", placeholder: p(cmHips) },
+      { key: "height", label: "Height", unit: "cm", placeholder: "e.g. 170" },
+      { key: "chest", label: "Chest", unit: "cm", placeholder: "e.g. 96" },
+      { key: "waist", label: "Waist", unit: "cm", placeholder: "e.g. 76" },
+      { key: "hips", label: "Hips", unit: "cm", placeholder: "e.g. 90" },
     ];
   }
   const t = productCategory.toLowerCase();
@@ -64,24 +67,53 @@ function getMeasurementFields(productCategory?: string, unit?: "cm" | "in"): Mea
   );
   if (isBottom) {
     return [
-      { key: "height", label: "Height", unit: unit || "cm", placeholder: p(cmHeight) },
-      { key: "waist", label: "Waist", unit: unit || "cm", placeholder: p(cmWaist) },
-      { key: "hips", label: "Hips", unit: unit || "cm", placeholder: p(cmHips) },
+      { key: "height", label: "Height", unit: "cm", placeholder: "e.g. 170" },
+      { key: "waist", label: "Waist", unit: "cm", placeholder: "e.g. 76" },
+      { key: "hips", label: "Hips", unit: "cm", placeholder: "e.g. 90" },
     ];
   }
   if (isTop) {
     return [
-      { key: "height", label: "Height", unit: unit || "cm", placeholder: p(cmHeight) },
-      { key: "chest", label: "Chest", unit: unit || "cm", placeholder: p(cmChest) },
-      { key: "waist", label: "Waist", unit: unit || "cm", placeholder: p(cmWaist) },
+      { key: "height", label: "Height", unit: "cm", placeholder: "e.g. 170" },
+      { key: "chest", label: "Chest", unit: "cm", placeholder: "e.g. 96" },
+      { key: "waist", label: "Waist", unit: "cm", placeholder: "e.g. 76" },
     ];
   }
   return [
-    { key: "height", label: "Height", unit: unit || "cm", placeholder: p(cmHeight) },
-    { key: "chest", label: "Chest", unit: unit || "cm", placeholder: p(cmChest) },
-    { key: "waist", label: "Waist", unit: unit || "cm", placeholder: p(cmWaist) },
-    { key: "hips", label: "Hips", unit: unit || "cm", placeholder: p(cmHips) },
+    { key: "height", label: "Height", unit: "cm", placeholder: "e.g. 170" },
+    { key: "chest", label: "Chest", unit: "cm", placeholder: "e.g. 96" },
+    { key: "waist", label: "Waist", unit: "cm", placeholder: "e.g. 76" },
+    { key: "hips", label: "Hips", unit: "cm", placeholder: "e.g. 90" },
   ];
+}
+
+function FitScoreGauge({ score }: { score: number }) {
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  const [animatedOffset, setAnimatedOffset] = useState(circumference);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimatedOffset(offset), 200);
+    return () => clearTimeout(timer);
+  }, [offset]);
+
+  const color =
+    score >= 85 ? "#22c55e"
+    : score >= 70 ? "#8b5e3a"
+    : score >= 50 ? "#eab308"
+    : "#8c3a3f";
+
+  return (
+    <svg className="w-32 h-32" viewBox="0 0 128 128">
+      <circle cx="64" cy="64" r={radius} fill="none" stroke="currentColor" className="text-muted/40" strokeWidth="8" />
+      <circle cx="64" cy="64" r={radius} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={animatedOffset} className="transition-all duration-1000 ease-out" transform="rotate(-90 64 64)" />
+      <text x="64" y="64" textAnchor="middle" dominantBaseline="central" className="fill-foreground" style={{ fontSize: "28px", fontWeight: 600 }}>
+        {score}
+        <tspan className="fill-muted-foreground" style={{ fontSize: "14px" }}>%</tspan>
+      </text>
+    </svg>
+  );
 }
 
 type Tab = "ai" | "fit";
@@ -91,7 +123,7 @@ export function VirtualTryOnScreen({
   onBack,
   productSizes = ["XS", "S", "M", "L", "XL", "XXL"],
 }: VirtualTryOnScreenProps) {
-  const { session, result, startTryOn, updateSize, computeFitScore } = useVirtualTryOn();
+  const { session, result, startTryOn, updateSize, updateMeasurements, computeFitScore } = useVirtualTryOn();
   const [tab, setTab] = useState<Tab>("ai");
 
   const [fullBodyFile, setFullBodyFile] = useState<File | null>(null);
@@ -105,30 +137,19 @@ export function VirtualTryOnScreen({
 
   const [adding, setAdding] = useState(false);
   const [addDone, setAddDone] = useState(false);
+  const [editingMeasurements, setEditingMeasurements] = useState(false);
   const [measurementValues, setMeasurementValues] = useState<Record<string, string>>({});
   const [calculating, setCalculating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [unit, setUnit] = useState<"cm" | "in">("cm");
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
 
   const fullBodyRef = useRef<HTMLInputElement>(null);
   const selfieRef = useRef<HTMLInputElement>(null);
   const prevProductId = useRef<string | null>(null);
-  const hasCalculatedOnce = useRef(false);
-  const lastCalculatedMeasurements = useRef<string>("");
 
   const fitScore = result?.fitScore;
-  const fields = getMeasurementFields(session?.productCategory, unit);
-  // Snapshot for stale detection: sorted key=value pairs joined by "|"
-  const currentSnapshot =
-    Object.keys(measurementValues).length > 0
-      ? Object.entries(measurementValues)
-          .filter(([, v]) => v !== "")
-          .map(([k, v]) => `${k}=${v}`)
-          .sort()
-          .join("|")
-      : "";
-  const isStale = hasCalculatedOnce.current && currentSnapshot !== lastCalculatedMeasurements.current && currentSnapshot !== "";
+  const comparisonRows = result?.comparisonRows ?? [];
+  const fields = getMeasurementFields(session?.productCategory);
 
   useEffect(() => {
     if (!session?.productId) return;
@@ -141,31 +162,14 @@ export function VirtualTryOnScreen({
       setAiResultUrl(null);
       setAiError(null);
       setTab("ai");
+      setEditingMeasurements(false);
       setMeasurementValues({});
       setCalculating(false);
     }
     prevProductId.current = session.productId;
   }, [session?.productId]);
 
-  // Sync measurementValues from session.measurements when they're available
-  // but measurementValues is empty (e.g. after saving via Edit form)
-  useEffect(() => {
-    if (session?.measurements && Object.keys(session.measurements).length > 0) {
-      setMeasurementValues((prev) => {
-        if (Object.keys(prev).length === 0) {
-          const init: Record<string, string> = {};
-          for (const [k, v] of Object.entries(session.measurements)) init[k] = String(v);
-          return init;
-        }
-        return prev;
-      });
-    }
-  }, [session?.measurements]);
-
-  const hasAnyMeasurements = Object.keys(measurementValues).length > 0;
-
   const toCm = (v: number, u: "cm" | "in") => (u === "in" ? Math.round(v * 2.54) : v);
-  const fromCm = (v: number, u: "cm" | "in") => (u === "in" ? Math.round(v / 2.54) : v);
 
   const handleCalculate = useCallback(async () => {
     if (!session?.productHandle) return;
@@ -179,7 +183,6 @@ export function VirtualTryOnScreen({
     if (Object.keys(parsed).length === 0) return;
 
     setCalculating(true);
-    setError(null);
 
     try {
       const res = await getSizeChart(session.productHandle);
@@ -204,13 +207,7 @@ export function VirtualTryOnScreen({
         startTryOn(updated);
         computeFitScore(updated);
       }
-      hasCalculatedOnce.current = true;
-      lastCalculatedMeasurements.current = Object.entries(parsed)
-        .map(([k, v]) => `${k}=${v}`)
-        .sort()
-        .join("|");
     } catch {
-      setError("Failed to calculate fit score. Please try again.");
       const updated: TryOnSession = { ...session, measurements: parsed };
       startTryOn(updated);
       computeFitScore(updated);
@@ -219,22 +216,22 @@ export function VirtualTryOnScreen({
     }
   }, [session, measurementValues, startTryOn, computeFitScore]);
 
-  // Auto-recalculate when size changes after first calculation
-  useEffect(() => {
-    if (hasCalculatedOnce.current && session?.selectedSize && result && !calculating) {
-      // Populate measurementValues from session measurements if empty
-      setMeasurementValues((prev) => {
-        if (Object.keys(prev).length === 0 && session.measurements) {
-          const init: Record<string, string> = {};
-          for (const [k, v] of Object.entries(session.measurements)) init[k] = String(v);
-          return init;
-        }
-        return prev;
-      });
-      handleCalculate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.selectedSize]);
+  const handleMeasurementSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const catFields = getMeasurementFields(session?.productCategory);
+      const parsed: Record<string, number> = {};
+      for (const field of catFields) {
+        const v = Number(measurementValues[field.key]);
+        if (v > 0 && v <= 300) parsed[field.key] = v;
+      }
+      if (Object.keys(parsed).length > 0) {
+        updateMeasurements(parsed);
+        setEditingMeasurements(false);
+      }
+    },
+    [session?.productCategory, measurementValues, updateMeasurements]
+  );
 
   const handleAddToCart = useCallback(() => {
     if (!session || adding) return;
@@ -245,8 +242,8 @@ export function VirtualTryOnScreen({
         id: session.productId,
         title: session.productTitle,
         description: "",
-        price: Number(session.price) || 0,
-        currency: session.currency || "INR",
+        price: 0,
+        currency: "INR",
         images: session.productImage ? [session.productImage] : [],
         category: session.productCategory,
         sizes: productSizes,
@@ -339,6 +336,147 @@ export function VirtualTryOnScreen({
       <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in px-6">
         <Shirt className="h-12 w-12 text-muted-foreground/40 mb-4" />
         <p className="text-sm text-muted-foreground">Select a product to start virtual try-on</p>
+      </div>
+    );
+  }
+
+  const qualityColor = fitScore ? QUALITY_COLORS[fitScore.quality] : QUALITY_COLORS.good;
+
+  function renderFitScoreCard() {
+    if (!result || !fitScore) return null;
+    const sc = result.sizeChart;
+    const score = fitScore.overall;
+    const chartUnit = result.chartUnit;
+    const unitMismatch = chartUnit && chartUnit !== unit;
+
+    const scoreLegend =
+      score >= 90
+        ? { label: "Great", color: "text-emerald-600 dark:text-emerald-400" }
+        : score >= 70
+          ? { label: "Good", color: "text-teal-600 dark:text-teal-400" }
+          : score >= 50
+            ? { label: "Fair", color: "text-amber-600 dark:text-amber-400" }
+            : { label: "Poor", color: "text-red-600 dark:text-red-400" };
+
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        {/* Gauge + Label row */}
+        <div className="flex flex-col items-center sm:flex-row sm:items-center gap-3">
+          <FitScoreGauge score={score} />
+          <div className="text-center sm:text-left">
+            <div className="flex items-center gap-2 justify-center sm:justify-start">
+              <p className="text-sm font-medium text-foreground">{fitScore.label}</p>
+              <span className={`text-[10px] font-semibold uppercase tracking-wide ${scoreLegend.color}`}>
+                {scoreLegend.label}
+              </span>
+              {chartUnit && (
+                <span className="text-[9px] text-muted-foreground/60 border border-border rounded px-1 py-0.5 uppercase tracking-wider">
+                  {chartUnit === "in" ? "in" : "cm"}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">{session?.productTitle}</p>
+            {unitMismatch && (
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+                Chart in inches — toggle input to <span className="font-medium">in</span> for matching values
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Size selector row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <select
+            value={session?.selectedSize || ""}
+            onChange={(e) => updateSize(e.target.value)}
+            className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent min-h-[44px]"
+          >
+            {productSizes.map((s) => (
+              <option key={s} value={s}>Size {s}</option>
+            ))}
+          </select>
+          {result.recommendedSize && result.recommendedSize !== session?.selectedSize && (
+            <button
+              type="button"
+              onClick={() => updateSize(result.recommendedSize!)}
+              className="rounded-md bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-800/40 px-3 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 whitespace-nowrap hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors min-h-[44px] flex items-center justify-center gap-1"
+            >
+              Try {result.recommendedSize}
+              <Check className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+
+        {/* Description */}
+        <p className="text-xs text-muted-foreground leading-relaxed">{fitScore.description}</p>
+
+        {/* Comparison rows */}
+        {result.comparisonRows.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Fit Details</p>
+            {result.comparisonRows.map((row) => (
+              <div key={row.label} className="flex items-center justify-between rounded-md bg-muted/50 px-2.5 py-1.5">
+                <span className="text-xs text-foreground capitalize">{row.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground">
+                    {row.userValue} cm
+                    {row.sizeRange.min !== row.sizeRange.max
+                      ? ` (${row.sizeRange.min}-${row.sizeRange.max} cm)`
+                      : ` (${row.sizeRange.min} cm)`}
+                  </span>
+                  <span className={`text-[11px] font-medium ${row.withinRange ? "text-green-600" : "text-amber-600"}`}>
+                    {row.withinRange ? "✓" : "△"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Expandable size chart */}
+        {sc && (sc.chartData || sc.image) && (
+          <div className="pt-1 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setExpandedChart(expandedChart === "size" ? null : "size")}
+              className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Ruler className="h-3.5 w-3.5" />
+              Size Chart
+              <ChevronDown className={`h-3 w-3 transition-transform ${expandedChart === "size" ? "rotate-180" : ""}`} />
+            </button>
+            {expandedChart === "size" && (
+              <div className="mt-2 space-y-2">
+                {sc.image && (
+                  <img src={sc.image} alt="Size chart" className="w-full max-h-48 object-contain rounded" />
+                )}
+                {sc.chartData && (
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        {(Array.isArray(sc.chartData) ? sc.chartData[0]?.headers || [] : []).map((h: string) => (
+                          <th key={h} className="border border-border px-2 py-1 text-left text-[10px] font-medium">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(Array.isArray(sc.chartData) ? sc.chartData[0]?.sizes || [] : []).map((row: string[], i: number) => (
+                        <tr key={i}>
+                          {row.map((cell, j) => (
+                            <td key={j} className="border border-border px-2 py-1 text-[10px]">{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+                {sc.fitNotes && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">{sc.fitNotes}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -437,7 +575,7 @@ export function VirtualTryOnScreen({
                 <span className="absolute top-2 left-2 bg-accent/80 text-accent-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">AI Generated</span>
               </div>
               <div className="p-2 flex gap-2 justify-center">
-                <Button size="lg" variant="outline" className="text-xs h-9" onClick={() => {
+                <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => {
                   const a = document.createElement("a");
                   a.href = aiResultUrl;
                   a.download = "aeternum-try-on.png";
@@ -447,7 +585,7 @@ export function VirtualTryOnScreen({
                 }}>
                   <Download className="mr-1 h-3 w-3" /> Download
                 </Button>
-                <Button size="lg" variant="outline" className="text-xs h-9" onClick={generateAiTryOn}>
+                <Button size="sm" variant="outline" className="text-xs h-8" onClick={generateAiTryOn}>
                   <RefreshCw className="mr-1 h-3 w-3" /> Regenerate
                 </Button>
               </div>
@@ -457,14 +595,14 @@ export function VirtualTryOnScreen({
           {aiStatus === "error" && (
             <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
               <p className="text-xs text-destructive mb-2">{aiError || "Failed to generate"}</p>
-              <Button size="lg" variant="outline" className="text-xs h-9" onClick={generateAiTryOn}>
+              <Button size="sm" variant="outline" className="text-xs h-8" onClick={generateAiTryOn}>
                 <RefreshCw className="mr-1 h-3 w-3" /> Try Again
               </Button>
             </div>
           )}
 
           <Button
-            size="lg"
+            size="sm"
             className="w-full"
             disabled={!fullBodyFile || !selfieFile || aiStatus === "generating"}
             onClick={generateAiTryOn}
@@ -483,14 +621,12 @@ export function VirtualTryOnScreen({
       {/* Fit Scores Tab */}
       <div className={tab === "fit" ? "block" : "hidden"}>
         <div className="space-y-4">
-          {/* ════════════ Measurements Card ════════════ */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-            {/* Header row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Ruler className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">Your Measurements</span>
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Ruler className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Your Measurements</span>
+            </div>
+            <div className="flex items-center gap-2">
               <div className="flex rounded-lg bg-muted p-0.5">
                 <button
                   type="button"
@@ -535,288 +671,117 @@ export function VirtualTryOnScreen({
                   in
                 </button>
               </div>
-            </div>
-
-            {/* Stale banner */}
-            {isStale && (
-              <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-800/40 dark:bg-amber-900/20 px-4 py-3">
-                <span className="mt-0.5 text-amber-600 dark:text-amber-400 text-xs font-medium">△</span>
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Measurements changed — tap <strong>Recalculate</strong> for updated scores.
-                </p>
-              </div>
-            )}
-
-            {/* Always-editable measurement inputs */}
-            <div className="grid grid-cols-2 gap-2">
-              {fields.map((field) => (
-                <div key={field.key}>
-                  <label className="mb-1 block text-[10px] text-muted-foreground">
-                    {field.label} ({unit})
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder={field.placeholder}
-                    value={measurementValues[field.key] ?? ""}
-                    onChange={(e) => setMeasurementValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Size selector — always visible before/beside calculation */}
-            <div>
-              <label className="mb-1 block text-[10px] text-muted-foreground">Size</label>
-              <div className="relative inline-flex w-full">
-                <select
-                  value={session?.selectedSize || ""}
-                  onChange={(e) => updateSize(e.target.value)}
-                  className="w-full rounded-md border border-border bg-background px-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent min-h-[44px] cursor-pointer appearance-none"
-                >
-                  <option value="" disabled>Select a size</option>
-                  {productSizes.map((s) => (
-                    <option key={s} value={s}>
-                      Size {s}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Calculate button */}
-            <Button
-              size="lg"
-              className="w-full"
-              variant={hasCalculatedOnce.current ? "outline" : "default"}
-              disabled={
-                calculating ||
-                !hasAnyMeasurements ||
-                !session?.selectedSize
-              }
-              onClick={handleCalculate}
+              <button
+              type="button"
+              onClick={() => {
+                if (editingMeasurements) {
+                  setEditingMeasurements(false);
+                } else {
+                  if (session.measurements) {
+                    const init: Record<string, string> = {};
+                    for (const [k, v] of Object.entries(session.measurements)) init[k] = String(v);
+                    setMeasurementValues(init);
+                  }
+                  setEditingMeasurements(true);
+                }
+              }}
+              className="text-xs text-accent hover:text-accent/80 transition-colors"
             >
-              {calculating ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                  Calculating...
-                </>
-              ) : hasCalculatedOnce.current ? (
-                <>
-                  <RefreshCw className="mr-1.5 h-3 w-3" />
-                  Recalculate Fit Scores
-                </>
-              ) : (
-                <>
-                  <Ruler className="mr-1.5 h-3 w-3" />
-                  Calculate Fit Score
-                </>
-              )}
-            </Button>
+              {editingMeasurements ? "Cancel" : "Edit"}
+            </button>
           </div>
 
-          {/* ════════════ Fit Score Card ════════════ */}
-          {result && fitScore && (
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              {/* Gauge + Label row */}
-              <div className="flex flex-row items-center gap-3">
-                <FitScoreGauge score={fitScore.overall} size="sm" />
-                <div className="text-left min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-foreground">{fitScore.label}</p>
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wide ${
-                        fitScore.overall >= 90
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : fitScore.overall >= 70
-                            ? "text-teal-600 dark:text-teal-400"
-                            : fitScore.overall >= 50
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {fitScore.overall >= 90
-                        ? "Great"
-                        : fitScore.overall >= 70
-                          ? "Good"
-                          : fitScore.overall >= 50
-                            ? "Fair"
-                            : "Poor"}
-                    </span>
-                    {result.chartUnit && (
-                      <span className="text-[9px] text-muted-foreground/60 border border-border rounded px-1 py-0.5 uppercase tracking-wider">
-                        {result.chartUnit === "in" ? "in" : "cm"}
-                      </span>
-                    )}
+          {editingMeasurements ? (
+            <form onSubmit={handleMeasurementSubmit} className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {fields.map((field) => (
+                  <div key={field.key}>
+                    <label className="mb-1 block text-[10px] text-muted-foreground">{field.label} ({field.unit})</label>
+                    <Input type="number" placeholder={field.placeholder} value={measurementValues[field.key] ?? ""}
+                      onChange={(e) => setMeasurementValues((prev) => ({ ...prev, [field.key]: e.target.value }))} />
                   </div>
-                  <p className="text-xs text-muted-foreground">{session?.productTitle}</p>
-                  {result.chartUnit && result.chartUnit !== unit && (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
-                      Chart in inches — toggle input to <span className="font-medium">in</span> for matching values
-                    </p>
-                  )}
-                </div>
+                ))}
               </div>
-
-              {/* Size selector row */}
-              <div className="flex flex-row items-stretch sm:items-center gap-2">
-                <div className="flex-1 relative inline-flex">
-                  <select
-                    value={session?.selectedSize || ""}
-                    onChange={(e) => updateSize(e.target.value)}
-                    className="w-full rounded-md border border-border bg-background px-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent min-h-[44px] cursor-pointer appearance-none"
-                  >
-                    {productSizes.map((s) => (
-                      <option key={s} value={s}>
-                        Size {s}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-                </div>
-                {result.recommendedSize && result.recommendedSize !== session?.selectedSize && (
-                  <button
-                    type="button"
-                    onClick={() => updateSize(result.recommendedSize!)}
-                    className="rounded-md bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-800/40 px-3 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 whitespace-nowrap hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors min-h-[44px] flex items-center justify-center gap-1"
-                  >
-                    Try {result.recommendedSize}
-                    <Check className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-muted-foreground leading-relaxed">{fitScore.description}</p>
-
-              {/* Fit Details */}
-              {result.comparisonRows.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                    Fit Details
-                  </p>
-                  {result.comparisonRows.map((row) => (
-                    <div
-                      key={row.label}
-                      className="flex items-center justify-between rounded-md bg-muted/50 px-2.5 py-1.5"
-                    >
-                      <span className="text-xs text-foreground capitalize">{row.label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-muted-foreground">
-                          {fromCm(row.userValue, unit)} {unit}
-                          {row.sizeRange.min !== row.sizeRange.max
-                            ? ` (${fromCm(row.sizeRange.min, unit)}-${fromCm(row.sizeRange.max, unit)} ${unit})`
-                            : ` (${fromCm(row.sizeRange.min, unit)} ${unit})`}
-                        </span>
-                        <span
-                          className={`text-[11px] font-medium ${
-                            row.withinRange ? "text-green-600" : "text-amber-600"
-                          }`}
-                        >
-                          {row.withinRange ? "✓" : "△"}
-                        </span>
+              <Button type="submit" size="sm" className="w-full">
+                <RefreshCw className="mr-2 h-3 w-3" /> Save Measurements
+              </Button>
+            </form>
+          ) : (
+            <div className="rounded-xl border border-border bg-card divide-y divide-border">
+              {Object.entries(session.measurements).length > 0 ? (
+                Object.entries(session.measurements).map(([key, val]) => {
+                  const label = fields.find((f) => f.key === key)?.label ?? key;
+                  const row = comparisonRows.find((r) => r.label.toLowerCase() === key);
+                  return (
+                    <div key={key} className="flex items-center justify-between px-4 py-3">
+                      <span className="text-xs text-muted-foreground capitalize">{label}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-foreground font-medium">{val} cm</span>
+                        {row && (
+                          <span className={`text-xs ${row.withinRange ? "text-green-600" : "text-red-500"}`}>
+                            {row.withinRange ? "✓ In range" : "✗ Adjust"}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  ))}
+                  );
+                })
+              ) : (
+                <div className="px-4 py-6 text-center">
+                  <p className="text-xs text-muted-foreground">No measurements entered. Click Edit to add them.</p>
                 </div>
               )}
-
-              {/* Size chart section */}
-              {result.sizeChart ? (
-                <>
-                  {!result.sizeChart.chartData && !result.sizeChart.image && !result.sizeChart.fitNotes ? (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 italic leading-relaxed">
-                      Scores estimated without size chart data — may be less accurate.
-                    </p>
-                  ) : (
-                    <div className="pt-1 border-t border-border">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedChart(expandedChart === "size" ? null : "size")}
-                        className="flex items-center gap-1.5 w-full rounded-md border border-border bg-background px-2 py-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
-                      >
-                        <Ruler className="h-3.5 w-3.5" />
-                        Size Chart
-                        <ChevronDown
-                          className={`h-3 w-3 ml-auto transition-transform ${
-                            expandedChart === "size" ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-                      {expandedChart === "size" && (
-                        <SizeChartModal
-                          title={session?.productTitle || ""}
-                          chartData={result.sizeChart.chartData}
-                          image={result.sizeChart.image}
-                          fitNotes={result.sizeChart.fitNotes}
-                          onClose={() => setExpandedChart(null)}
-                        />
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 italic leading-relaxed">
-                  Scores estimated without size chart data — may be less accurate.
-                </p>
-              )}
             </div>
           )}
 
-          {/* ════════════ Loading State ════════════ */}
-          {calculating && !result && (
-            <div className="rounded-xl border border-border bg-card p-6 text-center space-y-3">
-              <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Fetching size chart data...</p>
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Shirt className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Select Size</span>
             </div>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {productSizes.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => updateSize(size)}
+                  className={`rounded-lg border px-4 py-2 text-xs transition-all ${
+                    session.selectedSize === size
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-foreground hover:border-muted-foreground"
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+            {session.measurements && Object.keys(session.measurements).length > 0 && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Recommended:{" "}
+                <span className="text-accent font-medium">{findRecommendedSize(session.measurements)}</span>
+              </p>
+            )}
+          </div>
 
-          {/* ════════════ Error State ════════════ */}
-          {error && (
-            <div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
-              <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-xs text-destructive">{error}</p>
-            </div>
-          )}
+          <Button
+            size="sm"
+            className="w-full"
+            disabled={calculating || Object.keys(measurementValues).length === 0 || !session?.selectedSize}
+            onClick={handleCalculate}
+          >
+            <RefreshCw className={`mr-2 h-3 w-3 ${calculating ? "animate-spin" : ""}`} />
+            {calculating ? "Calculating..." : "Calculate Fit Score"}
+          </Button>
+
+          {renderFitScoreCard()}
         </div>
       </div>
-
-      {/* ── Product card — shown in both tabs ── */}
-      {session?.productTitle && (
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
-          {session.productImage && (
-            <div className="h-16 w-16 rounded-lg overflow-hidden bg-muted shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={session.productImage}
-                alt={session.productTitle}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground truncate">
-              {session.productTitle}
-            </p>
-            <div className="flex items-center gap-2 mt-0.5">
-              {session.selectedSize && (
-                <p className="text-xs text-muted-foreground">Size: {session.selectedSize}</p>
-              )}
-              {session.price && (
-                <p className="text-xs font-medium text-foreground">
-                  {session.currency === "INR" ? "₹" : ""}{session.price}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Add to Cart — visible from both tabs once a size is selected ── */}
       {session?.selectedSize && (
         <div className="sticky bottom-0 pt-2 pb-1 bg-background">
           <Button
-            size="lg"
+            size="sm"
             className="w-full"
             disabled={adding || addDone || !session?.selectedSize}
             onClick={handleAddToCart}

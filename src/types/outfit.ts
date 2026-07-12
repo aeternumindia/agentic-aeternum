@@ -4,6 +4,7 @@ export type OutfitProduct = {
   handle: string;
   productType: string;
   image: string;
+  images: string[];
   price: string;
   currency: string;
   variants: OutfitVariant[];
@@ -15,6 +16,7 @@ export type OutfitVariant = {
   size: string;
   color: string;
   price: string;
+  compareAtPrice?: string;
   available: boolean;
 };
 

@@ -38,6 +38,8 @@ export type TryOnSession = {
   productTitle: string;
   productImage: string;
   productCategory: string;
+  price: string;
+  currency: string;
   selectedSize: string;
   selectedColor: string;
   measurements: Record<string, number>;
