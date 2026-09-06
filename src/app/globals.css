@@ -286,3 +286,80 @@
   -webkit-text-fill-color: transparent;
   animation: gradient-shift 6s ease-in-out infinite;
 }
+
+/* Responsive Dialog Component */
+.responsive-dialog-content {
+  position: fixed !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden !important;
+  outline: none !important;
+}
+
+/* Mobile Screen (< 640px): Bottom Sheet */
+@media (max-width: 639px) {
+  .responsive-dialog-content {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-top-left-radius: 1.5rem !important;
+    border-top-right-radius: 1.5rem !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+  .responsive-dialog-content[data-state="open"] {
+    animation: sheet-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+}
+
+/* Desktop Screen (>= 640px): Centered Modal */
+@media (min-width: 640px) {
+  .responsive-dialog-content {
+    top: 50% !important;
+    left: 50% !important;
+    bottom: auto !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100% - 2rem) !important;
+    max-width: 42rem !important;
+    border-radius: 1.5rem !important;
+    border: 1px solid var(--border) !important;
+  }
+  .responsive-dialog-content[data-state="open"] {
+    animation: modal-center-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  }
+}
+
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-center-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

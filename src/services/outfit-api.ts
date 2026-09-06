@@ -39,11 +39,45 @@ export async function fetchAllProducts(): Promise<OutfitProduct[]> {
     .map(mapProduct);
 }
 
+export async function fetchAllCatalogProducts(): Promise<OutfitProduct[]> {
+  try {
+    const res = await fetch(`${SHOPIFY_DOMAIN}/products.json?limit=250`);
+    if (!res.ok) throw new Error(`Shopify API error: ${res.statusText}`);
+    const json = await res.json();
+    const raw: ShopifyRawProduct[] = json.products ?? [];
+    return raw.map(mapProduct);
+  } catch (error) {
+    console.error("Error fetching catalog products:", error);
+    return [];
+  }
+}
+
 export async function fetchProductsByType(
   productType: string
 ): Promise<OutfitProduct[]> {
   const all = await fetchAllProducts();
   return all.filter((p) => p.productType === productType);
+}
+
+export function normalizeCategory(category: string): string {
+  if (!category) return "Apparel";
+  const lower = category.trim().toLowerCase();
+  if (lower === "shirt" || lower === "shirts") return "Shirts";
+  if (lower === "polo" || lower === "polos") return "Polos";
+  if (lower === "trouser" || lower === "trousers") return "Trousers";
+  if (lower === "pant" || lower === "pants") return "Pants";
+  if (
+    lower === "oversized t-shirt" ||
+    lower === "oversized t-shirts" ||
+    lower === "oversized tshirt" ||
+    lower === "oversized tshirts"
+  ) {
+    return "Oversized T-Shirts";
+  }
+  if (lower === "t-shirt" || lower === "t-shirts" || lower === "tshirt" || lower === "tshirts") {
+    return "T-Shirts";
+  }
+  return category.trim();
 }
 
 function mapProduct(raw: ShopifyRawProduct): OutfitProduct {
@@ -70,7 +104,7 @@ function mapProduct(raw: ShopifyRawProduct): OutfitProduct {
     id: String(raw.id),
     title: raw.title,
     handle: raw.handle,
-    productType: raw.product_type,
+    productType: normalizeCategory(raw.product_type),
     image: raw.images[0]?.src ?? "",
     images: raw.images.map((i) => i.src),
     price: raw.variants[0]?.price ?? "0",

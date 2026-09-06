@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ShoppingBag, Menu, X } from "lucide-react";
 
@@ -20,35 +21,44 @@ export const FloatingNav = ({
   className?: string;
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div
       className={cn(
-        "fixed top-0 inset-x-0 z-[5000] flex items-center justify-center border-b border-border bg-background/90 backdrop-blur-xl",
+        "fixed top-0 inset-x-0 z-40 flex items-center justify-center border-b border-border/80 bg-background/90 backdrop-blur-xl shadow-2xs",
         className,
       )}
     >
-      <div className="flex w-full max-w-6xl items-center justify-between px-4 md:px-8 h-16">
+      <div className="flex w-full max-w-6xl items-center justify-between px-4 sm:px-6 md:px-8 h-16">
         {/* Logo */}
-        <Link href="/">
+        <Link href="/" className="flex items-center gap-2">
           <img
             src="/logo.svg"
             alt="Aeternum"
-            className="h-7 md:h-9 w-auto"
+            className="h-7 md:h-8 w-auto transition-transform hover:scale-105"
           />
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {navItems.map((navItem, idx) => (
-            <Link
-              key={`link-${idx}`}
-              href={navItem.link}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground font-medium"
-            >
-              {navItem.name}
-            </Link>
-          ))}
+        <div className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-card/60 border border-border/60 backdrop-blur-md shadow-2xs">
+          {navItems.map((navItem, idx) => {
+            const isActive = pathname === navItem.link;
+            return (
+              <Link
+                key={`link-${idx}`}
+                href={navItem.link}
+                className={cn(
+                  "text-xs px-3.5 py-1.5 rounded-full transition-all font-medium",
+                  isActive
+                    ? "bg-foreground text-background font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                )}
+              >
+                {navItem.name}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Right */}
