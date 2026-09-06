@@ -9,10 +9,13 @@ import {
   DEFAULT_GARMENTS,
 } from "./garment-selector";
 import { UserSelector } from "./user-selector";
+import { AISizeCheckerModal, NoGarmentSelectedModal } from "./size-checker";
 import { fetchAllCatalogProducts, normalizeCategory } from "@/services/outfit-api";
-import { generateTryOnImage } from "@/services/api";
+import apiClient, { generateTryOnImage } from "@/services/api";
+import { useShopifyCart } from "@/contexts/shopify-cart";
 
 const TryOnPage = () => {
+  const { addToCart, openCart } = useShopifyCart();
   const [activeTab, setActiveTab] = useState<"model" | "photos">("model");
   const [selectedModel, setSelectedModel] = useState("Model 1");
   const [faceImage, setFaceImage] = useState<string | null>(null);
@@ -21,6 +24,8 @@ const TryOnPage = () => {
   const [bodyFile, setBodyFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGarmentModalOpen, setIsGarmentModalOpen] = useState(false);
+  const [isSizeCheckerOpen, setIsSizeCheckerOpen] = useState(false);
+  const [isNoGarmentModalOpen, setIsNoGarmentModalOpen] = useState(false);
   const [garmentMode, setGarmentMode] = useState<"single" | "multiple">(
     "single",
   );
@@ -34,6 +39,44 @@ const TryOnPage = () => {
   const [tryOnError, setTryOnError] = useState<string | null>(null);
 
   const models = DEFAULT_MODELS;
+
+  const handleOpenSizeChecker = () => {
+    if (selectedGarments.length === 0) {
+      setIsNoGarmentModalOpen(true);
+    } else {
+      setIsSizeCheckerOpen(true);
+    }
+  };
+
+  const handleAddToCartCanvas = async () => {
+    if (selectedGarments.length === 0) {
+      setIsNoGarmentModalOpen(true);
+      return;
+    }
+
+    const selectedItems = garments.filter((g) => selectedGarments.includes(g.name));
+    for (const item of selectedItems) {
+      const handle = item.handle || item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      try {
+        const { data } = await apiClient.get(`/cart/variants/admin/${handle}`);
+        if (data.success && data.data?.variants?.length > 0) {
+          const firstAvail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
+          await addToCart(firstAvail.id, 1);
+        }
+      } catch {
+        try {
+          const { data } = await apiClient.get(`/cart/variants/${handle}`);
+          if (data.success && data.data?.variants?.length > 0) {
+            const firstAvail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
+            await addToCart(firstAvail.id, 1);
+          }
+        } catch (err) {
+          console.error("Canvas add to cart failed:", err);
+        }
+      }
+    }
+    openCart();
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -181,17 +224,7 @@ const TryOnPage = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-8 flex flex-col items-center">
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "nowrap",
-          gap: "28px",
-          width: "100%",
-          alignItems: "flex-start",
-          justifyContent: "center",
-        }}
-        className="flex-col md:flex-row w-full gap-7 lg:gap-8"
-      >
+      <div className="flex flex-col md:flex-row items-center md:items-start justify-center w-full gap-7 lg:gap-8">
         {/* left panel try on uploader */}
         <UserSelector
           activeTab={activeTab}
@@ -201,6 +234,8 @@ const TryOnPage = () => {
           models={models}
           onOpenModal={() => setIsModalOpen(true)}
           onOpenGarmentModal={() => setIsGarmentModalOpen(true)}
+          onOpenSizeChecker={handleOpenSizeChecker}
+          onAddToCart={handleAddToCartCanvas}
           selectedGarmentsCount={selectedGarments.length}
           onTryOn={handleTryOn}
           isGenerating={isGeneratingTryOn}
@@ -284,6 +319,22 @@ const TryOnPage = () => {
           isLoading={isLoadingGarments}
         />
       )}
+
+      {/* AI Size Checker Modal */}
+      <AISizeCheckerModal
+        isOpen={isSizeCheckerOpen}
+        onClose={() => setIsSizeCheckerOpen(false)}
+        selectedGarments={garments.filter((g) =>
+          selectedGarments.includes(g.name)
+        )}
+      />
+
+      {/* Alert modal when trying to check size without selecting a garment */}
+      <NoGarmentSelectedModal
+        isOpen={isNoGarmentModalOpen}
+        onClose={() => setIsNoGarmentModalOpen(false)}
+        onSelectGarmentsNow={() => setIsGarmentModalOpen(true)}
+      />
     </div>
   );
 };

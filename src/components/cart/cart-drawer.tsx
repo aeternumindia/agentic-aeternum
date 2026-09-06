@@ -11,7 +11,7 @@ export function CartDrawer() {
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-[5001]">
+        <div className="fixed inset-0 z-[100000]">
           <div className="absolute inset-0 bg-black/40" onClick={closeCart} />
           <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-background border-l border-border shadow-xl flex flex-col animate-message-in">
             <div className="flex items-center justify-between px-5 h-14 border-b border-border shrink-0">

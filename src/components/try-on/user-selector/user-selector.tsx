@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Shirt, Camera, UserPlus, Image as ImageIcon, Loader2, Download, RotateCcw, AlertCircle } from "lucide-react";
+import { Sparkles, Shirt, Camera, UserPlus, Image as ImageIcon, Loader2, Download, RotateCcw, AlertCircle, Ruler, ShoppingBag } from "lucide-react";
 import { ModelOption } from "../model-selection-modal";
 
 export interface UserSelectorProps {
@@ -12,6 +12,8 @@ export interface UserSelectorProps {
   models: ModelOption[];
   onOpenModal: () => void;
   onOpenGarmentModal?: () => void;
+  onOpenSizeChecker?: () => void;
+  onAddToCart?: () => void;
   selectedGarmentsCount?: number;
   onTryOn?: () => void;
   isGenerating?: boolean;
@@ -28,6 +30,8 @@ export function UserSelector({
   models,
   onOpenModal,
   onOpenGarmentModal,
+  onOpenSizeChecker,
+  onAddToCart,
   selectedGarmentsCount = 0,
   onTryOn,
   isGenerating = false,
@@ -63,7 +67,7 @@ export function UserSelector({
   return (
     <div
       style={{ flex: "1 1 360px", maxWidth: "420px", minWidth: "300px" }}
-      className="w-full border border-border bg-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xs gap-5 self-start"
+      className="w-full border border-border bg-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xs gap-5 mx-auto md:mx-0 md:self-start"
     >
       <div className="space-y-4">
         {/* Header */}
@@ -229,6 +233,29 @@ export function UserSelector({
                 </span>
               </>
             )}
+          </button>
+        </div>
+
+        {/* Secondary Action Row: AI Size Checker & Add to Cart */}
+        <div className="flex items-center gap-2.5 w-full">
+          <button
+            type="button"
+            onClick={onOpenSizeChecker}
+            disabled={isGenerating}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+          >
+            <Ruler className="w-3.5 h-3.5 text-accent shrink-0" />
+            <span className="truncate">AI Size Checker</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onAddToCart}
+            disabled={selectedGarmentsCount === 0 || isGenerating}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+          >
+            <ShoppingBag className="w-3.5 h-3.5 text-accent shrink-0" />
+            <span className="truncate">Add to Cart</span>
           </button>
         </div>
 

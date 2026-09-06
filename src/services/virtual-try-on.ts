@@ -180,7 +180,7 @@ function getSizeRangeForSize(size: string): SizeRange | null {
   return STANDARD_SIZE_CHARTS[size] ?? null;
 }
 
-function genericFitScore(
+export function genericFitScore(
   selectedSize: string,
   measurements: Record<string, number>,
   productCategory?: string
