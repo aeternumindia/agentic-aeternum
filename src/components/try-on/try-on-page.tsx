@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { ModelSelectionModal, DEFAULT_MODELS } from "./model-selection-modal";
-import { GarmentSelector, GarmentSelectionModal, GarmentItem, DEFAULT_GARMENTS } from "./garment-selector";
+import {
+  GarmentSelector,
+  GarmentSelectionModal,
+  MultipleGarmentSelector,
+  MultipleGarmentSelectionModal,
+  GarmentItem,
+  DEFAULT_GARMENTS,
+} from "./garment-selector";
 import { UserSelector } from "./user-selector";
 import { fetchAllCatalogProducts, normalizeCategory } from "@/services/outfit-api";
 import { generateTryOnImage } from "@/services/api";
@@ -206,15 +213,27 @@ const TryOnPage = () => {
         />
 
         {/* right panel garment selector */}
-        <GarmentSelector
-          garments={garments}
-          garmentMode={garmentMode}
-          onGarmentModeChange={setGarmentMode}
-          selectedGarments={selectedGarments}
-          onToggleGarment={toggleGarment}
-          onClearSelection={clearSelectedGarments}
-          isLoading={isLoadingGarments}
-        />
+        {garmentMode === "multiple" ? (
+          <MultipleGarmentSelector
+            garments={garments}
+            garmentMode={garmentMode}
+            onGarmentModeChange={setGarmentMode}
+            selectedGarments={selectedGarments}
+            onToggleGarment={toggleGarment}
+            onClearSelection={clearSelectedGarments}
+            isLoading={isLoadingGarments}
+          />
+        ) : (
+          <GarmentSelector
+            garments={garments}
+            garmentMode={garmentMode}
+            onGarmentModeChange={setGarmentMode}
+            selectedGarments={selectedGarments}
+            onToggleGarment={toggleGarment}
+            onClearSelection={clearSelectedGarments}
+            isLoading={isLoadingGarments}
+          />
+        )}
       </div>
 
       {/* Model Selection Modal */}
@@ -241,16 +260,30 @@ const TryOnPage = () => {
       />
 
       {/* Garment Selection Modal (Mobile) */}
-      <GarmentSelectionModal
-        isOpen={isGarmentModalOpen}
-        onClose={() => setIsGarmentModalOpen(false)}
-        garments={garments}
-        garmentMode={garmentMode}
-        onGarmentModeChange={setGarmentMode}
-        selectedGarments={selectedGarments}
-        onToggleGarment={toggleGarment}
-        isLoading={isLoadingGarments}
-      />
+      {garmentMode === "multiple" ? (
+        <MultipleGarmentSelectionModal
+          isOpen={isGarmentModalOpen}
+          onClose={() => setIsGarmentModalOpen(false)}
+          garments={garments}
+          garmentMode={garmentMode}
+          onGarmentModeChange={setGarmentMode}
+          selectedGarments={selectedGarments}
+          onToggleGarment={toggleGarment}
+          onClearSelection={clearSelectedGarments}
+          isLoading={isLoadingGarments}
+        />
+      ) : (
+        <GarmentSelectionModal
+          isOpen={isGarmentModalOpen}
+          onClose={() => setIsGarmentModalOpen(false)}
+          garments={garments}
+          garmentMode={garmentMode}
+          onGarmentModeChange={setGarmentMode}
+          selectedGarments={selectedGarments}
+          onToggleGarment={toggleGarment}
+          isLoading={isLoadingGarments}
+        />
+      )}
     </div>
   );
 };

@@ -1,7 +1,10 @@
 export { GarmentSelector, DEFAULT_GARMENTS } from "./garment-selector";
-export type {
-  GarmentItem,
-  GarmentSelectorProps,
-} from "./garment-selector";
+export type { GarmentItem, GarmentSelectorProps } from "./garment-selector";
 export { GarmentSelectionModal } from "./garment-selection-modal";
 export type { GarmentSelectionModalProps } from "./garment-selection-modal";
+export { MultipleGarmentSelector } from "./multiple-garment-selector";
+export type { MultipleGarmentSelectorProps } from "./multiple-garment-selector";
+export { MultipleGarmentSelectionModal } from "./multiple-garment-selection-modal";
+export type { MultipleGarmentSelectionModalProps } from "./multiple-garment-selection-modal";
+export { GarmentCard } from "./garment-card";
+export type { GarmentCardProps } from "./garment-card";
