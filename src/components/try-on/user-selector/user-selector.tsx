@@ -20,6 +20,8 @@ export interface UserSelectorProps {
   tryOnResultImage?: string | null;
   tryOnError?: string | null;
   onClearResult?: () => void;
+  triesRemaining?: number;
+  maxTries?: number;
 }
 
 export function UserSelector({
@@ -38,6 +40,8 @@ export function UserSelector({
   tryOnResultImage = null,
   tryOnError = null,
   onClearResult,
+  triesRemaining = 5,
+  maxTries = 5,
 }: UserSelectorProps) {
   const selectedModelObj = models.find((m) => m.name === selectedModel);
 
@@ -215,21 +219,26 @@ export function UserSelector({
           <button
             type="button"
             onClick={onTryOn}
-            disabled={selectedGarmentsCount === 0 || isGenerating}
-            className="flex-1 w-full flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={selectedGarmentsCount === 0 || isGenerating || triesRemaining <= 0}
+            className="flex-1 w-full flex items-center justify-between py-2.5 sm:py-3 px-3.5 sm:px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
-              <>
+              <div className="flex items-center justify-center gap-1.5 mx-auto">
                 <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
                 <span className="truncate">Generating...</span>
-              </>
+              </div>
             ) : (
               <>
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">
-                  {selectedGarmentsCount === 0
-                    ? "Try On"
-                    : `Try On (${selectedGarmentsCount})`}
+                <div className="flex items-center gap-1.5 truncate">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">
+                    {selectedGarmentsCount === 0
+                      ? "Try On"
+                      : `Try On (${selectedGarmentsCount})`}
+                  </span>
+                </div>
+                <span className="ml-1.5 text-[10px] px-2 py-0.5 rounded-full bg-primary-foreground/20 text-primary-foreground font-mono font-medium shrink-0">
+                  {triesRemaining}/{maxTries} Tries
                 </span>
               </>
             )}
@@ -263,11 +272,13 @@ export function UserSelector({
         <p className="text-[11px] text-center text-muted-foreground">
           {isGenerating
             ? "AI processing model and garment fitting..."
+            : triesRemaining <= 0
+            ? "Daily try-on limit reached (5/5 tries used today)."
             : selectedGarmentsCount === 0
-            ? "Choose garments above to start virtual try-on"
+            ? `Choose garments above to start virtual try-on (${triesRemaining} daily tries left)`
             : `${selectedGarmentsCount} garment${
                 selectedGarmentsCount > 1 ? "s" : ""
-              } selected for fitting`}
+              } selected (${triesRemaining} ${triesRemaining === 1 ? "try" : "tries"} left today)`}
         </p>
       </div>
     </div>

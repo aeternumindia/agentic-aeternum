@@ -39,8 +39,27 @@ const TryOnPage = () => {
   const [isGeneratingTryOn, setIsGeneratingTryOn] = useState(false);
   const [tryOnResultImage, setTryOnResultImage] = useState<string | null>(null);
   const [tryOnError, setTryOnError] = useState<string | null>(null);
+  const MAX_DAILY_TRIES = 5;
+  const [triesUsed, setTriesUsed] = useState<number>(0);
 
   const models = DEFAULT_MODELS;
+
+  useEffect(() => {
+    try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const storedData = localStorage.getItem("aeternum_tryon_usage");
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+        if (parsed.date === todayStr && typeof parsed.count === "number") {
+          setTriesUsed(parsed.count);
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  const triesRemaining = Math.max(0, MAX_DAILY_TRIES - triesUsed);
 
   const handleOpenSizeChecker = () => {
     if (selectedGarments.length === 0) {
@@ -166,6 +185,11 @@ const TryOnPage = () => {
   const handleTryOn = async () => {
     if (selectedGarments.length === 0) return;
 
+    if (triesRemaining <= 0) {
+      setTryOnError("You have reached your daily limit of 5 virtual try-ons. Please try again tomorrow.");
+      return;
+    }
+
     setIsGeneratingTryOn(true);
     setTryOnError(null);
 
@@ -207,6 +231,19 @@ const TryOnPage = () => {
       });
 
       setTryOnResultImage(resultUrl);
+
+      // Increment daily try count on success
+      const newCount = triesUsed + 1;
+      setTriesUsed(newCount);
+      try {
+        const todayStr = new Date().toISOString().split("T")[0];
+        localStorage.setItem(
+          "aeternum_tryon_usage",
+          JSON.stringify({ date: todayStr, count: newCount })
+        );
+      } catch {
+        // Ignore localStorage write error
+      }
     } catch (err) {
       console.error("Virtual Try-On error:", err);
       setTryOnError(
@@ -242,6 +279,8 @@ const TryOnPage = () => {
             setTryOnResultImage(null);
             setTryOnError(null);
           }}
+          triesRemaining={triesRemaining}
+          maxTries={MAX_DAILY_TRIES}
         />
 
         {/* right panel garment selector */}

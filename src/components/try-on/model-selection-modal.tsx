@@ -36,19 +36,19 @@ export interface ModelSelectionModalProps {
 export const DEFAULT_MODELS: ModelOption[] = [
   {
     name: "Model 1",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=85",
+    image: "/models/model-1.jpg",
   },
   {
     name: "Model 2",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=800&q=85",
+    image: "/models/model-2.jpg",
   },
   {
     name: "Model 3",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=85",
+    image: "/models/model-3.jpg",
   },
   {
     name: "Model 4",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=85",
+    image: "/models/model-4.jpg",
   },
 ];
 
