@@ -101,8 +101,8 @@ export function UcpChatPanel() {
   const isTryOnActive = state === APP_STATES.VIRTUAL_TRY_ON && session;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
+    <div className="h-[calc(100dvh-4rem)] w-full flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto pb-4">
         <div className="min-h-full flex flex-col">
           {isEmpty ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4 py-3 sm:py-4" suppressHydrationWarning>
@@ -131,7 +131,7 @@ export function UcpChatPanel() {
         </div>
       </div>
 
-      <div className="bg-background border-t border-border pb-safe-bottom">
+      <div className="shrink-0 bg-background border-t border-border pb-safe-bottom z-10">
         <ChatInput onSend={sendMessage} isLoading={isLoading} />
       </div>
 
