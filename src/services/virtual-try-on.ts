@@ -1,6 +1,7 @@
 import type {
   FitScore,
   ComparisonRow,
+  FitStatus,
   TryOnSession,
   TryOnResult,
   SizeChartData,
@@ -135,22 +136,65 @@ export function getSizeRanges(): Record<string, SizeRange> {
 }
 
 export function findRecommendedSize(
-  measurements: Record<string, number>
+  measurements: Record<string, number>,
+  productCategory?: string,
+  availableSizes?: string[]
 ): string {
   const chest = measurements.chest ?? 0;
   const waist = measurements.waist ?? 0;
   const hips = measurements.hips ?? 0;
 
-  if (!chest && !waist && !hips) return "M";
+  const isBottom = productCategory
+    ? ["jeans", "pant", "pants", "trouser", "shorts", "skirt", "legging", "short", "bottom"].some((k) =>
+        productCategory.toLowerCase().includes(k)
+      )
+    : false;
 
-  let bestSize = "M";
+  if (!chest && !waist && !hips) {
+    if (availableSizes && availableSizes.length > 0) return availableSizes[0];
+    return isBottom ? "32" : "M";
+  }
+
+  let targetCharts: Record<string, SizeRange> = STANDARD_SIZE_CHARTS;
+
+  if (availableSizes && availableSizes.length > 0) {
+    const matchedCharts: Record<string, SizeRange> = {};
+    for (const sz of availableSizes) {
+      const target = sz.trim().toUpperCase();
+      // Look up direct key or letter/number match
+      for (const [key, range] of Object.entries(STANDARD_SIZE_CHARTS)) {
+        if (key.toUpperCase() === target || target.includes(key.toUpperCase())) {
+          matchedCharts[sz] = range;
+        }
+      }
+    }
+    if (Object.keys(matchedCharts).length > 0) {
+      targetCharts = matchedCharts;
+    }
+  } else {
+    // Filter by product category: Tops -> XS-XXL, Bottoms -> 28-40
+    const filtered: Record<string, SizeRange> = {};
+    for (const [sizeKey, range] of Object.entries(STANDARD_SIZE_CHARTS)) {
+      const isNumeric = /^\d+$/.test(sizeKey);
+      if (isBottom && isNumeric) {
+        filtered[sizeKey] = range;
+      } else if (!isBottom && !isNumeric) {
+        filtered[sizeKey] = range;
+      }
+    }
+    if (Object.keys(filtered).length > 0) {
+      targetCharts = filtered;
+    }
+  }
+
+  let bestSize = Object.keys(targetCharts)[0] || (isBottom ? "32" : "M");
   let bestDiff = Infinity;
 
-  for (const [size, range] of Object.entries(STANDARD_SIZE_CHARTS)) {
+  for (const [size, range] of Object.entries(targetCharts)) {
     let diff = 0;
     let count = 0;
 
-    if (chest) {
+    if (chest && !isBottom) {
       const mid = (range.chest[0] + range.chest[1]) / 2;
       diff += Math.abs(chest - mid);
       count++;
@@ -160,7 +204,7 @@ export function findRecommendedSize(
       diff += Math.abs(waist - mid);
       count++;
     }
-    if (hips) {
+    if (hips && isBottom) {
       const mid = (range.hips[0] + range.hips[1]) / 2;
       diff += Math.abs(hips - mid);
       count++;
@@ -220,19 +264,24 @@ export function genericFitScore(
     const effectiveMax = max + tolerance;
 
     let withinRange = false;
+    let fitStatus: FitStatus = "optimal";
     let score = 0;
 
     if (userValue >= min && userValue <= max) {
       withinRange = true;
+      fitStatus = "optimal";
       score = 100;
     } else if (userValue >= effectiveMin && userValue <= effectiveMax) {
-      withinRange = true;
+      withinRange = false;
+      fitStatus = "acceptable";
       if (userValue < min) {
         score = 70 - ((min - userValue) / tolerance) * 30;
       } else {
         score = 70 - ((userValue - max) / tolerance) * 30;
       }
     } else {
+      withinRange = false;
+      fitStatus = userValue > max ? "too_tight" : "too_loose";
       score = Math.max(0, 30 - Math.abs(userValue - (min + max) / 2) * 0.5);
     }
 
@@ -241,6 +290,7 @@ export function genericFitScore(
       userValue,
       sizeRange: { min, max },
       withinRange,
+      fitStatus,
     });
 
     totalScore += score;
@@ -298,19 +348,24 @@ function chartBasedFitScore(
     const max = estimatedBodyFit + tolerance;
 
     let withinRange = false;
+    let fitStatus: FitStatus = "optimal";
     let score = 0;
 
     if (userValue >= min && userValue <= max) {
       withinRange = true;
+      fitStatus = "optimal";
       score = 100;
     } else if (userValue >= min - tolerance && userValue <= max + tolerance) {
-      withinRange = true;
+      withinRange = false;
+      fitStatus = "acceptable";
       if (userValue < min) {
         score = 70 - ((min - userValue) / tolerance) * 30;
       } else {
         score = 70 - ((userValue - max) / tolerance) * 30;
       }
     } else {
+      withinRange = false;
+      fitStatus = userValue > max ? "too_tight" : "too_loose";
       score = Math.max(0, 30 - Math.abs(userValue - (min + max) / 2) * 0.5);
     }
 
@@ -320,6 +375,7 @@ function chartBasedFitScore(
       userValue,
       sizeRange: { min: Math.round(min), max: Math.round(max) },
       withinRange,
+      fitStatus,
     });
 
     totalScore += score;

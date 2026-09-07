@@ -1,34 +1,57 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Check } from "lucide-react";
 import { GarmentItem } from "./garment-selector";
 import { normalizeCategory } from "@/services/outfit-api";
+import { cn } from "@/lib/utils";
 
 export interface GarmentCardProps {
   garment: GarmentItem;
   isSelected: boolean;
+  selectedSize?: string;
   badgeLabel?: string;
   badgeNumber?: number;
   onSelect: () => void;
+  onSelectSize?: (size: string) => void;
 }
 
 export function GarmentCard({
   garment,
   isSelected,
+  selectedSize: externalSelectedSize,
   badgeLabel = "Selected",
   badgeNumber,
   onSelect,
+  onSelectSize,
 }: GarmentCardProps) {
+  const defaultSize = garment.sizes?.[0] || "M";
+  const [internalSize, setInternalSize] = useState<string>(
+    externalSelectedSize || defaultSize
+  );
+
+  const currentSize = externalSelectedSize || internalSize;
+
+  const handleSizeClick = (e: React.MouseEvent, sz: string) => {
+    e.stopPropagation();
+    setInternalSize(sz);
+    if (onSelectSize) {
+      onSelectSize(sz);
+    }
+    if (!isSelected) {
+      onSelect();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <div
       onClick={onSelect}
-      className={`group relative border rounded-lg overflow-hidden text-left cursor-pointer transition-all duration-300 bg-card flex flex-col ${
+      className={cn(
+        "group relative border rounded-xl overflow-hidden text-left cursor-pointer transition-all duration-300 bg-card flex flex-col justify-between",
         isSelected
           ? "ring-2 ring-foreground ring-offset-2 ring-offset-background border-foreground shadow-md -translate-y-0.5"
           : "border-border/70 hover:border-foreground/40 hover:shadow-md hover:-translate-y-0.5"
-      }`}
+      )}
     >
       {/* Image Canvas with Portrait 3:4 Aspect Ratio */}
       <div className="w-full aspect-[3/4] relative bg-muted/20 overflow-hidden flex items-center justify-center">
@@ -50,12 +73,12 @@ export function GarmentCard({
                 <span className="w-3.5 h-3.5 rounded-full bg-background/20 flex items-center justify-center text-[9px] font-bold">
                   {badgeNumber}
                 </span>
-                <span>{badgeLabel}</span>
+                <span>{badgeLabel} {currentSize ? `(${currentSize})` : ""}</span>
               </>
             ) : (
               <>
                 <Check className="w-3 h-3 stroke-[3]" />
-                <span>{badgeLabel}</span>
+                <span>{badgeLabel} {currentSize ? `(${currentSize})` : ""}</span>
               </>
             )}
           </div>
@@ -63,22 +86,63 @@ export function GarmentCard({
       </div>
 
       {/* Card Details */}
-      <div className="px-4 py-3 sm:px-4 sm:py-3.5 flex flex-col justify-between flex-1 border-t border-border/40 bg-card/90">
-        <p className="text-xs sm:text-[13px] font-medium text-foreground tracking-tight line-clamp-1 group-hover:text-accent transition-colors">
-          {garment.name}
-        </p>
-        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/30">
-          <span className="text-[10px] uppercase font-medium tracking-wider text-muted-foreground/80">
-            {normalizeCategory(garment.category)}
-          </span>
-          {garment.price && (
-            <span className="text-xs font-semibold text-foreground tracking-tight">
-              ₹{Number(garment.price).toLocaleString("en-IN")}
+      <div className="px-3.5 py-3 sm:px-4 sm:py-3.5 flex flex-col justify-between flex-1 border-t border-border/40 bg-card/90 gap-2">
+        <div>
+          <p className="text-xs sm:text-[13px] font-medium text-foreground tracking-tight line-clamp-1 group-hover:text-accent transition-colors">
+            {garment.name}
+          </p>
+          <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-border/30">
+            <span className="text-[10px] uppercase font-medium tracking-wider text-muted-foreground/80">
+              {normalizeCategory(garment.category)}
             </span>
-          )}
+            {garment.price && (
+              <span className="text-xs font-semibold text-foreground tracking-tight">
+                ₹{Number(garment.price).toLocaleString("en-IN")}
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Interactive Size Selector Row */}
+        {garment.sizes && garment.sizes.length > 0 && (
+          <div
+            className="mt-1 pt-2 border-t border-border/30 space-y-1.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="font-semibold text-muted-foreground/90 uppercase tracking-wider text-[9px]">
+                Select Size:
+              </span>
+              {currentSize && (
+                <span className="font-bold text-accent text-[10px]">
+                  Size {currentSize}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {garment.sizes.map((sz) => {
+                const isSizeActive = isSelected && currentSize === sz;
+                return (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={(e) => handleSizeClick(e, sz)}
+                    className={cn(
+                      "px-2 py-0.5 text-[10px] font-semibold rounded-md border transition-all cursor-pointer shadow-2xs",
+                      isSizeActive
+                        ? "bg-foreground text-background border-foreground font-bold scale-105 shadow-xs"
+                        : "bg-muted/30 border-border/70 text-foreground hover:border-foreground/50 hover:bg-muted/70 active:scale-95"
+                    )}
+                  >
+                    {sz}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
-    </button>
+    </div>
   );
 }
 

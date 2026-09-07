@@ -703,17 +703,25 @@ export function VirtualTryOnScreen({
                       <span className="text-xs text-foreground capitalize">{row.label}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] text-muted-foreground">
-                          {fromCm(row.userValue, unit)} {unit}
+                          {fromCm(Math.round(row.userValue * 10) / 10, unit)} {unit}
                           {row.sizeRange.min !== row.sizeRange.max
                             ? ` (${fromCm(row.sizeRange.min, unit)}-${fromCm(row.sizeRange.max, unit)} ${unit})`
                             : ` (${fromCm(row.sizeRange.min, unit)} ${unit})`}
                         </span>
                         <span
                           className={`text-[11px] font-medium ${
-                            row.withinRange ? "text-green-600" : "text-amber-600"
+                            row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus)
+                              ? "text-green-600"
+                              : row.fitStatus === "acceptable"
+                              ? "text-amber-600"
+                              : "text-red-500"
                           }`}
                         >
-                          {row.withinRange ? "✓" : "△"}
+                          {row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus)
+                            ? "✓"
+                            : row.fitStatus === "acceptable"
+                            ? "△"
+                            : "✗"}
                         </span>
                       </div>
                     </div>

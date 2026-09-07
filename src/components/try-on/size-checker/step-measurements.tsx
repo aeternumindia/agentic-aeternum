@@ -15,22 +15,26 @@ import {
 } from "./types";
 
 interface StepMeasurementsProps {
+  subStep: 1 | 2;
   selectedGarments: GarmentItem[];
   measurements: BodyMeasurements;
   onChangeMeasurement: (field: keyof BodyMeasurements, value: number) => void;
   fitPreference: FitPreference;
   onSelectFitPreference: (fit: FitPreference) => void;
   onApplyPreset: (preset: PresetProfile) => void;
+  onGoToSubStep: (step: 1 | 2) => void;
   onCalculate: () => void;
 }
 
 export function StepMeasurements({
+  subStep,
   selectedGarments,
   measurements,
   onChangeMeasurement,
   fitPreference,
   onSelectFitPreference,
   onApplyPreset,
+  onGoToSubStep,
   onCalculate,
 }: StepMeasurementsProps) {
   const [unit, setUnit] = useState<UnitType>("cm");
@@ -51,30 +55,34 @@ export function StepMeasurements({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCalculate();
+    if (subStep === 1) {
+      onGoToSubStep(2);
+    } else {
+      onCalculate();
+    }
   };
 
   return (
-    <form id="size-checker-form" onSubmit={handleSubmit} className="space-y-5">
-      {/* Selected Garments Banner (Supports 1 or multiple garments) */}
+    <form id="size-checker-form" onSubmit={handleSubmit} className="space-y-4">
+      {/* Selected Garments Banner */}
       {selectedGarments.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
             <span>Target Garment{selectedGarments.length > 1 ? "s" : ""}</span>
             <span className="text-accent font-semibold">
-              {selectedGarments.length} item{selectedGarments.length > 1 ? "s" : ""} selected for sizing
+              {selectedGarments.length} item{selectedGarments.length > 1 ? "s" : ""}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {selectedGarments.map((garment, idx) => {
               const cat = normalizeCategory(garment.category);
               return (
                 <div
                   key={garment.id || garment.name + idx}
-                  className="flex items-center gap-3 p-2.5 rounded-2xl bg-muted/20 border border-border/60"
+                  className="flex items-center gap-2.5 p-2 rounded-xl bg-muted/20 border border-border/60"
                 >
-                  <div className="w-11 h-13 rounded-xl overflow-hidden bg-muted/40 shrink-0 border border-border/40">
+                  <div className="w-9 h-11 rounded-lg overflow-hidden bg-muted/40 shrink-0 border border-border/40">
                     <img
                       src={garment.image}
                       alt={garment.name}
@@ -82,8 +90,8 @@ export function StepMeasurements({
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] uppercase font-bold tracking-wider text-accent bg-accent/10 px-1.5 py-0.5 rounded-md">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-accent bg-accent/10 px-1 py-0.5 rounded">
                         {idx === 0 ? "Top / Item 1" : "Bottom / Item 2"}
                       </span>
                       <span className="text-[10px] text-muted-foreground">• {cat}</span>
@@ -91,11 +99,6 @@ export function StepMeasurements({
                     <p className="text-xs font-semibold text-foreground truncate mt-0.5">
                       {garment.name}
                     </p>
-                    {garment.price && (
-                      <p className="text-[11px] font-semibold text-foreground">
-                        ₹{Number(garment.price).toLocaleString("en-IN")}
-                      </p>
-                    )}
                   </div>
                 </div>
               );
@@ -104,25 +107,48 @@ export function StepMeasurements({
         </div>
       )}
 
-      {/* Preset Profile Selection */}
-      <PresetSelector
-        activePresetId={activePresetId}
-        onSelectPreset={handleSelectPreset}
-      />
+      {/* Sub-Step 1: Body Measurements */}
+      {subStep === 1 && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          {/* Measurement Inputs Grid */}
+          <MeasurementInputs
+            unit={unit}
+            onUnitChange={setUnit}
+            measurements={measurements}
+            onChangeMeasurement={handleCustomMeasurementChange}
+          />
+        </div>
+      )}
 
-      {/* Measurement Inputs Grid */}
-      <MeasurementInputs
-        unit={unit}
-        onUnitChange={setUnit}
-        measurements={measurements}
-        onChangeMeasurement={handleCustomMeasurementChange}
-      />
+      {/* Sub-Step 2: Fit Preference */}
+      {subStep === 2 && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          {/* Body Measurements Summary Card */}
+          <div className="p-3 rounded-2xl bg-muted/30 border border-border/70 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                Your Measurements Profile
+              </p>
+              <p className="text-xs font-semibold text-foreground mt-0.5">
+                Height: {measurements.height}cm • Chest: {measurements.chest}cm • Waist: {measurements.waist}cm
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onGoToSubStep(1)}
+              className="text-xs text-accent font-semibold hover:underline cursor-pointer shrink-0"
+            >
+              Edit
+            </button>
+          </div>
 
-      {/* Fit Preference Selection */}
-      <FitPreferenceSelector
-        fitPreference={fitPreference}
-        onSelectFitPreference={onSelectFitPreference}
-      />
+          {/* Fit Preference Selector */}
+          <FitPreferenceSelector
+            fitPreference={fitPreference}
+            onSelectFitPreference={onSelectFitPreference}
+          />
+        </div>
+      )}
     </form>
   );
 }

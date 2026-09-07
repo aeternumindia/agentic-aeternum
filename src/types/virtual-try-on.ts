@@ -12,11 +12,14 @@ export type FitScore = {
   description: string;
 };
 
+export type FitStatus = "optimal" | "acceptable" | "too_tight" | "too_loose";
+
 export type ComparisonRow = {
   label: string;
   userValue: number;
   sizeRange: { min: number; max: number };
   withinRange: boolean;
+  fitStatus?: FitStatus;
 };
 
 export type SizeChartRow = string[];

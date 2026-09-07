@@ -14,18 +14,10 @@ interface MeasurementInputsProps {
 // Convert internal cm value to display string in active unit
 function formatValue(cmValue: number, unit: UnitType): string {
   if (unit === "in") {
-    return (cmValue / 2.54).toFixed(1);
+    const inVal = cmValue / 2.54;
+    return String(Math.round(inVal * 10) / 10);
   }
   return String(Math.round(cmValue));
-}
-
-// Parse input in active unit to internal cm value
-function parseValue(displayValue: string, unit: UnitType): number {
-  const num = parseFloat(displayValue) || 0;
-  if (unit === "in") {
-    return Math.round(num * 2.54);
-  }
-  return num;
 }
 
 export function MeasurementInputs({
@@ -34,12 +26,36 @@ export function MeasurementInputs({
   measurements,
   onChangeMeasurement,
 }: MeasurementInputsProps) {
+  // Sync local display values for smooth typing in both cm & inches
+  const [displayValues, setDisplayValues] = React.useState<
+    Record<keyof BodyMeasurements, string>
+  >({
+    height: formatValue(measurements.height, unit),
+    chest: formatValue(measurements.chest, unit),
+    waist: formatValue(measurements.waist, unit),
+    hips: formatValue(measurements.hips, unit),
+  });
+
+  React.useEffect(() => {
+    setDisplayValues({
+      height: formatValue(measurements.height, unit),
+      chest: formatValue(measurements.chest, unit),
+      waist: formatValue(measurements.waist, unit),
+      hips: formatValue(measurements.hips, unit),
+    });
+  }, [unit, measurements.height, measurements.chest, measurements.waist, measurements.hips]);
+
   const handleInputChange = (
     field: keyof BodyMeasurements,
     rawValue: string
   ) => {
-    const cmVal = parseValue(rawValue, unit);
-    onChangeMeasurement(field, cmVal);
+    setDisplayValues((prev) => ({ ...prev, [field]: rawValue }));
+
+    const num = parseFloat(rawValue);
+    if (!isNaN(num) && num > 0) {
+      const cmVal = unit === "in" ? num * 2.54 : num;
+      onChangeMeasurement(field, cmVal);
+    }
   };
 
   return (
@@ -47,7 +63,7 @@ export function MeasurementInputs({
       {/* Header with Unit Switcher */}
       <div className="flex items-center justify-between">
         <label className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground">
-          Step 2: Exact Body Measurements
+          Body Measurements
         </label>
 
         {/* Unit Switcher */}
@@ -90,7 +106,7 @@ export function MeasurementInputs({
             type="number"
             step={unit === "in" ? "0.1" : "1"}
             required
-            value={formatValue(measurements.height, unit)}
+            value={displayValues.height}
             onChange={(e) => handleInputChange("height", e.target.value)}
             className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
@@ -107,7 +123,7 @@ export function MeasurementInputs({
             type="number"
             step={unit === "in" ? "0.1" : "1"}
             required
-            value={formatValue(measurements.chest, unit)}
+            value={displayValues.chest}
             onChange={(e) => handleInputChange("chest", e.target.value)}
             className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
@@ -124,7 +140,7 @@ export function MeasurementInputs({
             type="number"
             step={unit === "in" ? "0.1" : "1"}
             required
-            value={formatValue(measurements.waist, unit)}
+            value={displayValues.waist}
             onChange={(e) => handleInputChange("waist", e.target.value)}
             className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
@@ -141,7 +157,7 @@ export function MeasurementInputs({
             type="number"
             step={unit === "in" ? "0.1" : "1"}
             required
-            value={formatValue(measurements.hips, unit)}
+            value={displayValues.hips}
             onChange={(e) => handleInputChange("hips", e.target.value)}
             className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />

@@ -1098,17 +1098,25 @@ function FitScoreCard({
               <span className="text-xs text-foreground capitalize">{row.label}</span>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] text-muted-foreground">
-                  {row.userValue} cm
+                  {Math.round(row.userValue * 10) / 10} cm
                   {row.sizeRange.min !== row.sizeRange.max
                     ? ` (${row.sizeRange.min}-${row.sizeRange.max} cm)`
                     : ` (${row.sizeRange.min} cm)`}
                 </span>
                 <span
                   className={`text-[11px] font-medium ${
-                    row.withinRange ? "text-green-600" : "text-amber-600"
+                    row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus)
+                      ? "text-green-600"
+                      : row.fitStatus === "acceptable"
+                      ? "text-amber-600"
+                      : "text-red-500"
                   }`}
                 >
-                  {row.withinRange ? "✓" : "△"}
+                  {row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus)
+                    ? "✓"
+                    : row.fitStatus === "acceptable"
+                    ? "△"
+                    : "✗"}
                 </span>
               </div>
             </div>

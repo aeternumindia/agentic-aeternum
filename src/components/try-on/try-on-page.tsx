@@ -75,15 +75,22 @@ const TryOnPage = () => {
         const products = await fetchAllCatalogProducts();
         if (isMounted && products && products.length > 0) {
           const mapped: GarmentItem[] = products
-            .map((p) => ({
-              id: p.id,
-              name: p.title,
-              category: normalizeCategory(p.productType || "Apparel"),
-              image: p.image || p.images?.[0] || "",
-              price: p.price,
-              handle: p.handle,
-              images: p.images,
-            }))
+            .map((p) => {
+              const rawSizes = p.variants
+                ? Array.from(new Set(p.variants.map((v) => v.size).filter(Boolean)))
+                : [];
+              return {
+                id: p.id,
+                name: p.title,
+                category: normalizeCategory(p.productType || "Apparel"),
+                image: p.image || p.images?.[0] || "",
+                price: p.price,
+                handle: p.handle,
+                images: p.images,
+                sizes: rawSizes,
+                variants: p.variants,
+              };
+            })
             .filter((g) => Boolean(g.image));
 
           if (mapped.length > 0) {

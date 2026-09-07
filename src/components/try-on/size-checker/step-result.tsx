@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ShieldCheck, Check, Info, RotateCcw, Shirt, ShoppingBag, Loader2, ExternalLink } from "lucide-react";
 import { GarmentItem } from "../garment-selector/garment-selector";
 import { normalizeCategory } from "@/services/outfit-api";
@@ -39,6 +39,63 @@ export function StepResult({
     image: string;
   } | null>(null);
 
+  // Map of handle -> variants fetched from Shopify
+  const [productVariantsMap, setProductVariantsMap] = useState<
+    Record<
+      string,
+      {
+        variants: any[];
+        loading: boolean;
+      }
+    >
+  >({});
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchAllGarmentVariants() {
+      const initialMap: Record<string, { variants: any[]; loading: boolean }> = {};
+      for (const g of selectedGarments) {
+        const handle = g.handle || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        initialMap[handle] = { variants: [], loading: true };
+      }
+      setProductVariantsMap(initialMap);
+
+      for (const g of selectedGarments) {
+        const handle = g.handle || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        let fetchedVariants: any[] = [];
+        try {
+          const { data } = await apiClient.get(`/cart/variants/admin/${handle}`);
+          if (data.success && data.data?.variants?.length > 0) {
+            fetchedVariants = data.data.variants;
+          }
+        } catch {
+          try {
+            const { data } = await apiClient.get(`/cart/variants/${handle}`);
+            if (data.success && data.data?.variants?.length > 0) {
+              fetchedVariants = data.data.variants;
+            }
+          } catch {}
+        }
+
+        if (isMounted) {
+          setProductVariantsMap((prev) => ({
+            ...prev,
+            [handle]: { variants: fetchedVariants, loading: false },
+          }));
+        }
+      }
+    }
+
+    if (selectedGarments.length > 0) {
+      fetchAllGarmentVariants();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedGarments]);
+
   // Apply fit preference adjustments
   const adjusted = { ...measurements };
   if (fitPreference === "slim") {
@@ -49,67 +106,90 @@ export function StepResult({
     adjusted.waist -= 2;
   }
 
-  // Pre-calculate sizing for all selected garments
+  // Pre-calculate sizing for all selected garments using actual Shopify variant sizes
   const garmentResults = selectedGarments.map((garment) => {
-    const recommendedSize = findRecommendedSize(adjusted);
+    const handle = garment.handle || garment.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const variantData = productVariantsMap[handle] || { variants: [], loading: false };
     const category = normalizeCategory(garment.category);
+
+    // Extract available size labels from Shopify variants
+    const availableSizeLabels = Array.from(
+      new Set(
+        variantData.variants
+          .map((v: any) => {
+            const opt =
+              v.options?.find(
+                (o: any) =>
+                  o.name.toLowerCase() === "size" || o.name.toLowerCase() === "title"
+              ) || v.options?.[0];
+            return opt?.value || v.title;
+          })
+          .filter(Boolean)
+      )
+    );
+
+    const recommendedSize = findRecommendedSize(adjusted, category, availableSizeLabels);
+
+    const target = recommendedSize.trim().toLowerCase();
+    const matchedVariant = variantData.variants.find(
+      (v: any) =>
+        v.title.toLowerCase() === target ||
+        v.title.toLowerCase().includes(target) ||
+        v.options?.some((o: any) => o.value.toLowerCase() === target)
+    );
+
+    const isAvailable = matchedVariant ? Boolean(matchedVariant.available) : false;
+    const isOffered = Boolean(matchedVariant);
+    const variantId = isAvailable ? matchedVariant?.id || null : null;
+
+    // Closest in-stock fallback variant if recommended size is out of stock or not offered
+    const closestInStockVariant = !isAvailable
+      ? variantData.variants.find((v: any) => v.available)
+      : null;
+    const closestSizeLabel = closestInStockVariant
+      ? closestInStockVariant.options?.find(
+          (o: any) => o.name.toLowerCase() === "size"
+        )?.value || closestInStockVariant.title
+      : null;
+
     const { fitScore, comparisonRows } = genericFitScore(
       recommendedSize,
       measurements,
       category
     );
+
     return {
       garment,
       category,
       recommendedSize,
       fitScore,
       comparisonRows,
+      variantData,
+      matchedVariant,
+      isAvailable,
+      isOffered,
+      variantId,
+      closestInStockVariant,
+      closestSizeLabel,
     };
   });
 
   const activeResult = garmentResults[activeGarmentIndex] || garmentResults[0];
 
-  const handleAddSingleToCart = async (garment: GarmentItem, recommendedSize: string, index: number) => {
+  const handleAddSingleToCart = async (
+    garment: GarmentItem,
+    variantIdToUse: string | null,
+    sizeToDisplay: string,
+    index: number
+  ) => {
+    if (!variantIdToUse) return;
     setAddingIndex(index);
     try {
-      const handle = garment.handle || garment.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      let variantId: string | null = null;
-
-      try {
-        const { data } = await apiClient.get(`/cart/variants/admin/${handle}`);
-        if (data.success && data.data?.variants?.length > 0) {
-          const target = recommendedSize.trim().toLowerCase();
-          const matched = data.data.variants.find(
-            (v: any) =>
-              v.title.toLowerCase() === target ||
-              v.title.toLowerCase().includes(target) ||
-              v.options?.some((o: any) => o.value.toLowerCase() === target)
-          );
-          variantId = matched ? matched.id : (data.data.variants.find((v: any) => v.available)?.id || data.data.variants[0].id);
-        }
-      } catch {
-        try {
-          const { data } = await apiClient.get(`/cart/variants/${handle}`);
-          if (data.success && data.data?.variants?.length > 0) {
-            const target = recommendedSize.trim().toLowerCase();
-            const matched = data.data.variants.find(
-              (v: any) =>
-                v.title.toLowerCase() === target ||
-                v.title.toLowerCase().includes(target) ||
-                v.options?.some((o: any) => o.value.toLowerCase() === target)
-            );
-            variantId = matched ? matched.id : (data.data.variants.find((v: any) => v.available)?.id || data.data.variants[0].id);
-          }
-        } catch {}
-      }
-
-      if (variantId) {
-        await addToCart(variantId, 1);
-      }
+      await addToCart(variantIdToUse, 1);
       setAddedIndices((prev) => [...prev, index]);
       setLastAddedNotice({
         title: garment.name,
-        size: recommendedSize,
+        size: sizeToDisplay,
         image: garment.image,
       });
       openCart();
@@ -123,17 +203,26 @@ export function StepResult({
   const handleAddAllToCart = async () => {
     setAddingAll(true);
     try {
+      let addedCount = 0;
       for (let i = 0; i < garmentResults.length; i++) {
         const res = garmentResults[i];
-        await handleAddSingleToCart(res.garment, res.recommendedSize, i);
+        const targetId = res.variantId || res.closestInStockVariant?.id;
+        const targetSize = res.variantId ? res.recommendedSize : res.closestSizeLabel || res.recommendedSize;
+
+        if (targetId) {
+          await addToCart(targetId, 1);
+          addedCount++;
+        }
       }
-      setAddedAll(true);
-      setLastAddedNotice({
-        title: `Complete Outfit (${garmentResults.length} items)`,
-        size: garmentResults.map((r) => r.recommendedSize).join(" / "),
-        image: garmentResults[0].garment.image,
-      });
-      openCart();
+      if (addedCount > 0) {
+        setAddedAll(true);
+        setLastAddedNotice({
+          title: `Outfit (${addedCount} items)`,
+          size: garmentResults.map((r) => r.recommendedSize).join(" / "),
+          image: garmentResults[0].garment.image,
+        });
+        openCart();
+      }
     } catch (err) {
       console.error("Add all to cart error:", err);
     } finally {
@@ -286,39 +375,88 @@ export function StepResult({
 
               {/* Add Recommended Size to Cart Button */}
               <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleAddSingleToCart(
-                      activeResult.garment,
-                      activeResult.recommendedSize,
-                      activeGarmentIndex
-                    )
-                  }
-                  disabled={addingIndex === activeGarmentIndex}
-                  className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all disabled:opacity-50 ${
-                    addedIndices.includes(activeGarmentIndex)
-                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
-                  }`}
-                >
-                  {addingIndex === activeGarmentIndex ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Adding Size {activeResult.recommendedSize}...</span>
-                    </>
-                  ) : addedIndices.includes(activeGarmentIndex) ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-white font-bold" />
-                      <span>Size {activeResult.recommendedSize} Added to Cart ✓</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Add Size {activeResult.recommendedSize} to Cart</span>
-                    </>
-                  )}
-                </button>
+                {activeResult.variantData?.loading ? (
+                  <div className="inline-flex items-center gap-2 py-2.5 px-4 text-xs text-muted-foreground bg-muted/40 rounded-xl">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Checking size availability in Shopify...</span>
+                  </div>
+                ) : activeResult.isAvailable ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleAddSingleToCart(
+                        activeResult.garment,
+                        activeResult.variantId,
+                        activeResult.recommendedSize,
+                        activeGarmentIndex
+                      )
+                    }
+                    disabled={addingIndex === activeGarmentIndex}
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all disabled:opacity-50 ${
+                      addedIndices.includes(activeGarmentIndex)
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                        : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+                    }`}
+                  >
+                    {addingIndex === activeGarmentIndex ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Adding Size {activeResult.recommendedSize}...</span>
+                      </>
+                    ) : addedIndices.includes(activeGarmentIndex) ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-white font-bold" />
+                        <span>Size {activeResult.recommendedSize} Added to Cart ✓</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Add Size {activeResult.recommendedSize} to Cart</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium border border-amber-500/20">
+                      <Info className="w-4 h-4 shrink-0 text-amber-500" />
+                      <span>
+                        {activeResult.isOffered
+                          ? `Size ${activeResult.recommendedSize} is currently out of stock.`
+                          : `Size ${activeResult.recommendedSize} is not offered for this item.`}
+                      </span>
+                    </div>
+
+                    {activeResult.closestInStockVariant && activeResult.closestSizeLabel && (
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAddSingleToCart(
+                              activeResult.garment,
+                              activeResult.closestInStockVariant.id,
+                              activeResult.closestSizeLabel,
+                              activeGarmentIndex
+                            )
+                          }
+                          disabled={addingIndex === activeGarmentIndex}
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold cursor-pointer transition-all"
+                        >
+                          {addingIndex === activeGarmentIndex ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Adding Size {activeResult.closestSizeLabel}...</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingBag className="w-3.5 h-3.5" />
+                              <span>Add Closest Available Size ({activeResult.closestSizeLabel}) to Cart</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -363,17 +501,26 @@ export function StepResult({
                     <div className="space-y-0.5">
                       <span className="font-semibold text-foreground">{row.label}</span>
                       <p className="text-[11px] text-muted-foreground">
-                        Your measurement: <strong>{row.userValue} cm</strong> (Chart Range: {row.sizeRange.min}–{row.sizeRange.max} cm)
+                        Your measurement: <strong>{Math.round(row.userValue * 10) / 10} cm</strong> (Chart Range: {row.sizeRange.min}–{row.sizeRange.max} cm)
                       </p>
                     </div>
                     <div className="shrink-0">
-                      {row.withinRange ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold">
+                      {row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus) ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
                           <Check className="w-3 h-3" />
                           Optimal
                         </span>
+                      ) : row.fitStatus === "too_tight" ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold">
+                          Too Tight
+                        </span>
+                      ) : row.fitStatus === "too_loose" ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold">
+                          Too Loose
+                        </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+                          <Info className="w-3 h-3" />
                           Acceptable
                         </span>
                       )}
