@@ -40,9 +40,8 @@ const TryOnPage = () => {
   const [tryOnResultImage, setTryOnResultImage] = useState<string | null>(null);
   const [tryOnError, setTryOnError] = useState<string | null>(null);
   const MAX_DAILY_TRIES = 5;
-  const [triesUsed, setTriesUsed] = useState<number>(0);
-
   const models = DEFAULT_MODELS;
+  const [triesUsed, setTriesUsed] = useState<number>(0);
 
   useEffect(() => {
     try {

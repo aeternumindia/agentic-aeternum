@@ -36,14 +36,35 @@ export function MeasurementInputs({
     hips: formatValue(measurements.hips, unit),
   });
 
-  React.useEffect(() => {
+  const [prevProps, setPrevProps] = React.useState({
+    unit,
+    height: measurements.height,
+    chest: measurements.chest,
+    waist: measurements.waist,
+    hips: measurements.hips,
+  });
+
+  if (
+    prevProps.unit !== unit ||
+    prevProps.height !== measurements.height ||
+    prevProps.chest !== measurements.chest ||
+    prevProps.waist !== measurements.waist ||
+    prevProps.hips !== measurements.hips
+  ) {
+    setPrevProps({
+      unit,
+      height: measurements.height,
+      chest: measurements.chest,
+      waist: measurements.waist,
+      hips: measurements.hips,
+    });
     setDisplayValues({
       height: formatValue(measurements.height, unit),
       chest: formatValue(measurements.chest, unit),
       waist: formatValue(measurements.waist, unit),
       hips: formatValue(measurements.hips, unit),
     });
-  }, [unit, measurements.height, measurements.chest, measurements.waist, measurements.hips]);
+  }
 
   const handleInputChange = (
     field: keyof BodyMeasurements,
