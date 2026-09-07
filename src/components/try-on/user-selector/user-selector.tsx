@@ -66,20 +66,20 @@ export function UserSelector({
 
   return (
     <div
-      style={{ flex: "1 1 360px", maxWidth: "420px", minWidth: "300px" }}
-      className="w-full border border-border bg-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xs gap-5 mx-auto md:mx-0 md:self-start"
+      style={{ flex: "1 1 360px", maxWidth: "420px", minWidth: "280px" }}
+      className="w-full border border-border bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 flex flex-col justify-between shadow-xs gap-3 md:gap-5 mx-auto md:mx-0 md:self-start"
     >
-      <div className="space-y-4">
+      <div className="space-y-2.5 sm:space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 shrink-0">
           <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Sparkles className="w-4 h-4 text-accent shrink-0" />
               <h2 className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
                 Try-On Canvas
               </h2>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               {tryOnResultImage
                 ? "AI Try-On Result"
                 : activeTab === "model"
@@ -94,15 +94,15 @@ export function UserSelector({
             type="button"
             onClick={onOpenModal}
             disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-border bg-muted/40 hover:bg-muted/80 text-foreground transition-all cursor-pointer shadow-xs hover:border-foreground/30 active:scale-95 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-xl border border-border bg-muted/40 hover:bg-muted/80 text-foreground transition-all cursor-pointer shadow-xs hover:border-foreground/30 active:scale-95 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Camera className="w-3.5 h-3.5 text-accent shrink-0" />
             <span>Upload Photo / Model</span>
           </button>
         </div>
 
-        {/* Canvas Preview Viewport (Strict 3:4 Aspect Ratio) */}
-        <div className="border border-border/80 rounded-2xl overflow-hidden bg-muted/20 relative shadow-inner aspect-[3/4] w-full flex items-center justify-center">
+        {/* Canvas Preview Viewport (Strict 3:4 Portrait Aspect Ratio Always, Dynamic Height Scaling) */}
+        <div className="border border-border/80 rounded-2xl overflow-hidden bg-muted/20 relative shadow-inner aspect-[3/4] w-full max-h-[calc(100dvh-17.5rem)] md:max-h-none mx-auto flex items-center justify-center">
           <div className="w-full h-full flex items-center justify-center relative">
             {isGenerating ? (
               <div className="absolute inset-0 bg-card/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-4 z-20">
@@ -154,7 +154,7 @@ export function UserSelector({
               <img
                 src={bodyImage}
                 alt="Try on preview"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             ) : activeTab === "model" && selectedModelObj?.image ? (
               <img
@@ -191,14 +191,14 @@ export function UserSelector({
       </div>
 
       {/* Action Buttons (Mobile: 2 equal buttons, Desktop: 1 full-width Try On button) */}
-      <div className="flex flex-col gap-2.5 pt-2">
-        <div className="flex items-center gap-3 w-full">
+      <div className="flex flex-col gap-2 sm:gap-2.5 pt-1 sm:pt-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 w-full">
           {/* Choose Garments Button (Mobile & Tablet only) */}
           <button
             type="button"
             onClick={onOpenGarmentModal}
             disabled={isGenerating}
-            className="flex md:hidden flex-1 items-center justify-center gap-2 py-3 px-3.5 sm:px-4 rounded-xl border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-medium transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            className="flex md:hidden flex-1 items-center justify-center gap-1.5 py-2.5 sm:py-3 px-2.5 sm:px-4 rounded-xl border border-border bg-card hover:bg-muted/40 text-foreground text-xs font-medium transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
           >
             <Shirt className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="truncate">
@@ -216,7 +216,7 @@ export function UserSelector({
             type="button"
             onClick={onTryOn}
             disabled={selectedGarmentsCount === 0 || isGenerating}
-            className="flex-1 w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 w-full flex items-center justify-center gap-1.5 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isGenerating ? (
               <>
@@ -237,12 +237,12 @@ export function UserSelector({
         </div>
 
         {/* Secondary Action Row: AI Size Checker & Add to Cart */}
-        <div className="flex items-center gap-2.5 w-full">
+        <div className="flex items-center gap-2 sm:gap-2.5 w-full">
           <button
             type="button"
             onClick={onOpenSizeChecker}
             disabled={isGenerating}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
           >
             <Ruler className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="truncate">AI Size Checker</span>
@@ -252,7 +252,7 @@ export function UserSelector({
             type="button"
             onClick={onAddToCart}
             disabled={selectedGarmentsCount === 0 || isGenerating}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl border border-border bg-card hover:bg-muted/50 text-foreground text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
           >
             <ShoppingBag className="w-3.5 h-3.5 text-accent shrink-0" />
             <span className="truncate">Add to Cart</span>
