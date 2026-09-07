@@ -13,6 +13,7 @@ import { AISizeCheckerModal, NoGarmentSelectedModal } from "./size-checker";
 import { fetchAllCatalogProducts, normalizeCategory } from "@/services/outfit-api";
 import apiClient, { generateTryOnImage } from "@/services/api";
 import { useShopifyCart } from "@/contexts/shopify-cart";
+import { AddToCartModal, type AddToCartItem } from "@/components/cart/add-to-cart-modal";
 
 const TryOnPage = () => {
   const { addToCart, openCart } = useShopifyCart();
@@ -26,6 +27,7 @@ const TryOnPage = () => {
   const [isGarmentModalOpen, setIsGarmentModalOpen] = useState(false);
   const [isSizeCheckerOpen, setIsSizeCheckerOpen] = useState(false);
   const [isNoGarmentModalOpen, setIsNoGarmentModalOpen] = useState(false);
+  const [cartModalItems, setCartModalItems] = useState<AddToCartItem[] | null>(null);
   const [garmentMode, setGarmentMode] = useState<"single" | "multiple">(
     "single",
   );
@@ -48,34 +50,22 @@ const TryOnPage = () => {
     }
   };
 
-  const handleAddToCartCanvas = async () => {
+  const handleAddToCartCanvas = () => {
     if (selectedGarments.length === 0) {
       setIsNoGarmentModalOpen(true);
       return;
     }
 
     const selectedItems = garments.filter((g) => selectedGarments.includes(g.name));
-    for (const item of selectedItems) {
-      const handle = item.handle || item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-      try {
-        const { data } = await apiClient.get(`/cart/variants/admin/${handle}`);
-        if (data.success && data.data?.variants?.length > 0) {
-          const firstAvail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
-          await addToCart(firstAvail.id, 1);
-        }
-      } catch {
-        try {
-          const { data } = await apiClient.get(`/cart/variants/${handle}`);
-          if (data.success && data.data?.variants?.length > 0) {
-            const firstAvail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
-            await addToCart(firstAvail.id, 1);
-          }
-        } catch (err) {
-          console.error("Canvas add to cart failed:", err);
-        }
-      }
-    }
-    openCart();
+    const items: AddToCartItem[] = selectedItems.map((item) => ({
+      handle: item.handle || item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      title: item.name,
+      image: item.image,
+      price: item.price ? `₹${Number(item.price).toLocaleString("en-IN")}` : "",
+      category: item.category,
+    }));
+
+    setCartModalItems(items);
   };
 
   useEffect(() => {
@@ -335,6 +325,14 @@ const TryOnPage = () => {
         onClose={() => setIsNoGarmentModalOpen(false)}
         onSelectGarmentsNow={() => setIsGarmentModalOpen(true)}
       />
+
+      {/* Add To Cart Size Selector Modal (Supports Single & Multiple Garments) */}
+      {cartModalItems && (
+        <AddToCartModal
+          items={cartModalItems}
+          onClose={() => setCartModalItems(null)}
+        />
+      )}
     </div>
   );
 };

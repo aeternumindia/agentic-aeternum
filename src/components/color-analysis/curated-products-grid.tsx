@@ -7,12 +7,17 @@ import { fetchAllCatalogProducts } from "@/services/outfit-api";
 import { OutfitProduct } from "@/types/outfit";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import apiClient from "@/services/api";
+import { AddToCartModal } from "@/components/cart/add-to-cart-modal";
 
 interface CuratedProductsGridProps {
+  colorPalette?: string[];
+  season?: string;
   seasonTitle?: string;
 }
 
 export function CuratedProductsGrid({
+  colorPalette,
+  season,
   seasonTitle = "Seasonal Essentials",
 }: CuratedProductsGridProps) {
   const { addToCart, openCart } = useShopifyCart();
@@ -20,15 +25,18 @@ export function CuratedProductsGrid({
   const [loading, setLoading] = useState(true);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<string[]>([]);
+  const [cartModalProduct, setCartModalProduct] = useState<OutfitProduct | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    async function load() {
+    async function loadCatalogue() {
       try {
-        const items = await fetchAllCatalogProducts();
-        if (isMounted && items.length > 0) {
-          const validItems = items.filter((p) => Boolean(p.image) && p.image.trim() !== "");
-          setProducts(validItems.slice(0, 6)); // Display top 6 curated pieces with valid images
+        const allProducts = await fetchAllCatalogProducts();
+        if (isMounted && allProducts.length > 0) {
+          const valid = allProducts.filter(
+            (p) => Boolean(p.image) && p.image.trim() !== ""
+          );
+          setProducts(valid.slice(0, 6));
         }
       } catch (err) {
         console.error("Failed to load curated products:", err);
@@ -36,42 +44,15 @@ export function CuratedProductsGrid({
         if (isMounted) setLoading(false);
       }
     }
-    load();
+
+    loadCatalogue();
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const handleAddToCart = async (product: OutfitProduct) => {
-    setAddingId(product.id);
-    try {
-      let variantId: string | null = null;
-      try {
-        const { data } = await apiClient.get(`/cart/variants/admin/${product.handle}`);
-        if (data.success && data.data?.variants?.length > 0) {
-          const avail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
-          variantId = avail.id;
-        }
-      } catch {
-        try {
-          const { data } = await apiClient.get(`/cart/variants/${product.handle}`);
-          if (data.success && data.data?.variants?.length > 0) {
-            const avail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
-            variantId = avail.id;
-          }
-        } catch {}
-      }
-
-      if (variantId) {
-        await addToCart(variantId, 1);
-        setAddedIds((prev) => [...prev, product.id]);
-        openCart();
-      }
-    } catch (err) {
-      console.error("Failed to add product to cart:", err);
-    } finally {
-      setAddingId(null);
-    }
+  const handleAddToCart = (product: OutfitProduct) => {
+    setCartModalProduct(product);
   };
 
   if (loading) {
@@ -186,6 +167,17 @@ export function CuratedProductsGrid({
           </div>
         ))}
       </div>
+
+      {/* Add To Cart Size Selector Modal */}
+      {cartModalProduct && (
+        <AddToCartModal
+          productHandle={cartModalProduct.handle}
+          productTitle={cartModalProduct.title}
+          productImage={cartModalProduct.image}
+          productPrice={`₹${Number(cartModalProduct.price).toLocaleString("en-IN")}`}
+          onClose={() => setCartModalProduct(null)}
+        />
+      )}
     </div>
   );
 }

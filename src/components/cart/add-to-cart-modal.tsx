@@ -6,6 +6,14 @@ import { useShopifyCart } from "@/contexts/shopify-cart";
 import { cn } from "@/lib/utils";
 import apiClient, { getSizeChart } from "@/services/api";
 
+export type AddToCartItem = {
+  handle: string;
+  title: string;
+  image: string;
+  price: string;
+  category?: string;
+};
+
 type Variant = {
   id: string;
   title: string;
@@ -16,15 +24,17 @@ type Variant = {
 };
 
 type AddToCartModalProps = {
-  productHandle: string;
-  productTitle: string;
-  productImage: string;
-  productPrice: string;
+  items?: AddToCartItem[];
+  productHandle?: string;
+  productTitle?: string;
+  productImage?: string;
+  productPrice?: string;
   productSizeChart?: string | null;
   onClose: () => void;
 };
 
 export function AddToCartModal({
+  items,
   productHandle,
   productTitle,
   productImage,
@@ -32,222 +42,375 @@ export function AddToCartModal({
   productSizeChart,
   onClose,
 }: AddToCartModalProps) {
-  const { addToCart } = useShopifyCart();
-  const [variants, setVariants] = useState<Variant[]>([]);
+  const { addToCart, openCart } = useShopifyCart();
+
+  // Normalize single vs multiple items
+  const effectiveItems: AddToCartItem[] =
+    items && items.length > 0
+      ? items
+      : productHandle
+      ? [
+          {
+            handle: productHandle,
+            title: productTitle || "",
+            image: productImage || "",
+            price: productPrice || "",
+          },
+        ]
+      : [];
+
+  const [variantsMap, setVariantsMap] = useState<Record<string, Variant[]>>({});
+  const [selectedVariantsMap, setSelectedVariantsMap] = useState<
+    Record<string, string>
+  >({});
   const [loading, setLoading] = useState(true);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [done, setDone] = useState(false);
-  const [showSizeChart, setShowSizeChart] = useState(false);
-  const [fetchedSizeChart, setFetchedSizeChart] = useState<string | null>(null);
+  const [activeSizeChartItem, setActiveSizeChartItem] = useState<string | null>(null);
+  const [sizeChartDataMap, setSizeChartDataMap] = useState<
+    Record<string, string | null>
+  >({});
 
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await apiClient.get(`/cart/variants/admin/${productHandle}`);
-        if (data.success) {
-          const v = data.data.variants as Variant[];
-          setVariants(v);
-          const firstAvailable = v.find((x) => x.available);
-          if (firstAvailable) setSelectedVariantId(firstAvailable.id);
-        }
-      } catch {
+    let isMounted = true;
+
+    async function loadAllVariants() {
+      setLoading(true);
+      const newVariantsMap: Record<string, Variant[]> = {};
+      const newSelectedMap: Record<string, string> = {};
+
+      for (const item of effectiveItems) {
         try {
-          const { data } = await apiClient.get(`/cart/variants/${productHandle}`);
-          if (data.success) {
-            const v = data.data.variants as Variant[];
-            setVariants(v);
-            const firstAvailable = v.find((x) => x.available);
-            if (firstAvailable) setSelectedVariantId(firstAvailable.id);
+          let v: Variant[] = [];
+          try {
+            const { data } = await apiClient.get(
+              `/cart/variants/admin/${item.handle}`
+            );
+            if (data.success && data.data?.variants?.length > 0) {
+              v = data.data.variants as Variant[];
+            }
+          } catch {
+            const { data } = await apiClient.get(
+              `/cart/variants/${item.handle}`
+            );
+            if (data.success && data.data?.variants?.length > 0) {
+              v = data.data.variants as Variant[];
+            }
+          }
+
+          if (v.length > 0) {
+            newVariantsMap[item.handle] = v;
+            const firstAvail = v.find((x) => x.available) || v[0];
+            newSelectedMap[item.handle] = firstAvail.id;
           }
         } catch (err) {
-          console.error("Failed to load variants", err);
+          console.error(`Failed to load variants for ${item.handle}`, err);
         }
-      } finally {
+      }
+
+      if (isMounted) {
+        setVariantsMap(newVariantsMap);
+        setSelectedVariantsMap(newSelectedMap);
         setLoading(false);
       }
-    })();
-    (async () => {
+    }
+
+    if (effectiveItems.length > 0) {
+      loadAllVariants();
+    } else {
+      setLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [items, productHandle]);
+
+  const handleSelectVariant = (handle: string, variantId: string) => {
+    setSelectedVariantsMap((prev) => ({
+      ...prev,
+      [handle]: variantId,
+    }));
+  };
+
+  const toggleSizeChart = async (handle: string) => {
+    if (activeSizeChartItem === handle) {
+      setActiveSizeChartItem(null);
+      return;
+    }
+
+    if (!sizeChartDataMap[handle]) {
       try {
-        const res = await getSizeChart(productHandle);
+        const res = await getSizeChart(handle);
         if (res?.success && res.data) {
-          setFetchedSizeChart(JSON.stringify(res.data));
+          setSizeChartDataMap((prev) => ({
+            ...prev,
+            [handle]: JSON.stringify(res.data),
+          }));
         }
       } catch {}
-    })();
-  }, [productHandle]);
+    }
+    setActiveSizeChartItem(handle);
+  };
 
-  async function handleAdd() {
-    if (!selectedVariantId) return;
+  const handleAddAll = async () => {
     setAdding(true);
     try {
-      await addToCart(selectedVariantId, 1);
+      for (const item of effectiveItems) {
+        const selectedVarId = selectedVariantsMap[item.handle];
+        if (selectedVarId) {
+          await addToCart(selectedVarId, 1);
+        }
+      }
       setDone(true);
+      openCart();
       setTimeout(() => {
         onClose();
-      }, 1200);
-    } catch {
-      // error
+      }, 1000);
+    } catch (err) {
+      console.error("Failed adding items to cart:", err);
     } finally {
       setAdding(false);
     }
-  }
+  };
 
-  const selectedVariant = variants.find((v) => v.id === selectedVariantId);
-  const effectiveSizeChart = productSizeChart || fetchedSizeChart;
+  // Calculate total price
+  let totalPrice = 0;
+  effectiveItems.forEach((item) => {
+    const selectedVarId = selectedVariantsMap[item.handle];
+    const variants = variantsMap[item.handle] || [];
+    const matched = variants.find((v) => v.id === selectedVarId);
+    if (matched) {
+      totalPrice += Number(matched.price.amount || 0);
+    } else {
+      const parsed = Number(item.price.replace(/[^0-9.]/g, ""));
+      if (!isNaN(parsed)) totalPrice += parsed;
+    }
+  });
 
-  let sizeChartData: { headers: string[]; sizes: string[][] } | null = null;
-  let sizeChartImage: string | null = null;
-  let sizeChartNotes: string | null = null;
-  if (effectiveSizeChart) {
-    try {
-      const parsed = JSON.parse(effectiveSizeChart);
-      if (typeof parsed.chart_data === "string") {
-        try { sizeChartData = JSON.parse(parsed.chart_data); } catch {}
-      } else {
-        sizeChartData = parsed.chart_data ?? null;
-      }
-      sizeChartImage = parsed.image ?? null;
-      sizeChartNotes = parsed.fit_notes ?? null;
-    } catch {}
-  }
+  const canAdd =
+    effectiveItems.length > 0 &&
+    effectiveItems.every((item) => Boolean(selectedVariantsMap[item.handle]));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-background p-6 shadow-lg animate-message-in">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
-        <div className="flex gap-4 mb-5">
-          <div className="h-20 w-20 shrink-0 rounded-lg bg-muted overflow-hidden">
-            {productImage ? (
-              <img src={productImage} alt={productTitle} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                {productTitle.charAt(0)}
-              </div>
-            )}
-          </div>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose} />
+      <div className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-background p-5 sm:p-6 shadow-2xl animate-message-in max-h-[85dvh] flex flex-col justify-between overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-border/60 shrink-0">
           <div>
-            <p className="text-sm font-medium text-foreground">{productTitle}</p>
-            <p className="text-sm text-accent mt-0.5">{productPrice}</p>
+            <h3 className="text-base font-semibold text-foreground">
+              {effectiveItems.length > 1
+                ? `Select Sizes for Your Outfit (${effectiveItems.length} Items)`
+                : "Select Size"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Choose your preferred size before adding to cart
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        {showSizeChart && effectiveSizeChart && (
-          <div className="mb-4 rounded-lg bg-muted p-3 text-xs text-foreground space-y-3">
-            {sizeChartImage && (
-              <img
-                src={sizeChartImage}
-                alt="Size chart"
-                className="w-full max-h-48 object-contain rounded"
-              />
-            )}
-            {sizeChartData && (
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    {sizeChartData.headers.map((h) => (
-                      <th key={h} className="border border-border px-2 py-1 text-left font-medium">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sizeChartData.sizes.map((row, i) => (
-                    <tr key={i}>
-                      {row.map((cell, j) => (
-                        <td key={j} className="border border-border px-2 py-1">{cell}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            {sizeChartNotes && (
-              <p className="text-muted-foreground leading-relaxed">{sizeChartNotes}</p>
-            )}
-          </div>
-        )}
+        {/* Content Body */}
+        <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3 text-xs text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-accent" />
+              <span>Fetching available sizes & stock...</span>
+            </div>
+          ) : effectiveItems.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No products selected
+            </div>
+          ) : (
+            effectiveItems.map((item) => {
+              const variants = variantsMap[item.handle] || [];
+              const selectedVarId = selectedVariantsMap[item.handle];
+              const availableVariants = variants.filter((v) => v.available);
+              const isChartActive = activeSizeChartItem === item.handle;
+              const chartRaw = sizeChartDataMap[item.handle] || productSizeChart;
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : variants.filter((v) => v.available).length === 0 ? (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            This product is currently out of stock
-          </div>
-        ) : (
-          <>
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-foreground">Size</p>
-                {effectiveSizeChart && (
-                  <button
-                    onClick={() => setShowSizeChart(!showSizeChart)}
-                    className="text-xs text-muted-foreground underline hover:text-foreground"
-                  >
-                    {showSizeChart ? "Hide" : "Size Chart"}
-                  </button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                  {variants.filter((v) => v.available).map((v) => {
-                  const sizeOption = v.options.find((o) => o.name === "Size" || o.name === "Title");
-                  const label = sizeOption?.value || v.title;
-                  const inv = v.inventory;
-                  return (
-                    <div key={v.id} className="relative">
-                      <button
-                        onClick={() => setSelectedVariantId(v.id)}
-                        className={cn(
-                          "rounded-lg border px-3 py-1.5 text-sm transition-all",
-                          selectedVariantId === v.id
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card text-foreground hover:border-muted-foreground"
-                        )}
-                      >
-                        {label}
-                      </button>
-                      {inv !== null && inv !== undefined && inv <= 5 && (
-                        <span className="absolute -top-1.5 -right-1.5 text-[10px] font-medium text-muted-foreground bg-background px-1 rounded border">
-                          {inv === 0 ? "Sold out" : `${inv} left`}
-                        </span>
+              let chartData: { headers: string[]; sizes: string[][] } | null = null;
+              let chartImage: string | null = null;
+              let chartNotes: string | null = null;
+
+              if (chartRaw) {
+                try {
+                  const parsed = JSON.parse(chartRaw);
+                  chartData = typeof parsed.chart_data === "string" ? JSON.parse(parsed.chart_data) : parsed.chart_data;
+                  chartImage = parsed.image ?? null;
+                  chartNotes = parsed.fit_notes ?? null;
+                } catch {}
+              }
+
+              return (
+                <div
+                  key={item.handle}
+                  className="rounded-2xl border border-border/80 bg-card p-4 space-y-3 shadow-2xs"
+                >
+                  <div className="flex gap-3 items-center">
+                    <div className="h-16 w-16 shrink-0 rounded-xl bg-muted overflow-hidden border border-border/50">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                          {item.title.charAt(0)}
+                        </div>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground line-clamp-1">
+                        {item.title}
+                      </p>
+                      <p className="text-xs font-bold text-foreground mt-0.5">
+                        {item.price.startsWith("₹")
+                          ? item.price
+                          : `₹${Number(item.price).toLocaleString("en-IN")}`}
+                      </p>
+                    </div>
+                  </div>
 
-            <button
-              onClick={handleAdd}
-              disabled={!selectedVariantId || adding || done}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all",
-                done
-                  ? "bg-green-600 text-white"
-                  : "bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
-              )}
-            >
-              {done ? (
-                "Added to Cart!"
-              ) : adding ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <ShoppingBag className="h-4 w-4" />
-                  Add to Cart — ₹{selectedVariant ? Number(selectedVariant.price.amount).toLocaleString("en-IN") : productPrice.replace(/[^0-9]/g, "")}
-                </>
-              )}
-            </button>
-          </>
-        )}
+                  {/* Size Selector */}
+                  <div className="space-y-2 pt-1 border-t border-border/40">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">
+                        Select Size
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleSizeChart(item.handle)}
+                        className="text-[11px] text-accent hover:underline font-medium cursor-pointer"
+                      >
+                        {isChartActive ? "Hide Size Chart" : "Size Chart"}
+                      </button>
+                    </div>
+
+                    {/* Size Chart View */}
+                    {isChartActive && (
+                      <div className="rounded-xl bg-muted/40 p-3 text-xs text-foreground space-y-2 border border-border/60 animate-in fade-in duration-200">
+                        {chartImage && (
+                          <img
+                            src={chartImage}
+                            alt="Size chart"
+                            className="w-full max-h-40 object-contain rounded-lg"
+                          />
+                        )}
+                        {chartData && (
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse text-[10px]">
+                              <thead>
+                                <tr className="bg-muted">
+                                  {chartData.headers.map((h) => (
+                                    <th key={h} className="border border-border/60 px-2 py-1 text-left font-semibold">{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {chartData.sizes.map((row, idx) => (
+                                  <tr key={idx}>
+                                    {row.map((cell, cidx) => (
+                                      <td key={cidx} className="border border-border/60 px-2 py-1">{cell}</td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                        {chartNotes && (
+                          <p className="text-[10px] text-muted-foreground">{chartNotes}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Size Options Pills */}
+                    {availableVariants.length === 0 ? (
+                      <p className="text-xs text-destructive">Currently out of stock</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {availableVariants.map((v) => {
+                          const sizeOpt =
+                            v.options?.find(
+                              (o) =>
+                                o.name.toLowerCase() === "size" ||
+                                o.name.toLowerCase() === "title"
+                            ) || v.options?.[0];
+                          const label = sizeOpt?.value || v.title;
+                          const isSelected = selectedVarId === v.id;
+                          const inv = v.inventory;
+
+                          return (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={() => handleSelectVariant(item.handle, v.id)}
+                              className={cn(
+                                "relative px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer",
+                                isSelected
+                                  ? "bg-foreground text-background border-foreground shadow-2xs scale-[1.02]"
+                                  : "bg-muted/30 border-border/80 text-foreground hover:border-foreground/40 hover:bg-muted/60"
+                              )}
+                            >
+                              <span>{label}</span>
+                              {inv !== null && inv !== undefined && inv <= 5 && (
+                                <span className="ml-1 text-[9px] font-bold text-amber-500">
+                                  ({inv} left)
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer Add to Cart Button */}
+        <div className="pt-3 border-t border-border/60 shrink-0">
+          <button
+            type="button"
+            onClick={handleAddAll}
+            disabled={!canAdd || adding || done}
+            className={cn(
+              "w-full py-3.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs",
+              done
+                ? "bg-emerald-600 text-white"
+                : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            )}
+          >
+            {done ? (
+              <span>Added to Cart!</span>
+            ) : adding ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Adding items to cart...</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-4 h-4" />
+                <span>
+                  {effectiveItems.length > 1
+                    ? `Add ${effectiveItems.length} Items to Cart — ₹${totalPrice.toLocaleString("en-IN")}`
+                    : `Add to Cart — ₹${totalPrice.toLocaleString("en-IN")}`}
+                </span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

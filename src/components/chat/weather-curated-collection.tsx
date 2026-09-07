@@ -17,6 +17,7 @@ import { fetchAllCatalogProducts } from "@/services/outfit-api";
 import { OutfitProduct } from "@/types/outfit";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import apiClient from "@/services/api";
+import { AddToCartModal } from "@/components/cart/add-to-cart-modal";
 
 interface WeatherCuratedCollectionProps {
   onAskAura: (prompt: string) => void;
@@ -34,6 +35,7 @@ export function WeatherCuratedCollection({
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addedIds, setAddedIds] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [cartModalProduct, setCartModalProduct] = useState<OutfitProduct | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -89,36 +91,8 @@ export function WeatherCuratedCollection({
     };
   }, [weather.tempC]);
 
-  const handleAddToCart = async (product: OutfitProduct) => {
-    setAddingId(product.id);
-    try {
-      let variantId: string | null = null;
-      try {
-        const { data } = await apiClient.get(`/cart/variants/admin/${product.handle}`);
-        if (data.success && data.data?.variants?.length > 0) {
-          const avail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
-          variantId = avail.id;
-        }
-      } catch {
-        try {
-          const { data } = await apiClient.get(`/cart/variants/${product.handle}`);
-          if (data.success && data.data?.variants?.length > 0) {
-            const avail = data.data.variants.find((v: any) => v.available) || data.data.variants[0];
-            variantId = avail.id;
-          }
-        } catch {}
-      }
-
-      if (variantId) {
-        await addToCart(variantId, 1);
-        setAddedIds((prev) => [...prev, product.id]);
-        openCart();
-      }
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-    } finally {
-      setAddingId(null);
-    }
+  const handleAddToCart = (product: OutfitProduct) => {
+    setCartModalProduct(product);
   };
 
   return (
@@ -271,6 +245,17 @@ export function WeatherCuratedCollection({
           </div>
         ) : null}
       </div>
+
+      {/* Add To Cart Size Selector Modal */}
+      {cartModalProduct && (
+        <AddToCartModal
+          productHandle={cartModalProduct.handle}
+          productTitle={cartModalProduct.title}
+          productImage={cartModalProduct.image}
+          productPrice={`₹${Number(cartModalProduct.price).toLocaleString("en-IN")}`}
+          onClose={() => setCartModalProduct(null)}
+        />
+      )}
     </div>
   );
 }
