@@ -105,7 +105,7 @@ export function UcpChatPanel() {
       <div className="flex-1 overflow-y-auto">
         <div className="min-h-full flex flex-col">
           {isEmpty ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-8 px-4 pt-[20dvh] pb-8">
+            <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4 py-3 sm:py-4" suppressHydrationWarning>
               <LandingScreen
                 onSelectGoal={handleSelectGoal}
                 disabled={isLoading}
