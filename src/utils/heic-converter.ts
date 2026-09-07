@@ -1,38 +1,45 @@
 /**
- * Convert any non-JPEG image to JPEG client-side.
+ * Convert iPhone images (.heic, .heif, HEIC/HEIF) and non-JPEG photos to clean JPEG client-side before upload.
  *
- * - HEIC/HEIF → uses `heic2any` (dynamic import)
- * - PNG, WebP, AVIF, etc. → uses canvas conversion
+ * - HEIC/HEIF (iOS Camera / AirDrop) → uses `heic2any` library with fallback
+ * - PNG, WebP, AVIF, TIFF, etc. → uses HTML5 Canvas conversion to JPEG
  * - Already JPEG → returned as-is
  */
 export async function convertHeicToJpegIfNeeded(file: File): Promise<File> {
-  const isJpeg =
-    /\.jpe?g$/i.test(file.name) || file.type === "image/jpeg";
-  if (isJpeg) return file;
+  const fileName = file.name || "";
+  const fileType = file.type || "";
 
   const isHeic =
-    /\.heic$/i.test(file.name) ||
-    /\.heif$/i.test(file.name) ||
-    file.type === "image/heic" ||
-    file.type === "image/heif";
+    /\.(heic|heif)$/i.test(fileName) ||
+    fileType.includes("heic") ||
+    fileType.includes("heif");
 
-  // ── HEIC/HEIF path (needs heic2any library) ──
+  // ── HEIC/HEIF iPhone Photo Path ──
   if (isHeic) {
-    const heic2any = (await import("heic2any")).default;
+    try {
+      const heic2any = (await import("heic2any")).default;
+      const result = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.85,
+      });
 
-    const result = await heic2any({
-      blob: file,
-      toType: "image/jpeg",
-      quality: 0.85,
-    });
-
-    const jpegBlob = Array.isArray(result) ? result[0] : result;
-    const jpegName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
-    return new File([jpegBlob], jpegName, { type: "image/jpeg" });
+      const jpegBlob = Array.isArray(result) ? result[0] : result;
+      const jpegName = fileName.replace(/\.(heic|heif)$/i, ".jpg");
+      return new File([jpegBlob], jpegName || "iphone-photo.jpg", {
+        type: "image/jpeg",
+      });
+    } catch (err) {
+      console.warn("heic2any conversion error, trying canvas fallback:", err);
+    }
   }
 
-  // ── All other formats (PNG, WebP, AVIF, etc.) — canvas conversion ──
-  return new Promise((resolve, reject) => {
+  const isJpeg =
+    /\.jpe?g$/i.test(fileName) || fileType === "image/jpeg";
+  if (isJpeg) return file;
+
+  // ── Canvas Conversion Path for All Other Images ──
+  return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
 
@@ -43,7 +50,6 @@ export async function convertHeicToJpegIfNeeded(file: File): Promise<File> {
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        // Fallback: return original if canvas fails
         resolve(file);
         return;
       }
@@ -51,21 +57,19 @@ export async function convertHeicToJpegIfNeeded(file: File): Promise<File> {
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            const jpegName = file.name.replace(/\.[^.]+$/, ".jpg");
-            resolve(new File([blob], jpegName, { type: "image/jpeg" }));
+            const jpegName = fileName.replace(/\.[^.]+$/, "") + ".jpg";
+            resolve(new File([blob], jpegName || "converted.jpg", { type: "image/jpeg" }));
           } else {
-            // Fallback
             resolve(file);
           }
         },
         "image/jpeg",
-        0.85,
+        0.85
       );
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      // Fallback: return original if image fails to load
       resolve(file);
     };
 
