@@ -91,7 +91,16 @@ function getRelevantKeys(productType: string): string[] {
   return ["chest", "waist"];
 }
 
-function detectUnit(sizes: string[][]): "in" | "cm" {
+function detectUnit(sizes: string[][], headers?: string[]): "in" | "cm" {
+  if (headers) {
+    const hStr = headers.join(" ").toLowerCase();
+    if (hStr.includes("(in)") || hStr.includes("inch") || hStr.includes("inches")) {
+      return "in";
+    }
+    if (hStr.includes("(cm)")) {
+      return "cm";
+    }
+  }
   const allValues: number[] = [];
   for (const row of sizes) {
     for (let i = 1; i < row.length; i++) {
@@ -101,25 +110,31 @@ function detectUnit(sizes: string[][]): "in" | "cm" {
   }
   if (allValues.length === 0) return "cm";
   const avg = allValues.reduce((a, b) => a + b, 0) / allValues.length;
-  // Adult body measurements in cm are typically 60-130;
-  // in inches they are typically 24-48. Threshold at 50
-  // cleanly separates the two ranges.
   return avg < 50 ? "in" : "cm";
 }
 
 function findColumnIndex(headers: string[], canonical: string): number {
-  const lower = headers.map((h) => h.toLowerCase().trim());
+  const lower = headers.map((h) =>
+    h
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, "")
+      .trim()
+  );
   for (const [alias, target] of Object.entries(CHART_HEADER_ALIASES)) {
     if (target !== canonical) continue;
-    const idx = lower.indexOf(alias);
+    const idx = lower.findIndex((h) => h === alias || h.includes(alias));
     if (idx !== -1) return idx;
   }
   return -1;
 }
 
 function getSizeIndex(sizes: string[][], sizeLabel: string): number {
+  const idx = sizes.findIndex(
+    (row) => row[0] && isSizeMatch(row[0], sizeLabel)
+  );
+  if (idx !== -1) return idx;
   return sizes.findIndex(
-    (row) => row[0]?.toLowerCase().trim() === sizeLabel.toLowerCase().trim()
+    (row) => row[0] && isSizeMatch(sizeLabel, row[0])
   );
 }
 
@@ -135,11 +150,73 @@ export function getSizeRanges(): Record<string, SizeRange> {
   return STANDARD_SIZE_CHARTS;
 }
 
+export function isSizeMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  const cleanA = a.trim().toLowerCase();
+  const cleanB = b.trim().toLowerCase();
+  if (cleanA === cleanB) return true;
+
+  const map: Record<string, string[]> = {
+    xs: ["36", "xs", "extra small"],
+    s: ["38", "s", "small"],
+    m: ["40", "m", "medium"],
+    l: ["42", "l", "large"],
+    xl: ["44", "xl", "extra large"],
+    xxl: ["46", "xxl", "2xl"],
+    "36": ["xs", "36"],
+    "38": ["s", "38"],
+    "40": ["m", "40"],
+    "42": ["l", "42"],
+    "44": ["xl", "44"],
+    "46": ["xxl", "46"],
+  };
+
+  const NOISE_WORDS = new Set(["size", "sizes", "us", "uk", "eu", "in", "cm"]);
+  const tokensA = (cleanA.match(/[a-z0-9]+/g) || []).filter((t) => !NOISE_WORDS.has(t));
+  const tokensB = (cleanB.match(/[a-z0-9]+/g) || []).filter((t) => !NOISE_WORDS.has(t));
+
+  for (const tA of tokensA) {
+    for (const tB of tokensB) {
+      if (tA === tB) return true;
+      if (map[tA] && map[tA].includes(tB)) return true;
+      if (map[tB] && map[tB].includes(tA)) return true;
+    }
+  }
+
+  return false;
+}
+
 export function findRecommendedSize(
   measurements: Record<string, number>,
   productCategory?: string,
-  availableSizes?: string[]
+  availableSizes?: string[],
+  sizeChartData?: SizeChartData | null
 ): string {
+  if (sizeChartData && sizeChartData.headers?.length && sizeChartData.sizes?.length) {
+    const dummySession: TryOnSession = {
+      productId: "",
+      productHandle: "",
+      productTitle: "",
+      productImage: "",
+      productCategory: productCategory || "Apparel",
+      price: "",
+      currency: "",
+      selectedSize: sizeChartData.sizes[0]?.[0] || "M",
+      selectedColor: "",
+      measurements,
+      sizeChart: { chartData: sizeChartData, image: null, fitNotes: null },
+    };
+    const chartRes = chartBasedFitScore(dummySession, sizeChartData);
+    if (chartRes.recommendedSize) {
+      // If availableSizes is provided, verify if recommended size is in availableSizes
+      if (availableSizes && availableSizes.length > 0) {
+        const found = availableSizes.find((s) => isSizeMatch(chartRes.recommendedSize!, s));
+        if (found) return found;
+      }
+      return chartRes.recommendedSize;
+    }
+  }
+
   const chest = measurements.chest ?? 0;
   const waist = measurements.waist ?? 0;
   const hips = measurements.hips ?? 0;
@@ -215,6 +292,11 @@ export function findRecommendedSize(
       bestDiff = avgDiff;
       bestSize = size;
     }
+  }
+
+  if (availableSizes && availableSizes.length > 0) {
+    const found = availableSizes.find((s) => isSizeMatch(bestSize, s));
+    if (found) return found;
   }
 
   return bestSize;
@@ -314,9 +396,9 @@ function chartBasedFitScore(
   const { selectedSize, measurements, productCategory } = session;
   const { headers, sizes } = chartData;
 
-  const unit = detectUnit(sizes);
+  const unit = detectUnit(sizes, headers);
   const ease = getEaseForType(productCategory);
-  const toCm = unit === "in" ? (v: number) => Math.round(v * 2.54) : (v: number) => v;
+  const toCm = unit === "in" ? (v: number) => v * 2.54 : (v: number) => v;
 
   const sizeIdx = getSizeIndex(sizes, selectedSize);
   if (sizeIdx === -1) {
@@ -376,6 +458,7 @@ function chartBasedFitScore(
       sizeRange: { min: Math.round(min), max: Math.round(max) },
       withinRange,
       fitStatus,
+      garmentValue: garmentCm,
     });
 
     totalScore += score;

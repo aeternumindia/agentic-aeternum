@@ -20,6 +20,7 @@ export type ComparisonRow = {
   sizeRange: { min: number; max: number };
   withinRange: boolean;
   fitStatus?: FitStatus;
+  garmentValue?: number;
 };
 
 export type SizeChartRow = string[];
