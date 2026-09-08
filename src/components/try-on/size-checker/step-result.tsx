@@ -13,13 +13,13 @@ import {
 } from "@/services/virtual-try-on";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import apiClient, { getSizeChart } from "@/services/api";
-import { BodyMeasurements, FitPreference } from "./types";
+import { BodyMeasurements } from "./types";
 import { ProductSizeChart, TryOnSession } from "@/types/virtual-try-on";
 
 interface StepResultProps {
   selectedGarments: GarmentItem[];
   measurements: BodyMeasurements;
-  fitPreference: FitPreference;
+  fitPreference?: string;
   onRecalculate: () => void;
   onClose: () => void;
 }
@@ -27,7 +27,6 @@ interface StepResultProps {
 export function StepResult({
   selectedGarments,
   measurements,
-  fitPreference,
   onRecalculate,
   onClose,
 }: StepResultProps) {
@@ -138,18 +137,6 @@ export function StepResult({
     };
   }, [selectedGarments]);
 
-  // Apply fit preference adjustments for AI size recommendation calculation:
-  // - Relaxed fit: add +2cm ease offset to target a roomier size tier
-  // - Slim fit: subtract -2cm ease offset to target a tighter size tier
-  const adjustedForRec = { ...measurements };
-  if (fitPreference === "slim") {
-    adjustedForRec.chest = Math.max(0, (adjustedForRec.chest || 0) - 2);
-    adjustedForRec.waist = Math.max(0, (adjustedForRec.waist || 0) - 2);
-  } else if (fitPreference === "relaxed") {
-    adjustedForRec.chest = (adjustedForRec.chest || 0) + 2;
-    adjustedForRec.waist = (adjustedForRec.waist || 0) + 2;
-  }
-
   // Pre-calculate sizing for all selected garments using actual Shopify product size charts and variant data
   const garmentResults = selectedGarments.map((garment, gIdx) => {
     const handle = garment.handle || garment.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -175,7 +162,7 @@ export function StepResult({
 
     // AI recommended size calculation using product's actual size chart if available
     const recommendedSize = findRecommendedSize(
-      adjustedForRec,
+      measurements,
       category,
       availableSizeLabels,
       sizeChart?.chartData

@@ -14,7 +14,6 @@ import { normalizeCategory } from "@/services/outfit-api";
 import {
   AISizeCheckerModalProps,
   BodyMeasurements,
-  FitPreference,
   PresetProfile,
 } from "./types";
 import { StepMeasurements } from "./step-measurements";
@@ -27,20 +26,17 @@ export function AISizeCheckerModal({
   selectedGarments,
 }: AISizeCheckerModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [subStep, setSubStep] = useState<1 | 2>(1);
   const [measurements, setMeasurements] = useState<BodyMeasurements>({
     height: 176,
     chest: 96,
     waist: 80,
     hips: 98,
   });
-  const [fitPreference, setFitPreference] = useState<FitPreference>("regular");
 
   // Reset steps when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setStep(1);
-      setSubStep(1);
     }
   }, [isOpen]);
 
@@ -91,22 +87,19 @@ export function AISizeCheckerModal({
             </div>
           </div>
 
-          {/* Progressive Wizard Step Indicator */}
+          {/* Wizard Step Indicator */}
           <div className="flex items-center gap-3 pt-3">
             <div className="flex-1 flex items-center gap-1.5">
-              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 1 && subStep >= 1 ? "bg-accent" : "bg-muted/50"}`} />
-              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 2 || (step === 1 && subStep >= 2) ? "bg-accent" : "bg-muted/50"}`} />
+              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-accent" : "bg-muted/50"}`} />
               <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-accent" : "bg-muted/50"}`} />
               <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 3 ? "bg-accent" : "bg-muted/50"}`} />
             </div>
             <span className="text-[11px] font-semibold text-muted-foreground shrink-0">
-              {step === 1 && subStep === 1
-                ? "Step 1/3: Body Profile"
-                : step === 1 && subStep === 2
-                ? "Step 2/3: Fit Preference"
+              {step === 1
+                ? "Step 1/2: Body Profile"
                 : step === 2
                 ? "Calculating..."
-                : "Step 3/3: Sizing Result"}
+                : "Step 2/2: Sizing Result"}
             </span>
           </div>
         </DialogHeader>
@@ -115,14 +108,10 @@ export function AISizeCheckerModal({
         <div className="max-h-[68vh] sm:max-h-[480px] overflow-y-auto p-5 sm:p-6 overscroll-contain shrink-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full">
           {step === 1 && (
             <StepMeasurements
-              subStep={subStep}
               selectedGarments={selectedGarments}
               measurements={measurements}
               onChangeMeasurement={handleChangeMeasurement}
-              fitPreference={fitPreference}
-              onSelectFitPreference={setFitPreference}
               onApplyPreset={handleApplyPreset}
-              onGoToSubStep={setSubStep}
               onCalculate={() => setStep(2)}
             />
           )}
@@ -135,10 +124,8 @@ export function AISizeCheckerModal({
             <StepResult
               selectedGarments={selectedGarments}
               measurements={measurements}
-              fitPreference={fitPreference}
               onRecalculate={() => {
                 setStep(1);
-                setSubStep(1);
               }}
               onClose={onClose}
             />
@@ -153,7 +140,6 @@ export function AISizeCheckerModal({
                 type="button"
                 onClick={() => {
                   setStep(1);
-                  setSubStep(1);
                 }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border/80 bg-card hover:bg-muted/40 text-foreground text-xs font-medium transition-all cursor-pointer"
               >
@@ -169,7 +155,7 @@ export function AISizeCheckerModal({
                 Apply Recommended Size{selectedGarments.length > 1 ? "s" : ""}
               </button>
             </>
-          ) : step === 1 && subStep === 1 ? (
+          ) : step === 1 ? (
             <div className="w-full flex items-center justify-between gap-3">
               <button
                 type="button"
@@ -177,25 +163,6 @@ export function AISizeCheckerModal({
                 className="px-4 py-2 rounded-xl border border-border/80 bg-card hover:bg-muted/40 text-foreground text-xs font-medium transition-all cursor-pointer"
               >
                 Cancel
-              </button>
-
-              <button
-                type="submit"
-                form="size-checker-form"
-                className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-xs hover:opacity-90 active:scale-95 transition-all"
-              >
-                <span>Continue to Fit Preference</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ) : step === 1 && subStep === 2 ? (
-            <div className="w-full flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setSubStep(1)}
-                className="px-4 py-2 rounded-xl border border-border/80 bg-card hover:bg-muted/40 text-foreground text-xs font-medium transition-all cursor-pointer"
-              >
-                ← Back
               </button>
 
               <button

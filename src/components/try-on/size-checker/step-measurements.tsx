@@ -6,60 +6,41 @@ import { GarmentItem } from "../garment-selector/garment-selector";
 import { normalizeCategory } from "@/services/outfit-api";
 import { PresetSelector } from "./preset-selector";
 import { MeasurementInputs } from "./measurement-inputs";
-import { FitPreferenceSelector } from "./fit-preference-selector";
 import {
   UnitType,
-  FitPreference,
   BodyMeasurements,
   PresetProfile,
 } from "./types";
 
 interface StepMeasurementsProps {
-  subStep: 1 | 2;
   selectedGarments: GarmentItem[];
   measurements: BodyMeasurements;
   onChangeMeasurement: (field: keyof BodyMeasurements, value: number) => void;
-  fitPreference: FitPreference;
-  onSelectFitPreference: (fit: FitPreference) => void;
+  fitPreference?: string;
+  onSelectFitPreference?: (fit: any) => void;
   onApplyPreset: (preset: PresetProfile) => void;
-  onGoToSubStep: (step: 1 | 2) => void;
   onCalculate: () => void;
 }
 
 export function StepMeasurements({
-  subStep,
   selectedGarments,
   measurements,
   onChangeMeasurement,
-  fitPreference,
-  onSelectFitPreference,
   onApplyPreset,
-  onGoToSubStep,
   onCalculate,
 }: StepMeasurementsProps) {
   const [unit, setUnit] = useState<UnitType>("cm");
-  const [activePresetId, setActivePresetId] = useState<string | null>("regular");
-
-  const handleSelectPreset = (preset: PresetProfile) => {
-    setActivePresetId(preset.id);
-    onApplyPreset(preset);
-  };
 
   const handleCustomMeasurementChange = (
     field: keyof BodyMeasurements,
     value: number
   ) => {
-    setActivePresetId(null);
     onChangeMeasurement(field, value);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (subStep === 1) {
-      onGoToSubStep(2);
-    } else {
-      onCalculate();
-    }
+    onCalculate();
   };
 
   return (
@@ -107,48 +88,15 @@ export function StepMeasurements({
         </div>
       )}
 
-      {/* Sub-Step 1: Body Measurements */}
-      {subStep === 1 && (
-        <div className="space-y-4 animate-in fade-in duration-200">
-          {/* Measurement Inputs Grid */}
-          <MeasurementInputs
-            unit={unit}
-            onUnitChange={setUnit}
-            measurements={measurements}
-            onChangeMeasurement={handleCustomMeasurementChange}
-          />
-        </div>
-      )}
-
-      {/* Sub-Step 2: Fit Preference */}
-      {subStep === 2 && (
-        <div className="space-y-4 animate-in fade-in duration-200">
-          {/* Body Measurements Summary Card */}
-          <div className="p-3 rounded-2xl bg-muted/30 border border-border/70 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
-                Your Measurements Profile
-              </p>
-              <p className="text-xs font-semibold text-foreground mt-0.5">
-                Height: {measurements.height}cm • Chest: {measurements.chest}cm • Waist: {measurements.waist}cm
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onGoToSubStep(1)}
-              className="text-xs text-accent font-semibold hover:underline cursor-pointer shrink-0"
-            >
-              Edit
-            </button>
-          </div>
-
-          {/* Fit Preference Selector */}
-          <FitPreferenceSelector
-            fitPreference={fitPreference}
-            onSelectFitPreference={onSelectFitPreference}
-          />
-        </div>
-      )}
+      {/* Body Measurements Inputs */}
+      <div className="space-y-4 animate-in fade-in duration-200">
+        <MeasurementInputs
+          unit={unit}
+          onUnitChange={setUnit}
+          measurements={measurements}
+          onChangeMeasurement={handleCustomMeasurementChange}
+        />
+      </div>
     </form>
   );
 }
