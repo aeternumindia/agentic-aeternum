@@ -88,10 +88,10 @@ function getRelevantKeys(productType: string): string[] {
       t.includes(k)
     );
   if (isBottom) return ["waist", "hips"];
-  return ["chest", "waist"];
+  return ["chest", "shoulder", "length", "sleeve"];
 }
 
-function detectUnit(sizes: string[][], headers?: string[]): "in" | "cm" {
+export function detectUnit(sizes: string[][], headers?: string[]): "in" | "cm" {
   if (headers) {
     const hStr = headers.join(" ").toLowerCase();
     if (hStr.includes("(in)") || hStr.includes("inch") || hStr.includes("inches")) {
@@ -276,7 +276,7 @@ export function findRecommendedSize(
       diff += Math.abs(chest - mid);
       count++;
     }
-    if (waist) {
+    if (waist && isBottom) {
       const mid = (range.waist[0] + range.waist[1]) / 2;
       diff += Math.abs(waist - mid);
       count++;

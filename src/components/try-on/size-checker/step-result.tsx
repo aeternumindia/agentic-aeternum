@@ -9,6 +9,7 @@ import {
   genericFitScore,
   calculateFitScore,
   isSizeMatch,
+  detectUnit,
 } from "@/services/virtual-try-on";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import apiClient, { getSizeChart } from "@/services/api";
@@ -254,20 +255,25 @@ export function StepResult({
     return `${Math.round(cmVal)} cm`;
   };
 
-  const convertCellText = (cellStr: string) => {
+  const convertCellText = (
+    cellStr: string,
+    chartNativeUnit: "in" | "cm" = "cm"
+  ) => {
     if (!cellStr) return cellStr;
+    if (chartNativeUnit === displayUnit) return cellStr;
+
     const numbers = cellStr.match(/\d+(?:\.\d+)?/g);
     if (!numbers) return cellStr;
     let result = cellStr;
     for (const numStr of numbers) {
       const num = parseFloat(numStr);
       if (isNaN(num)) continue;
-      if (displayUnit === "in" && num > 50) {
-        const inVal = Math.round((num / 2.54) * 10) / 10;
-        result = result.replace(numStr, String(inVal));
-      } else if (displayUnit === "cm" && num <= 50 && num > 10) {
+      if (chartNativeUnit === "in" && displayUnit === "cm") {
         const cmVal = Math.round(num * 2.54);
         result = result.replace(numStr, String(cmVal));
+      } else if (chartNativeUnit === "cm" && displayUnit === "in") {
+        const inVal = Math.round((num / 2.54) * 10) / 10;
+        result = result.replace(numStr, String(inVal));
       }
     }
     return result;
@@ -371,19 +377,19 @@ export function StepResult({
       {garmentResults.length > 1 && (
         <div className="space-y-3">
           {/* Complete Outfit Sizing Summary Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-navy/90 to-black text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-neutral-900 border border-neutral-800 text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-amber-300 shrink-0">
+              <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
                 <Shirt className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-bold text-amber-300 tracking-wider">
+                <p className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
                   Complete Outfit Recommended Sizing
                 </p>
-                <div className="flex items-center gap-3 text-xs font-bold mt-0.5">
+                <div className="flex items-center gap-3 text-xs font-bold mt-0.5 text-white">
                   {garmentResults.map((res, i) => (
                     <span key={i} className="flex items-center gap-1">
-                      <span className="text-white/70 font-normal">
+                      <span className="text-neutral-300 font-normal">
                         {i === 0 ? "Top:" : "Bottom:"}
                       </span>{" "}
                       Size {res.recommendedSize}
@@ -444,7 +450,7 @@ export function StepResult({
                       {idx === 0 ? "Top Garment" : "Bottom Garment"}
                     </p>
                     <p className="text-xs font-bold truncate">
-                      Size {res.recommendedSize} ({res.fitScore.overall}%)
+                      Size {res.recommendedSize} • <span className="font-normal opacity-80">{res.fitScore.label}</span>
                     </p>
                   </div>
                 </button>
@@ -561,13 +567,9 @@ export function StepResult({
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs shrink-0 min-w-[120px]">
-              <span className="text-2xl font-extrabold text-foreground">
-                {activeResult.fitScore.overall}%
-              </span>
-              <span className="text-[10px] uppercase font-bold text-accent tracking-wider">
-                {activeResult.fitScore.label}
-              </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold shrink-0">
+              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>{activeResult.fitScore.label}</span>
             </div>
           </div>
 
@@ -599,9 +601,9 @@ export function StepResult({
                     }
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
                       isSelected && isRec
-                        ? "bg-accent/20 border-2 border-accent text-accent-foreground shadow-xs scale-102"
+                        ? "bg-black text-white border-2 border-amber-600 shadow-sm scale-102"
                         : isSelected
-                        ? "bg-primary/15 border-2 border-primary text-primary font-extrabold shadow-xs scale-102"
+                        ? "bg-black text-white border-2 border-neutral-800 shadow-sm scale-102"
                         : isRec
                         ? "bg-amber-500/10 border border-amber-500/40 text-amber-900 dark:text-amber-300 hover:bg-amber-500/20"
                         : "bg-card border-border/80 text-muted-foreground hover:border-foreground/40 hover:text-foreground hover:bg-muted/30"
@@ -609,12 +611,18 @@ export function StepResult({
                   >
                     <span>Size {sz}</span>
                     {isRec && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/25 text-accent font-bold uppercase">
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                          isSelected
+                            ? "bg-amber-500/30 text-amber-300"
+                            : "bg-accent/25 text-accent"
+                        }`}
+                      >
                         AI Rec
                       </span>
                     )}
                     {isSelected && !isRec && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase">
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/20 text-white font-bold uppercase">
                         Selected
                       </span>
                     )}
@@ -624,17 +632,7 @@ export function StepResult({
             </div>
           </div>
 
-          {/* Visual Fit Scale Indicator */}
-          <div className="space-y-1.5 p-3.5 bg-card rounded-xl border border-border/70">
-            <div className="flex justify-between text-[11px] font-medium text-muted-foreground">
-              <span>Snug / Tight</span>
-              <span className="font-bold text-foreground">Ideal Fit Curve</span>
-              <span>Loose / Oversized</span>
-            </div>
-            <div className="w-full bg-muted/40 h-2 rounded-full relative overflow-hidden flex items-center">
-              <div className="absolute left-1/2 -translate-x-1/2 w-8 h-full bg-accent rounded-full opacity-90 shadow-2xs" />
-            </div>
-          </div>
+
 
           {/* Measurement Comparison Breakdown */}
           {activeResult.comparisonRows.length > 0 && (
@@ -706,7 +704,7 @@ export function StepResult({
                     </div>
 
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 border-t border-border/40 text-xs">
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
                       {/* Metric 1: User Body Measurement */}
                       <div className="bg-muted/30 p-2.5 rounded-xl border border-border/50">
                         <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
@@ -717,19 +715,9 @@ export function StepResult({
                         </span>
                       </div>
 
-                      {/* Metric 2: Ideal Body Range */}
-                      <div className="bg-muted/30 p-2.5 rounded-xl border border-border/50">
-                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
-                          Ideal Body Range
-                        </span>
-                        <span className="font-bold text-foreground text-xs mt-0.5 block">
-                          {formatVal(row.sizeRange.min)} – {formatVal(row.sizeRange.max)}
-                        </span>
-                      </div>
-
-                      {/* Metric 3: Garment Spec */}
+                      {/* Metric 2: Garment Spec */}
                       {row.garmentValue ? (
-                        <div className="bg-accent/10 p-2.5 rounded-xl border border-accent/25 col-span-2 sm:col-span-1">
+                        <div className="bg-accent/10 p-2.5 rounded-xl border border-accent/25">
                           <span className="text-[10px] text-accent uppercase font-bold block">
                             Garment Spec ({activeResult.activeSize})
                           </span>
@@ -745,13 +733,7 @@ export function StepResult({
             </div>
           )}
 
-          {/* AI Stylist Note */}
-          <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 flex items-start gap-3 text-xs text-muted-foreground">
-            <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong>Stylist Advice:</strong> {activeResult.fitScore.description} For <strong>{activeResult.garment.name}</strong>, Size <strong>{activeResult.recommendedSize}</strong> delivers an optimal luxury fit.
-            </p>
-          </div>
+
 
           {/* Product Size Chart Table */}
           <div className="space-y-2.5 pt-1">
@@ -789,38 +771,136 @@ export function StepResult({
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-border/80 bg-card shadow-2xs">
-              {activeResult.sizeChart?.chartData?.headers && activeResult.sizeChart.chartData.sizes ? (
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-muted/50 border-b border-border/70 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                      {activeResult.sizeChart.chartData.headers.map((h, i) => (
-                        <th key={i} className="px-3.5 py-2.5">
-                          {h} ({displayUnit})
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
-                    {activeResult.sizeChart.chartData.sizes.map((row, rIdx) => {
-                      const rowLabel = row[0] || "";
-                      const isRecommended = isSizeMatch(rowLabel, activeResult.recommendedSize);
-                      const isSelected = isSizeMatch(rowLabel, activeResult.activeSize);
-                      return (
-                        <tr
-                          key={rIdx}
-                          className={`transition-colors ${
-                            isRecommended && isSelected
-                              ? "bg-accent/20 font-semibold text-foreground border-l-2 border-accent"
-                              : isRecommended
-                              ? "bg-accent/15 font-semibold text-foreground"
-                              : isSelected
-                              ? "bg-primary/10 font-semibold text-foreground border-l-2 border-primary"
-                              : "hover:bg-muted/30 text-muted-foreground"
-                          }`}
-                        >
-                          {row.map((cell, cIdx) => (
-                            <td key={cIdx} className="px-3.5 py-2.5 whitespace-nowrap">
-                              {cIdx === 0 ? (
+              {activeResult.sizeChart?.chartData?.headers && activeResult.sizeChart.chartData.sizes ? (() => {
+                const chartNativeUnit = detectUnit(
+                  activeResult.sizeChart.chartData.sizes,
+                  activeResult.sizeChart.chartData.headers
+                );
+                return (
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-muted/50 border-b border-border/70 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                        {activeResult.sizeChart.chartData.headers.map((h, i) => (
+                          <th key={i} className="px-3.5 py-2.5">
+                            {h} ({displayUnit})
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60">
+                      {activeResult.sizeChart.chartData.sizes.map((row, rIdx) => {
+                        const rowLabel = row[0] || "";
+                        const isRecommended = isSizeMatch(rowLabel, activeResult.recommendedSize);
+                        const isSelected = isSizeMatch(rowLabel, activeResult.activeSize);
+                        return (
+                          <tr
+                            key={rIdx}
+                            className={`transition-colors ${
+                              isRecommended && isSelected
+                                ? "bg-accent/20 font-semibold text-foreground border-l-2 border-accent"
+                                : isRecommended
+                                ? "bg-accent/15 font-semibold text-foreground"
+                                : isSelected
+                                ? "bg-primary/10 font-semibold text-foreground border-l-2 border-primary"
+                                : "hover:bg-muted/30 text-muted-foreground"
+                            }`}
+                          >
+                            {row.map((cell, cIdx) => (
+                              <td key={cIdx} className="px-3.5 py-2.5 whitespace-nowrap">
+                                {cIdx === 0 ? (
+                                  <span className="inline-flex items-center gap-1 flex-wrap">
+                                    {(isRecommended || isSelected) && (
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full ${
+                                          isRecommended ? "bg-accent" : "bg-primary"
+                                        }`}
+                                      />
+                                    )}
+                                    <strong className="text-foreground">{cell}</strong>
+                                    {isRecommended && (
+                                      <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-accent/20 text-accent font-bold uppercase">
+                                        AI Rec
+                                      </span>
+                                    )}
+                                    {isSelected && (
+                                      <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase">
+                                        Selected
+                                      </span>
+                                    )}
+                                  </span>
+                                ) : (
+                                  convertCellText(cell, chartNativeUnit)
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                );
+              })() : (
+                /* Fallback Standard Size Chart Table */
+                (() => {
+                  const isBottomCat =
+                    activeResult.category.toLowerCase().includes("pant") ||
+                    activeResult.category.toLowerCase().includes("jean") ||
+                    activeResult.category.toLowerCase().includes("trouser") ||
+                    activeResult.category.toLowerCase().includes("short") ||
+                    activeResult.category.toLowerCase().includes("skirt") ||
+                    activeResult.category.toLowerCase().includes("bottom");
+                  return (
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-muted/50 border-b border-border/70 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                          <th className="px-3.5 py-2.5">Size</th>
+                          {isBottomCat ? (
+                            <>
+                              <th className="px-3.5 py-2.5">Waist ({displayUnit})</th>
+                              <th className="px-3.5 py-2.5">Hips ({displayUnit})</th>
+                            </>
+                          ) : (
+                            <th className="px-3.5 py-2.5">Chest ({displayUnit})</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {Object.entries(
+                          isBottomCat
+                            ? {
+                                "28": { waist: [66, 71], hips: [89, 94] },
+                                "30": { waist: [71, 76], hips: [94, 99] },
+                                "32": { waist: [76, 81], hips: [99, 104] },
+                                "34": { waist: [81, 86], hips: [104, 109] },
+                                "36": { waist: [86, 91], hips: [109, 114] },
+                                "38": { waist: [91, 96], hips: [114, 119] },
+                                "40": { waist: [96, 101], hips: [119, 124] },
+                              }
+                            : {
+                                XS: { chest: [81, 86] },
+                                S: { chest: [86, 91] },
+                                M: { chest: [91, 96] },
+                                L: { chest: [96, 101] },
+                                XL: { chest: [101, 106] },
+                                XXL: { chest: [106, 111] },
+                              }
+                        ).map(([szLabel, range]: [string, any]) => {
+                          const isRecommended = isSizeMatch(szLabel, activeResult.recommendedSize);
+                          const isSelected = isSizeMatch(szLabel, activeResult.activeSize);
+                          return (
+                            <tr
+                              key={szLabel}
+                              className={`transition-colors ${
+                                isRecommended && isSelected
+                                  ? "bg-accent/20 font-semibold text-foreground border-l-2 border-accent"
+                                  : isRecommended
+                                  ? "bg-accent/15 font-semibold text-foreground"
+                                  : isSelected
+                                  ? "bg-primary/10 font-semibold text-foreground border-l-2 border-primary"
+                                  : "hover:bg-muted/30 text-muted-foreground"
+                              }`}
+                            >
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">
                                 <span className="inline-flex items-center gap-1 flex-wrap">
                                   {(isRecommended || isSelected) && (
                                     <span
@@ -829,7 +909,7 @@ export function StepResult({
                                       }`}
                                     />
                                   )}
-                                  <strong className="text-foreground">{cell}</strong>
+                                  <strong className="text-foreground">{szLabel}</strong>
                                   {isRecommended && (
                                     <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-accent/20 text-accent font-bold uppercase">
                                       AI Rec
@@ -841,98 +921,22 @@ export function StepResult({
                                     </span>
                                   )}
                                 </span>
+                              </td>
+                              {isBottomCat ? (
+                                <>
+                                  <td className="px-3.5 py-2.5 whitespace-nowrap">{formatVal(range.waist[0])}–{formatVal(range.waist[1])}</td>
+                                  <td className="px-3.5 py-2.5 whitespace-nowrap">{formatVal(range.hips[0])}–{formatVal(range.hips[1])}</td>
+                                </>
                               ) : (
-                                convertCellText(cell)
+                                <td className="px-3.5 py-2.5 whitespace-nowrap">{formatVal(range.chest[0])}–{formatVal(range.chest[1])}</td>
                               )}
-                            </td>
-                          ))}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : (
-                /* Fallback Standard Size Chart Table */
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-muted/50 border-b border-border/70 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                      <th className="px-3.5 py-2.5">Size</th>
-                      <th className="px-3.5 py-2.5">Chest ({displayUnit})</th>
-                      <th className="px-3.5 py-2.5">Waist ({displayUnit})</th>
-                      <th className="px-3.5 py-2.5">Hips ({displayUnit})</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/60">
-                    {Object.entries(
-                      activeResult.category.toLowerCase().includes("pant") ||
-                      activeResult.category.toLowerCase().includes("jean") ||
-                      activeResult.category.toLowerCase().includes("trouser") ||
-                      activeResult.category.toLowerCase().includes("short") ||
-                      activeResult.category.toLowerCase().includes("skirt") ||
-                      activeResult.category.toLowerCase().includes("bottom")
-                        ? {
-                            "28": { chest: [84, 89], waist: [66, 71], hips: [89, 94] },
-                            "30": { chest: [89, 94], waist: [71, 76], hips: [94, 99] },
-                            "32": { chest: [94, 99], waist: [76, 81], hips: [99, 104] },
-                            "34": { chest: [99, 104], waist: [81, 86], hips: [104, 109] },
-                            "36": { chest: [104, 109], waist: [86, 91], hips: [109, 114] },
-                            "38": { chest: [109, 114], waist: [91, 96], hips: [114, 119] },
-                            "40": { chest: [114, 119], waist: [96, 101], hips: [119, 124] },
-                          }
-                        : {
-                            XS: { chest: [81, 86], waist: [61, 66], hips: [86, 91] },
-                            S: { chest: [86, 91], waist: [66, 71], hips: [91, 96] },
-                            M: { chest: [91, 96], waist: [71, 76], hips: [96, 101] },
-                            L: { chest: [96, 101], waist: [76, 81], hips: [101, 106] },
-                            XL: { chest: [101, 106], waist: [81, 86], hips: [106, 111] },
-                            XXL: { chest: [106, 111], waist: [86, 91], hips: [111, 116] },
-                          }
-                    ).map(([szLabel, range]) => {
-                      const isRecommended = isSizeMatch(szLabel, activeResult.recommendedSize);
-                      const isSelected = isSizeMatch(szLabel, activeResult.activeSize);
-                      return (
-                        <tr
-                          key={szLabel}
-                          className={`transition-colors ${
-                            isRecommended && isSelected
-                              ? "bg-accent/20 font-semibold text-foreground border-l-2 border-accent"
-                              : isRecommended
-                              ? "bg-accent/15 font-semibold text-foreground"
-                              : isSelected
-                              ? "bg-primary/10 font-semibold text-foreground border-l-2 border-primary"
-                              : "hover:bg-muted/30 text-muted-foreground"
-                          }`}
-                        >
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 flex-wrap">
-                              {(isRecommended || isSelected) && (
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full ${
-                                    isRecommended ? "bg-accent" : "bg-primary"
-                                  }`}
-                                />
-                              )}
-                              <strong className="text-foreground">{szLabel}</strong>
-                              {isRecommended && (
-                                <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-accent/20 text-accent font-bold uppercase">
-                                  AI Rec
-                                </span>
-                              )}
-                              {isSelected && (
-                                <span className="ml-1 text-[9px] px-1.5 py-0.5 rounded bg-primary/20 text-primary font-bold uppercase">
-                                  Selected
-                                </span>
-                              )}
-                            </span>
-                          </td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{formatVal(range.chest[0])}–{formatVal(range.chest[1])}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{formatVal(range.waist[0])}–{formatVal(range.waist[1])}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{formatVal(range.hips[0])}–{formatVal(range.hips[1])}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  );
+                })()
               )}
             </div>
           </div>
