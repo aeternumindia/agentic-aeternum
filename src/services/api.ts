@@ -94,7 +94,9 @@ export type TryOnRequestParams = {
   personImage: File | string;
   faceImage?: File | string | null;
   garmentImage: File | string;
+  topReferenceImages?: (File | string)[];
   bottomGarmentImage?: File | string | null;
+  bottomReferenceImages?: (File | string)[];
 };
 
 export async function generateTryOnImage(
@@ -121,6 +123,13 @@ export async function generateTryOnImage(
   formData.append("personImage", personFile);
   formData.append("garmentImage", garmentFile);
 
+  if (params.topReferenceImages && params.topReferenceImages.length > 0) {
+    for (let i = 0; i < Math.min(params.topReferenceImages.length, 2); i++) {
+      const topRefFile = await toFile(params.topReferenceImages[i], `top-ref-${i + 1}.jpg`);
+      formData.append("topReferenceImages", topRefFile);
+    }
+  }
+
   if (params.faceImage) {
     const faceFile = await toFile(params.faceImage, "face.jpg");
     formData.append("faceImage", faceFile);
@@ -136,6 +145,13 @@ export async function generateTryOnImage(
       "bottom-garment.jpg"
     );
     formData.append("bottomGarmentImage", bottomFile);
+
+    if (params.bottomReferenceImages && params.bottomReferenceImages.length > 0) {
+      for (let i = 0; i < Math.min(params.bottomReferenceImages.length, 2); i++) {
+        const bottomRefFile = await toFile(params.bottomReferenceImages[i], `bottom-ref-${i + 1}.jpg`);
+        formData.append("bottomReferenceImages", bottomRefFile);
+      }
+    }
   }
 
   const res = await fetch(`${API_BASE}/api/try-on/image`, {

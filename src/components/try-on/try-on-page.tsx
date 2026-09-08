@@ -222,11 +222,21 @@ const TryOnPage = () => {
           ? selectedGarmentItems[1]
           : null;
 
+      const topReferences = topGarment?.images && topGarment.images.length > 1
+        ? topGarment.images.slice(1, 3)
+        : undefined;
+
+      const bottomReferences = bottomGarment?.images && bottomGarment.images.length > 1
+        ? bottomGarment.images.slice(1, 3)
+        : undefined;
+
       const resultUrl = await generateTryOnImage({
         personImage: personSource,
         faceImage: faceSource,
         garmentImage: topGarment.image,
+        topReferenceImages: topReferences,
         bottomGarmentImage: bottomGarment?.image || null,
+        bottomReferenceImages: bottomReferences,
       });
 
       setTryOnResultImage(resultUrl);
