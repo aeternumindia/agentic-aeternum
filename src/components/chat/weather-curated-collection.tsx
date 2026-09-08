@@ -141,9 +141,6 @@ export function WeatherCuratedCollection({
             <Thermometer className="w-3 h-3 text-accent" />
             Curated Climate Edit for {weather.city} ({weather.tempC}°C)
           </span>
-          <span className="text-[10px] text-muted-foreground font-medium">
-            Aeternum Catalogue
-          </span>
         </div>
 
         {loading ? (
