@@ -83,16 +83,16 @@ export function MeasurementInputs({
     <div className="space-y-3">
       {/* Header with Unit Switcher */}
       <div className="flex items-center justify-between">
-        <label className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground">
+        <label className="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider text-muted-foreground">
           Body Measurements
         </label>
 
         {/* Unit Switcher */}
-        <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60 text-xs">
+        <div className="flex items-center gap-1 bg-muted/40 p-0.5 sm:p-1 rounded-lg border border-border/60 text-xs">
           <button
             type="button"
             onClick={() => onUnitChange("cm")}
-            className={`px-2.5 py-0.5 rounded-md font-semibold text-[11px] transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-0.5 rounded-md font-semibold text-[10px] sm:text-[11px] transition-all cursor-pointer ${
               unit === "cm"
                 ? "bg-card text-foreground shadow-2xs border border-border/80"
                 : "text-muted-foreground hover:text-foreground"
@@ -103,7 +103,7 @@ export function MeasurementInputs({
           <button
             type="button"
             onClick={() => onUnitChange("in")}
-            className={`px-2.5 py-0.5 rounded-md font-semibold text-[11px] transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-0.5 rounded-md font-semibold text-[10px] sm:text-[11px] transition-all cursor-pointer ${
               unit === "in"
                 ? "bg-card text-foreground shadow-2xs border border-border/80"
                 : "text-muted-foreground hover:text-foreground"
@@ -115,11 +115,11 @@ export function MeasurementInputs({
       </div>
 
       {/* Grid of Inputs */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
         {/* Height Input */}
-        <div className="space-y-1 bg-card p-3 rounded-xl border border-border/70 shadow-2xs">
+        <div className="space-y-1 bg-card p-2.5 sm:p-3 rounded-xl border border-border/70 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground">
               Height ({unit})
             </span>
           </div>
@@ -129,14 +129,14 @@ export function MeasurementInputs({
             required
             value={displayValues.height}
             onChange={(e) => handleInputChange("height", e.target.value)}
-            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-2.5 py-1 sm:py-1.5 text-[11px] sm:text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
 
         {/* Chest Input */}
-        <div className="space-y-1 bg-card p-3 rounded-xl border border-border/70 shadow-2xs">
+        <div className="space-y-1 bg-card p-2.5 sm:p-3 rounded-xl border border-border/70 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground">
               Chest / Bust ({unit})
             </span>
           </div>
@@ -146,14 +146,14 @@ export function MeasurementInputs({
             required
             value={displayValues.chest}
             onChange={(e) => handleInputChange("chest", e.target.value)}
-            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-2.5 py-1 sm:py-1.5 text-[11px] sm:text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
 
         {/* Waist Input */}
-        <div className="space-y-1 bg-card p-3 rounded-xl border border-border/70 shadow-2xs">
+        <div className="space-y-1 bg-card p-2.5 sm:p-3 rounded-xl border border-border/70 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground">
               Waist ({unit})
             </span>
           </div>
@@ -163,14 +163,14 @@ export function MeasurementInputs({
             required
             value={displayValues.waist}
             onChange={(e) => handleInputChange("waist", e.target.value)}
-            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-2.5 py-1 sm:py-1.5 text-[11px] sm:text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
 
         {/* Hips Input */}
-        <div className="space-y-1 bg-card p-3 rounded-xl border border-border/70 shadow-2xs">
+        <div className="space-y-1 bg-card p-2.5 sm:p-3 rounded-xl border border-border/70 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-foreground">
+            <span className="text-[11px] sm:text-xs font-semibold text-foreground">
               Hips ({unit})
             </span>
           </div>
@@ -180,13 +180,13 @@ export function MeasurementInputs({
             required
             value={displayValues.hips}
             onChange={(e) => handleInputChange("hips", e.target.value)}
-            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-3 py-1.5 text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full bg-muted/20 border border-border/80 focus:border-foreground/60 rounded-lg px-2.5 py-1 sm:py-1.5 text-[11px] sm:text-xs text-foreground font-medium focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
       </div>
 
       {/* Measurement tip info banner */}
-      <div className="p-2.5 rounded-xl bg-muted/20 border border-border/50 flex items-start gap-2 text-[11px] text-muted-foreground">
+      <div className="p-2 sm:p-2.5 rounded-xl bg-muted/20 border border-border/50 flex items-start gap-2 text-[10px] sm:text-[11px] text-muted-foreground">
         <Info className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
         <p className="leading-tight">
           <strong>How to measure:</strong> Wrap tape comfortably around fullest part of chest and natural waist. Keep tape level.

@@ -47,11 +47,11 @@ export function StepCalculating({ onComplete }: StepCalculatingProps) {
         <div className="absolute inset-0 rounded-full border-2 border-accent/30 animate-ping" />
       </div>
 
-      <div className="space-y-2 max-w-sm">
-        <h3 className="text-base font-semibold text-foreground">
+      <div className="space-y-1.5 max-w-sm">
+        <h3 className="text-sm sm:text-base font-semibold text-foreground">
           Evaluating Fit & Sizing Curves
         </h3>
-        <p className="text-xs text-muted-foreground transition-all duration-200">
+        <p className="text-[11px] sm:text-xs text-muted-foreground transition-all duration-200">
           {steps[calcStepIndex]}
         </p>
       </div>
@@ -64,7 +64,7 @@ export function StepCalculating({ onComplete }: StepCalculatingProps) {
         />
       </div>
 
-      <div className="flex items-center gap-4 text-[11px] text-muted-foreground pt-2">
+      <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] text-muted-foreground pt-2">
         <span className="flex items-center gap-1">
           <ShieldCheck className="w-3.5 h-3.5 text-accent" /> Guaranteed Accuracy
         </span>

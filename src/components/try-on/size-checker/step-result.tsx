@@ -208,17 +208,19 @@ export function StepResult({
       sizeChart: sizeChart,
     };
 
-    const fitResult = calculateFitScore(session);
+    const effectiveAvailableSizes =
+      availableSizeLabels.length > 0
+        ? availableSizeLabels
+        : ["XS", "S", "M", "L", "XL", "XXL"];
+
+    const fitResult = calculateFitScore(session, effectiveAvailableSizes);
 
     return {
       garment,
       category,
       recommendedSize,
       activeSize,
-      availableSizeLabels:
-        availableSizeLabels.length > 0
-          ? availableSizeLabels
-          : ["XS", "S", "M", "L", "XL", "XXL"],
+      availableSizeLabels: effectiveAvailableSizes,
       fitScore: fitResult.fitScore,
       comparisonRows: fitResult.comparisonRows,
       variantData: { variants: details.variants, loading: details.loading },
@@ -450,9 +452,9 @@ export function StepResult({
       {/* Primary Recommended Size Hero Banner for Active Garment */}
       {activeResult && (
         <>
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-card via-muted/20 to-accent/10 border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-card via-muted/20 to-accent/10 border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-5">
             <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 text-accent text-[10px] font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 text-accent text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
                 <ShieldCheck className="w-3 h-3" />
                 <span>
                   {isSizeMatch(activeResult.activeSize, activeResult.recommendedSize)
@@ -460,17 +462,17 @@ export function StepResult({
                     : `Inspecting Size ${activeResult.activeSize} (AI Rec: Size ${activeResult.recommendedSize})`}
                 </span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
                 Size {activeResult.activeSize}
               </h3>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
                 {activeResult.garment.name}
               </p>
 
               {/* Add Active Size to Cart Button */}
-              <div className="pt-2">
+              <div className="pt-1.5 sm:pt-2">
                 {activeResult.variantData?.loading ? (
-                  <div className="inline-flex items-center gap-2 py-2.5 px-4 text-xs text-muted-foreground bg-muted/40 rounded-xl">
+                  <div className="inline-flex items-center gap-2 py-2 px-3.5 sm:py-2.5 sm:px-4 text-[11px] sm:text-xs text-muted-foreground bg-muted/40 rounded-xl">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     <span>Checking size availability in Shopify...</span>
                   </div>
@@ -486,7 +488,7 @@ export function StepResult({
                       )
                     }
                     disabled={addingIndex === activeGarmentIndex}
-                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all disabled:opacity-50 ${
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-4 sm:px-5 rounded-xl text-[11px] sm:text-xs font-semibold cursor-pointer shadow-xs transition-all disabled:opacity-50 ${
                       addedIndices.includes(activeGarmentIndex)
                         ? "bg-emerald-600 text-white hover:bg-emerald-700"
                         : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
@@ -554,10 +556,27 @@ export function StepResult({
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold shrink-0">
-              <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>{activeResult.fitScore.label}</span>
-            </div>
+            {!activeResult.isAvailable ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-semibold shrink-0">
+                <Info className="w-3.5 h-3.5 text-amber-600" />
+                <span>{activeResult.isOffered ? "Out of Stock" : "Not Offered"}</span>
+              </div>
+            ) : activeResult.fitScore.quality === "too_loose" || activeResult.fitScore.quality === "consider_sizing_down" ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-semibold shrink-0">
+                <Info className="w-3.5 h-3.5 text-amber-600" />
+                <span>{activeResult.fitScore.label}</span>
+              </div>
+            ) : activeResult.fitScore.quality === "too_tight" || activeResult.fitScore.quality === "consider_sizing_up" ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 text-red-800 dark:text-red-300 border border-red-500/30 text-xs font-semibold shrink-0">
+                <Info className="w-3.5 h-3.5 text-red-600" />
+                <span>{activeResult.fitScore.label}</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold shrink-0">
+                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>{activeResult.fitScore.label}</span>
+              </div>
+            )}
           </div>
 
           {/* Size Comparison & Selection Tabs Bar */}
@@ -572,7 +591,10 @@ export function StepResult({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+            <div
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none no-scrollbar [&::-webkit-scrollbar]:hidden"
+            >
               {activeResult.availableSizeLabels.map((sz) => {
                 const isRec = isSizeMatch(sz, activeResult.recommendedSize);
                 const isSelected = isSizeMatch(sz, activeResult.activeSize);
@@ -668,7 +690,12 @@ export function StepResult({
                         {row.label}
                       </span>
                       <div>
-                        {row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus) ? (
+                        {!activeResult.isAvailable ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-bold">
+                            <Info className="w-3 h-3" />
+                            {activeResult.isOffered ? "Out of Stock" : "Not Offered"}
+                          </span>
+                        ) : row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus) ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                             <Check className="w-3 h-3" />
                             Optimal Fit
@@ -929,6 +956,176 @@ export function StepResult({
           </div>
         </>
       )}
+
+      {/* Sticky Bottom Action Bar */}
+      <div className="sticky bottom-0 -mx-4 sm:-mx-6 p-3 sm:p-4 border-t border-border bg-card shadow-md flex items-center justify-between gap-2.5 sm:gap-3 shrink-0 z-20">
+        <button
+          type="button"
+          onClick={onRecalculate}
+          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-border/80 bg-card hover:bg-muted/40 text-foreground text-[11px] sm:text-xs font-medium transition-all cursor-pointer shrink-0"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Recalculate</span>
+        </button>
+
+        {selectedGarments.length > 1 ? (
+          /* Multi-garment / Outfit Add to Cart */
+          <button
+            type="button"
+            onClick={handleAddAllToCart}
+            disabled={addingAll}
+            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+              addedAll
+                ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+            }`}
+          >
+            {addingAll ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Adding Outfit to Cart...</span>
+              </>
+            ) : addedAll ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-white font-bold" />
+                <span>Outfit Added to Cart ✓</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>
+                  Add Recommended Sizes (
+                  {garmentResults
+                    .map((r) =>
+                      r.isAvailable
+                        ? r.activeSize
+                        : r.closestSizeLabel || r.activeSize
+                    )
+                    .join(", ")}
+                  ) to Cart
+                </span>
+              </>
+            )}
+          </button>
+        ) : (
+          /* Single garment Add to Cart (Recommended or Closest In-Stock) */
+          (() => {
+            const activeResult = garmentResults[activeGarmentIndex] || garmentResults[0];
+            if (!activeResult) return null;
+
+            if (activeResult.variantData?.loading) {
+              return (
+                <button
+                  type="button"
+                  disabled
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-muted text-muted-foreground text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 opacity-70 cursor-not-allowed"
+                >
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Checking Availability...</span>
+                </button>
+              );
+            }
+
+            // Recommended / Active size is in stock
+            if (activeResult.isAvailable && activeResult.variantId) {
+              const isAdding = addingIndex === activeGarmentIndex;
+              const isAdded = addedIndices.includes(activeGarmentIndex);
+
+              return (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleAddSingleToCart(
+                      activeResult.garment,
+                      activeResult.variantId,
+                      activeResult.activeSize,
+                      activeGarmentIndex
+                    )
+                  }
+                  disabled={isAdding}
+                  className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+                    isAdded
+                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                      : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+                  }`}
+                >
+                  {isAdding ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Adding Size {activeResult.activeSize}...</span>
+                    </>
+                  ) : isAdded ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-white font-bold" />
+                      <span>Size {activeResult.activeSize} Added to Cart ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Add Size {activeResult.activeSize} to Cart</span>
+                    </>
+                  )}
+                </button>
+              );
+            }
+
+            // Recommended size is out of stock, but closest size is available
+            if (activeResult.closestInStockVariant && activeResult.closestSizeLabel) {
+              const isAdding = addingIndex === activeGarmentIndex;
+              const isAdded = addedIndices.includes(activeGarmentIndex);
+
+              return (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleAddSingleToCart(
+                      activeResult.garment,
+                      activeResult.closestInStockVariant.id,
+                      activeResult.closestSizeLabel!,
+                      activeGarmentIndex
+                    )
+                  }
+                  disabled={isAdding}
+                  className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+                    isAdded
+                      ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                      : "bg-amber-600 hover:bg-amber-500 text-white active:scale-95"
+                  }`}
+                >
+                  {isAdding ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Adding Closest Size {activeResult.closestSizeLabel}...</span>
+                    </>
+                  ) : isAdded ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-white font-bold" />
+                      <span>Closest Size {activeResult.closestSizeLabel} Added ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Add Closest Size {activeResult.closestSizeLabel} to Cart</span>
+                    </>
+                  )}
+                </button>
+              );
+            }
+
+            // Completely out of stock
+            return (
+              <button
+                type="button"
+                disabled
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-muted text-muted-foreground text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 opacity-60 cursor-not-allowed"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Size {activeResult.activeSize} Out of Stock</span>
+              </button>
+            );
+          })()
+        )}
+      </div>
     </div>
   );
 }

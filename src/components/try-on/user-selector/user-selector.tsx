@@ -106,7 +106,7 @@ export function UserSelector({
         </div>
 
         {/* Canvas Preview Viewport (Strict 3:4 Portrait Aspect Ratio Always, Dynamic Height Scaling) */}
-        <div className="border border-border/80 rounded-2xl overflow-hidden bg-muted/20 relative shadow-inner aspect-[3/4] w-full max-h-[calc(100dvh-17.5rem)] md:max-h-none mx-auto flex items-center justify-center">
+        <div className="border border-border/80 rounded-2xl overflow-hidden bg-muted/20 relative shadow-inner aspect-[3/4] w-full max-h-[calc(100dvh-17.5rem)] md:max-h-[calc(100vh-21.5rem)] min-h-[240px] mx-auto flex items-center justify-center">
           <div className="w-full h-full flex items-center justify-center relative">
             {isGenerating ? (
               <div className="absolute inset-0 bg-card/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-4 z-20">

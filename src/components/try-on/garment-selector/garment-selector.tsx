@@ -138,13 +138,13 @@ export function GarmentSelector({
     <div
       style={{ flex: "2 1 480px", minWidth: "320px" }}
       className={cn(
-        "hidden md:flex flex-col justify-between border border-border/80 bg-card/95 rounded-3xl p-6 sm:p-7 shadow-xs gap-6 self-start backdrop-blur-sm",
+        "hidden md:flex flex-col justify-between border border-border/80 bg-card/95 rounded-3xl p-4 sm:p-5 md:p-6 shadow-xs gap-4 self-stretch backdrop-blur-sm md:h-full md:min-h-0",
         className
       )}
     >
-      <div className="space-y-5">
+      <div className="flex-1 flex flex-col min-h-0 gap-3.5 sm:gap-4">
         {/* Header with Title & Mode Switch */}
-        <div className="flex items-center justify-between gap-4 pb-1">
+        <div className="flex items-center justify-between gap-4 pb-1 shrink-0">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent">
@@ -189,7 +189,7 @@ export function GarmentSelector({
         {/* Category Filter Pills */}
         <div
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          className="flex gap-2.5 overflow-x-auto pb-1.5 [&::-webkit-scrollbar]:hidden"
+          className="flex gap-2.5 overflow-x-auto pb-1.5 shrink-0 [&::-webkit-scrollbar]:hidden"
         >
           {categories.map((category) => {
             const isSelected = selectedCategory === category;
@@ -211,7 +211,7 @@ export function GarmentSelector({
         </div>
 
         {/* Search Bar */}
-        <div className="relative flex items-center w-full group">
+        <div className="relative flex items-center w-full group shrink-0">
           <Search className="w-4 h-4 absolute left-4 text-muted-foreground/60 group-focus-within:text-foreground transition-colors pointer-events-none z-10" />
           <input
             type="text"
@@ -234,7 +234,7 @@ export function GarmentSelector({
         </div>
 
         {/* Selection Status Strip */}
-        <div className="flex items-center justify-between px-1 text-xs text-muted-foreground pt-1 pb-0.5">
+        <div className="flex items-center justify-between px-1 text-xs text-muted-foreground pt-1 pb-0.5 shrink-0">
           <div className="flex items-center gap-2.5">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               {filteredGarments.length} {filteredGarments.length === 1 ? "Garment" : "Garments"} Available
@@ -261,8 +261,8 @@ export function GarmentSelector({
         {/* Garment Grid with Generous Gaps & Full Padding */}
         {isLoading ? (
           <div
-            style={{ maxHeight: "490px", overflowY: "auto" }}
-            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            style={{ maxHeight: "calc(100vh - 21.5rem)", minHeight: "280px", overflowY: "auto" }}
+            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3.5 sm:gap-4.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
@@ -283,8 +283,8 @@ export function GarmentSelector({
           </div>
         ) : (
           <div
-            style={{ maxHeight: "490px", overflowY: "auto" }}
-            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            style={{ maxHeight: "calc(100vh - 21.5rem)", minHeight: "280px", overflowY: "auto" }}
+            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3.5 sm:gap-4.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {filteredGarments.map((garment, idx) => {
               const selectedIndex = selectedGarments.indexOf(garment.name);

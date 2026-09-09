@@ -2,6 +2,10 @@ export type FitQuality =
   | "perfect"
   | "great"
   | "good"
+  | "acceptable"
+  | "too_tight"
+  | "too_loose"
+  | "mixed"
   | "consider_sizing_up"
   | "consider_sizing_down";
 
