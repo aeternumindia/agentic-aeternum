@@ -11,20 +11,26 @@ import { Footer } from "@/components/ui/footer";
 const features = [
   {
     title: "AI Shopping Assistant",
+    tag: "Personal Stylist",
     description: "Get personalized product recommendations, sizing guidance, and style advice through natural conversation.",
-    icon: <MessageSquareText className="h-4 w-4 text-accent" />,
+    icon: <MessageSquareText className="h-3.5 w-3.5 text-white" />,
+    cta: "Launch Assistant",
     image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/Black_Shirt_25-10-2025--vika_igor00608.jpg?v=1769685733",
   },
   {
     title: "Virtual Try-On",
+    tag: "AI Fitting Room",
     description: "See how any garment looks on you with AI-powered virtual try-on. Upload a photo and preview outfits instantly.",
-    icon: <Eye className="h-4 w-4 text-accent" />,
+    icon: <Eye className="h-3.5 w-3.5 text-white" />,
+    cta: "Start Virtual Try-On",
     image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/Neutral_Linen_25-10-2025--vika_igor00694.jpg?v=1780747636",
   },
   {
     title: "Color Analysis",
-    description: "Discover your perfect color palette with AI-driven skin tone and seasonal analysis tailored to you.",
-    icon: <Sparkles className="h-4 w-4 text-accent" />,
+    tag: "Palette Matcher",
+    description: "Discover your perfect color palette with AI-driven skin tone and seasonal color analysis tailored to you.",
+    icon: <Sparkles className="h-3.5 w-3.5 text-white" />,
+    cta: "Analyze Color Palette",
     image: "https://cdn.shopify.com/s/files/1/0968/0270/1680/collections/aeternum-signature-formals.webp?v=1780747830",
   },
 ];
@@ -74,21 +80,26 @@ export default function HomePage() {
             direction="up"
             overlay={false}
             className="h-full w-full"
-       />
+          />
         </div>
       </div>
 
-      {/* Features */}
-      <GridBackground className="w-full mb-20 rounded-2xl py-10 px-6">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-            Everything you need
+      {/* Features Section - Luxury Interactive Cards with 100% Text Legibility */}
+      <section className="w-full mb-20 space-y-8">
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[11px] font-semibold tracking-wider uppercase">
+            <Sparkles className="w-3 h-3" />
+            <span>Interactive Styling Suite</span>
+          </div>
+          <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
+            Everything You Need
           </h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Three tools that work together to give you the perfect outfit
+          <p className="text-xs md:text-sm text-muted-foreground">
+            Three personal styling tools designed to help you discover, fit, and style your perfect outfit.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {features.map((feature, i) => {
             const href =
               i === 0
@@ -96,49 +107,51 @@ export default function HomePage() {
                 : i === 1
                   ? "/virtual-try-on"
                   : "/color-analysis";
+
             return (
-              <Link key={i} href={href}>
-                <CardContainer
-                  containerClassName="py-0 h-full"
-                  className="w-full h-full cursor-pointer"
-                >
-                  <CardBody className="bg-card border border-border rounded-xl overflow-hidden w-full h-full">
-                    <CardItem
-                      translateZ={60}
-                      className="w-full"
-                    >
-                      <img
-                        src={feature.image}
-                        alt={feature.title}
-                        className="w-full aspect-[3/4] object-cover"
-                      />
-                    </CardItem>
-                    <div className="p-4">
-                      <CardItem
-                        translateZ={80}
-                        className="flex items-center gap-2 mb-2 w-full"
-                      >
-                        {feature.icon}
-                        <h3 className="text-base font-bold text-card-foreground">
-                          {feature.title}
-                        </h3>
-                      </CardItem>
-                      <CardItem
-                        translateZ={40}
-                        className="w-full"
-                      >
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {feature.description}
-                        </p>
-                      </CardItem>
+              <Link key={i} href={href} className="group block h-full">
+                <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden border border-border/70 shadow-md transition-all duration-500 hover:shadow-2xl hover:border-white/50 cursor-pointer">
+                  {/* Full-bleed portrait image */}
+                  <img
+                    src={feature.image}
+                    alt={feature.title}
+                    className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+
+                  {/* Rich Black Hue Gradient Overlay for guaranteed white text contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 transition-opacity duration-300 group-hover:from-black" />
+
+                  {/* Hover Arrow Badge on Top-Right */}
+                  <div className="absolute top-4 right-4 z-10 w-8.5 h-8.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-black shadow-md">
+                    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                  </div>
+
+                  {/* Overlaid Card Content - All White Typography & Button */}
+                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 flex flex-col justify-end space-y-3">
+                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-sm transition-colors">
+                      {feature.title}
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed drop-shadow-sm line-clamp-2">
+                      {feature.description}
+                    </p>
+
+                    {/* Overlaid White CTA Button */}
+                    <div className="pt-1">
+                      <div className="w-full py-3 px-4 rounded-2xl bg-white/20 backdrop-blur-md border border-white/35 text-white text-xs font-semibold flex items-center justify-between transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white shadow-lg">
+                        <span>{feature.cta}</span>
+                        <div className="w-6 h-6 rounded-full bg-white/20 group-hover:bg-black group-hover:text-white flex items-center justify-center transition-all duration-300">
+                          <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                        </div>
+                      </div>
                     </div>
-                  </CardBody>
-                </CardContainer>
+                  </div>
+                </div>
               </Link>
             );
           })}
         </div>
-      </GridBackground>
+      </section>
 
       {/* How it works */}
       <div className="w-full mb-16">
