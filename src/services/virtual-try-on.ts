@@ -458,8 +458,8 @@ function getEaseBounds(canonical: string, productCategory?: string): EaseBounds 
     return {
       optimalMin: isJeans ? 0.5 : 1.0,
       optimalMax: isJeans ? 3.0 : 4.0,
-      minAllowed: -0.5,
-      maxAllowed: 5.5,
+      minAllowed: 0.0, // Garment spec MUST NOT be smaller than user body measurement (0.0 cm negative ease allowed)
+      maxAllowed: 10.0, // Up to ~3.9 inches loose is Acceptable Fit; only > 10.0 cm is Loose Fit
     };
   }
 
@@ -467,8 +467,8 @@ function getEaseBounds(canonical: string, productCategory?: string): EaseBounds 
     return {
       optimalMin: 5.0,
       optimalMax: 10.0,
-      minAllowed: 2.0,
-      maxAllowed: 13.0,
+      minAllowed: 1.0,
+      maxAllowed: 16.0,
     };
   }
 
@@ -476,8 +476,8 @@ function getEaseBounds(canonical: string, productCategory?: string): EaseBounds 
     return {
       optimalMin: 10.0,
       optimalMax: 16.0,
-      minAllowed: 5.0,
-      maxAllowed: 20.0,
+      minAllowed: 3.0,
+      maxAllowed: 22.0,
     };
   }
 
@@ -485,8 +485,8 @@ function getEaseBounds(canonical: string, productCategory?: string): EaseBounds 
     return {
       optimalMin: 8.0,
       optimalMax: 15.0,
-      minAllowed: 4.0,
-      maxAllowed: 18.0,
+      minAllowed: 2.0,
+      maxAllowed: 20.0,
     };
   }
 
@@ -494,8 +494,8 @@ function getEaseBounds(canonical: string, productCategory?: string): EaseBounds 
   return {
     optimalMin: 6.0,
     optimalMax: 11.0,
-    minAllowed: 3.0,
-    maxAllowed: 13.0,
+    minAllowed: 2.0,
+    maxAllowed: 17.0,
   };
 }
 
@@ -524,20 +524,31 @@ export function genericFitScore(
   let totalScore = 0;
   let maxScore = 0;
 
+  const isBottom = productCategory
+    ? ["jeans", "pant", "pants", "trouser", "shorts", "skirt", "legging", "short", "bottom"].some((k) =>
+        productCategory.toLowerCase().includes(k)
+      )
+    : false;
+
   const relevantKeys = productCategory ? getRelevantKeys(productCategory) : ["chest", "waist", "hips"];
   const checks: [string, keyof SizeRange][] = [];
   if (relevantKeys.includes("chest")) checks.push(["chest", "chest"]);
   if (relevantKeys.includes("waist")) checks.push(["waist", "waist"]);
   if (relevantKeys.includes("hips")) checks.push(["hips", "hips"]);
 
+  let waistPassed = true;
+
   for (const [key, rangeKey] of checks) {
+    // Bottoms rule: if waist does not fit, do not check hips
+    if (isBottom && key === "hips" && !waistPassed) {
+      continue;
+    }
+
     const userValue = measurements[key];
     if (!userValue) continue;
 
     const [min, max] = sizeRange[rangeKey];
-    const tolerance = (max - min) * 0.3;
-    const effectiveMin = min - tolerance;
-    const effectiveMax = max + tolerance;
+    const maxLooseTolerance = (max - min) * 0.8;
 
     let withinRange = false;
     let fitStatus: FitStatus = "optimal";
@@ -549,26 +560,24 @@ export function genericFitScore(
       score = 100;
     } else if (userValue < min) {
       const diff = min - userValue;
-      if (diff <= (max - min) * 0.4) {
+      if (diff <= maxLooseTolerance) {
         withinRange = false;
         fitStatus = "acceptable";
-        score = 70 - (diff / ((max - min) * 0.4)) * 30;
+        score = Math.max(60, 85 - (diff / maxLooseTolerance) * 25);
       } else {
         withinRange = false;
         fitStatus = "too_loose";
         score = Math.max(0, 40 - diff * 3);
       }
     } else {
-      const diff = userValue - max;
-      if (diff <= (max - min) * 0.4) {
-        withinRange = false;
-        fitStatus = "acceptable";
-        score = 70 - (diff / ((max - min) * 0.4)) * 30;
-      } else {
-        withinRange = false;
-        fitStatus = "too_tight";
-        score = Math.max(0, 40 - diff * 3);
-      }
+      // User body is larger than range max -> garment is physically too small!
+      withinRange = false;
+      fitStatus = "too_tight";
+      score = Math.max(0, 30 - (userValue - max) * 4);
+    }
+
+    if (key === "waist") {
+      waistPassed = fitStatus === "optimal" || fitStatus === "acceptable";
     }
 
     comparisonRows.push({
@@ -615,6 +624,12 @@ function chartBasedFitScore(
     return { ...fallback, recommendedSize: null, chartUnit: unit };
   }
 
+  const isBottom = productCategory
+    ? ["jeans", "pant", "pants", "trouser", "shorts", "skirt", "legging", "short", "bottom"].some((k) =>
+        productCategory.toLowerCase().includes(k)
+      )
+    : false;
+
   const relevantKeys = getRelevantKeys(productCategory);
   const cols = ["chest", "shoulder", "length", "sleeve", "waist", "hips"]
     .filter((c) => relevantKeys.includes(c))
@@ -624,8 +639,14 @@ function chartBasedFitScore(
   const comparisonRows: ComparisonRow[] = [];
   let totalScore = 0;
   let maxScore = 0;
+  let waistPassed = true;
 
   for (const { canonical, colIdx } of cols) {
+    // Bottoms rule: if waist does not fit, do not check hips
+    if (isBottom && canonical === "hips" && !waistPassed) {
+      continue;
+    }
+
     const userValue = measurements[canonical];
     if (!userValue) continue;
 
@@ -640,7 +661,12 @@ function chartBasedFitScore(
     let fitStatus: FitStatus = "optimal";
     let score = 0;
 
-    if (ease >= bounds.optimalMin && ease <= bounds.optimalMax) {
+    if (ease < 0) {
+      // Garment is physically smaller than body dimension -> ALWAYS TOO TIGHT!
+      withinRange = false;
+      fitStatus = "too_tight";
+      score = Math.max(0, 30 - Math.abs(ease) * 4);
+    } else if (ease >= bounds.optimalMin && ease <= bounds.optimalMax) {
       withinRange = true;
       fitStatus = "optimal";
       score = 100;
@@ -659,7 +685,11 @@ function chartBasedFitScore(
     } else {
       withinRange = false;
       fitStatus = "too_tight";
-      score = Math.max(0, 40 - (bounds.minAllowed - ease) * 4);
+      score = Math.max(0, 30 - (bounds.minAllowed - ease) * 4);
+    }
+
+    if (canonical === "waist") {
+      waistPassed = fitStatus === "optimal" || fitStatus === "acceptable";
     }
 
     const label = MEASUREMENT_LABELS[canonical] || canonical.charAt(0).toUpperCase() + canonical.slice(1);
@@ -685,13 +715,16 @@ function chartBasedFitScore(
 
   // Score all sizes to find the best recommendation
   let bestSize: string | null = null;
-  let bestScore = -1;
+  let bestScore = -Infinity;
   for (const row of sizes) {
     const sizeLabel = row[0];
     let sTotal = 0;
     let sMax = 0;
+    let sWaistPassed = true;
 
     for (const { canonical, colIdx } of cols) {
+      if (isBottom && canonical === "hips" && !sWaistPassed) continue;
+
       const userValue = measurements[canonical];
       if (!userValue) continue;
 
@@ -702,14 +735,26 @@ function chartBasedFitScore(
       const ease = garmentCm - userValue;
       const bounds = getEaseBounds(canonical, productCategory);
 
-      if (ease >= bounds.optimalMin && ease <= bounds.optimalMax) {
+      let status = "acceptable";
+      if (ease < 0) {
+        // Severe penalty for sizes where garment is smaller than body!
+        status = "too_tight";
+        sTotal -= 500;
+      } else if (ease >= bounds.optimalMin && ease <= bounds.optimalMax) {
+        status = "optimal";
         sTotal += 100;
       } else if (ease >= bounds.minAllowed && ease <= bounds.maxAllowed) {
+        status = "acceptable";
         sTotal += 70;
       } else {
-        sTotal += 30;
+        status = "poor";
+        sTotal += 20;
       }
       sMax += 100;
+
+      if (canonical === "waist") {
+        sWaistPassed = status === "optimal" || status === "acceptable";
+      }
     }
 
     const avg = sMax > 0 ? sTotal / sMax : 0;
