@@ -5,6 +5,7 @@ import { X, ShoppingBag, Loader2 } from "lucide-react";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import { cn } from "@/lib/utils";
 import apiClient, { getSizeChart } from "@/services/api";
+import { filterSizeChartToShopifySizes } from "@/services/virtual-try-on";
 
 export type AddToCartItem = {
   handle: string;
@@ -236,6 +237,21 @@ export function AddToCartModal({
               const isChartActive = activeSizeChartItem === item.handle;
               const chartRaw = sizeChartDataMap[item.handle] || productSizeChart;
 
+              const shopifySizes = Array.from(
+                new Set(
+                  variants
+                    .map((v) => {
+                      const opt =
+                        v.options?.find(
+                          (o: any) =>
+                            o.name.toLowerCase() === "size" || o.name.toLowerCase() === "title"
+                        ) || v.options?.[0];
+                      return opt?.value || v.title;
+                    })
+                    .filter(Boolean)
+                )
+              );
+
               let chartData: { headers: string[]; sizes: string[][] } | null = null;
               let chartImage: string | null = null;
               let chartNotes: string | null = null;
@@ -243,7 +259,8 @@ export function AddToCartModal({
               if (chartRaw) {
                 try {
                   const parsed = JSON.parse(chartRaw);
-                  chartData = typeof parsed.chart_data === "string" ? JSON.parse(parsed.chart_data) : parsed.chart_data;
+                  const rawData = typeof parsed.chart_data === "string" ? JSON.parse(parsed.chart_data) : parsed.chart_data;
+                  chartData = (filterSizeChartToShopifySizes(rawData, shopifySizes) as any) || rawData;
                   chartImage = parsed.image ?? null;
                   chartNotes = parsed.fit_notes ?? null;
                 } catch {}

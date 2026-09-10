@@ -230,7 +230,7 @@ export function StepResult({
       variantId,
       closestInStockVariant,
       closestSizeLabel,
-      sizeChart,
+      sizeChart: fitResult.sizeChart || sizeChart,
     };
   });
 
@@ -879,28 +879,36 @@ export function StepResult({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/60">
-                        {Object.entries(
-                          isBottomCat
-                            ? {
-                                "28": { waist: [66, 71], hips: [89, 94] },
-                                "30": { waist: [71, 76], hips: [94, 99] },
-                                "32": { waist: [76, 81], hips: [99, 104] },
-                                "34": { waist: [81, 86], hips: [104, 109] },
-                                "36": { waist: [86, 91], hips: [109, 114] },
-                                "38": { waist: [91, 96], hips: [114, 119] },
-                                "40": { waist: [96, 101], hips: [119, 124] },
-                              }
-                            : {
-                                XS: { chest: [81, 86] },
-                                S: { chest: [86, 91] },
-                                M: { chest: [91, 96] },
-                                L: { chest: [96, 101] },
-                                XL: { chest: [101, 106] },
-                                XXL: { chest: [106, 111] },
-                              }
-                        ).map(([szLabel, range]: [string, any]) => {
-                          const isRecommended = isSizeMatch(szLabel, activeResult.recommendedSize);
-                          const isSelected = isSizeMatch(szLabel, activeResult.activeSize);
+                        {(() => {
+                          const fallbackEntries = Object.entries(
+                            isBottomCat
+                              ? {
+                                  "28": { waist: [66, 71], hips: [89, 94] },
+                                  "30": { waist: [71, 76], hips: [94, 99] },
+                                  "32": { waist: [76, 81], hips: [99, 104] },
+                                  "34": { waist: [81, 86], hips: [104, 109] },
+                                  "36": { waist: [86, 91], hips: [109, 114] },
+                                  "38": { waist: [91, 96], hips: [114, 119] },
+                                  "40": { waist: [96, 101], hips: [119, 124] },
+                                }
+                              : {
+                                  XS: { chest: [81, 86] },
+                                  S: { chest: [86, 91] },
+                                  M: { chest: [91, 96] },
+                                  L: { chest: [96, 101] },
+                                  XL: { chest: [101, 106] },
+                                  XXL: { chest: [106, 111] },
+                                }
+                          );
+                          const filteredFallback = (activeResult.availableSizeLabels && activeResult.availableSizeLabels.length > 0)
+                            ? fallbackEntries.filter(([szLabel]) =>
+                                activeResult.availableSizeLabels.some((s) => isSizeMatch(szLabel, s))
+                              )
+                            : fallbackEntries;
+                          const entriesToUse = filteredFallback.length > 0 ? filteredFallback : fallbackEntries;
+                          return entriesToUse.map(([szLabel, range]: [string, any]) => {
+                            const isRecommended = isSizeMatch(szLabel, activeResult.recommendedSize);
+                            const isSelected = isSizeMatch(szLabel, activeResult.activeSize);
                           return (
                             <tr
                               key={szLabel}
@@ -946,7 +954,8 @@ export function StepResult({
                               )}
                             </tr>
                           );
-                        })}
+                        });
+                      })()}
                       </tbody>
                     </table>
                   );

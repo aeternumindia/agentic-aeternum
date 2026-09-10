@@ -237,13 +237,35 @@ export function findClosestSizeFromList(
   return availableSizes[0];
 }
 
+export function filterSizeChartToShopifySizes(
+  chartData: SizeChartData | null | undefined,
+  availableSizes?: string[]
+): SizeChartData | null | undefined {
+  if (!chartData || !chartData.sizes || !availableSizes || availableSizes.length === 0) {
+    return chartData;
+  }
+  const filtered = chartData.sizes.filter((row) => {
+    const rowSize = row[0] || "";
+    return availableSizes.some((s) => isSizeMatch(rowSize, s));
+  });
+  if (filtered.length === 0) {
+    return chartData;
+  }
+  return {
+    ...chartData,
+    sizes: filtered,
+  };
+}
+
 export function findRecommendedSize(
   measurements: Record<string, number>,
   productCategory?: string,
   availableSizes?: string[],
   sizeChartData?: SizeChartData | null
 ): string {
-  if (sizeChartData && sizeChartData.headers?.length && sizeChartData.sizes?.length) {
+  const effectiveChartData = filterSizeChartToShopifySizes(sizeChartData, availableSizes) || sizeChartData;
+
+  if (effectiveChartData && effectiveChartData.headers?.length && effectiveChartData.sizes?.length) {
     const dummySession: TryOnSession = {
       productId: "",
       productHandle: "",
@@ -252,12 +274,12 @@ export function findRecommendedSize(
       productCategory: productCategory || "Apparel",
       price: "",
       currency: "",
-      selectedSize: sizeChartData.sizes[0]?.[0] || "M",
+      selectedSize: effectiveChartData.sizes[0]?.[0] || "M",
       selectedColor: "",
       measurements,
-      sizeChart: { chartData: sizeChartData, image: null, fitNotes: null },
+      sizeChart: { chartData: effectiveChartData, image: null, fitNotes: null },
     };
-    const chartRes = chartBasedFitScore(dummySession, sizeChartData);
+    const chartRes = chartBasedFitScore(dummySession, effectiveChartData);
     if (chartRes.recommendedSize) {
       // If availableSizes is provided, verify if recommended size is in availableSizes
       if (availableSizes && availableSizes.length > 0) {
@@ -775,10 +797,15 @@ export function calculateFitScore(
   const { selectedSize, measurements, sizeChart, productCategory } = session;
 
   if (sizeChart?.chartData) {
-    const result = chartBasedFitScore(session, sizeChart.chartData, availableSizes);
+    const effectiveChartData = filterSizeChartToShopifySizes(sizeChart.chartData, availableSizes) || sizeChart.chartData;
+    const effectiveSizeChart = {
+      ...sizeChart,
+      chartData: effectiveChartData,
+    };
+    const result = chartBasedFitScore(session, effectiveChartData, availableSizes);
     return {
       ...result,
-      sizeChart,
+      sizeChart: effectiveSizeChart,
     };
   }
 

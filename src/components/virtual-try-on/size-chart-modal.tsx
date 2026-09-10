@@ -2,12 +2,14 @@
 
 import { X } from "lucide-react";
 import type { SizeChartData } from "@/types/virtual-try-on";
+import { filterSizeChartToShopifySizes } from "@/services/virtual-try-on";
 
 type SizeChartModalProps = {
   title: string;
   chartData: SizeChartData | null;
   image: string | null;
   fitNotes: string | null;
+  availableSizes?: string[];
   onClose: () => void;
 };
 
@@ -16,8 +18,10 @@ export function SizeChartModal({
   chartData,
   image,
   fitNotes,
+  availableSizes,
   onClose,
 }: SizeChartModalProps) {
+  const effectiveChartData = filterSizeChartToShopifySizes(chartData, availableSizes) || chartData;
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -47,12 +51,12 @@ export function SizeChartModal({
             />
           )}
 
-          {chartData && (
+          {effectiveChartData && (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-xs">
                 <thead>
                   <tr>
-                    {chartData.headers.map((h) => (
+                    {effectiveChartData.headers.map((h) => (
                       <th
                         key={h}
                         className="border border-border px-2 py-1.5 text-left font-medium text-muted-foreground bg-muted/30"
@@ -63,7 +67,7 @@ export function SizeChartModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {chartData.sizes.map((row, i) => (
+                  {effectiveChartData.sizes.map((row, i) => (
                     <tr key={i}>
                       {row.map((cell, j) => (
                         <td
