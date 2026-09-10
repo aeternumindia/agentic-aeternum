@@ -152,7 +152,7 @@ export function MultipleGarmentSelector({
     <div
       style={{ flex: "2 1 480px", minWidth: "320px" }}
       className={cn(
-        "hidden md:flex flex-col justify-between border border-border/80 bg-card/95 rounded-3xl p-6 sm:p-7 shadow-xs gap-6 self-start backdrop-blur-sm",
+        "hidden md:flex flex-col justify-between border border-border/80 bg-card/95 rounded-3xl p-4 sm:p-5 md:p-6 shadow-xs gap-4 sm:gap-5 self-start backdrop-blur-sm overflow-hidden",
         className
       )}
     >
@@ -381,7 +381,7 @@ export function MultipleGarmentSelector({
         {isLoading ? (
           <div
             style={{ maxHeight: "calc(100vh - 25.5rem)", minHeight: "250px", overflowY: "auto" }}
-            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3.5 sm:gap-4.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
@@ -403,7 +403,7 @@ export function MultipleGarmentSelector({
         ) : (
           <div
             style={{ maxHeight: "calc(100vh - 25.5rem)", minHeight: "250px", overflowY: "auto" }}
-            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3.5 sm:gap-4.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {filteredGarments.map((garment) => {
               const isSelected =

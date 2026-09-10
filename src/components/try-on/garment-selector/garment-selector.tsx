@@ -262,7 +262,7 @@ export function GarmentSelector({
         {isLoading ? (
           <div
             style={{ maxHeight: "calc(100vh - 21.5rem)", minHeight: "280px", overflowY: "auto" }}
-            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3.5 sm:gap-4.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
@@ -284,7 +284,7 @@ export function GarmentSelector({
         ) : (
           <div
             style={{ maxHeight: "calc(100vh - 21.5rem)", minHeight: "280px", overflowY: "auto" }}
-            className="p-2 sm:p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3.5 sm:gap-4.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {filteredGarments.map((garment, idx) => {
               const selectedIndex = selectedGarments.indexOf(garment.name);

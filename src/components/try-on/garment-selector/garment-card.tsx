@@ -106,19 +106,9 @@ export function GarmentCard({
         {/* Interactive Size Selector Row */}
         {garment.sizes && garment.sizes.length > 0 && (
           <div
-            className="mt-1 pt-2 border-t border-border/30 space-y-1.5"
+            className="mt-1 pt-2 border-t border-border/30"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between text-[10px]">
-              <span className="font-semibold text-muted-foreground/90 uppercase tracking-wider text-[9px]">
-                Select Size:
-              </span>
-              {currentSize && (
-                <span className="font-bold text-accent text-[10px]">
-                  Size {currentSize}
-                </span>
-              )}
-            </div>
             <div className="flex flex-wrap gap-1">
               {garment.sizes.map((sz) => {
                 const isSizeActive = isSelected && currentSize === sz;
