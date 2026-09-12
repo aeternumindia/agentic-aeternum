@@ -476,12 +476,11 @@ function getEaseBounds(canonical: string, productCategory?: string): EaseBounds 
   const cat = (productCategory || "").toLowerCase();
 
   if (canonical === "waist" || canonical === "hips") {
-    const isJeans = cat.includes("jean");
     return {
-      optimalMin: isJeans ? 0.5 : 1.0,
-      optimalMax: isJeans ? 3.0 : 4.0,
+      optimalMin: 0.0,
+      optimalMax: 3.81, // 1.5 inches in cm
       minAllowed: 0.0, // Garment spec MUST NOT be smaller than user body measurement (0.0 cm negative ease allowed)
-      maxAllowed: 10.0, // Up to ~3.9 inches loose is Acceptable Fit; only > 10.0 cm is Loose Fit
+      maxAllowed: 3.81, // Max 1.5 inches (3.81 cm) ease allowed; > 1.5 inches is too loose
     };
   }
 
@@ -628,6 +627,7 @@ function chartBasedFitScore(
   comparisonRows: ComparisonRow[];
   recommendedSize: string | null;
   chartUnit: "cm" | "in";
+  isOverExtremeSize?: boolean;
 } {
   const { selectedSize, measurements, productCategory } = session;
   const { headers, sizes } = chartData;
@@ -738,11 +738,14 @@ function chartBasedFitScore(
   // Score all sizes to find the best recommendation
   let bestSize: string | null = null;
   let bestScore = -Infinity;
+  let allSizesTooTight = true;
+
   for (const row of sizes) {
     const sizeLabel = row[0];
     let sTotal = 0;
     let sMax = 0;
     let sWaistPassed = true;
+    let sizeHasNegativeEase = false;
 
     for (const { canonical, colIdx } of cols) {
       if (isBottom && canonical === "hips" && !sWaistPassed) continue;
@@ -761,6 +764,7 @@ function chartBasedFitScore(
       if (ease < 0) {
         // Severe penalty for sizes where garment is smaller than body!
         status = "too_tight";
+        sizeHasNegativeEase = true;
         sTotal -= 500;
       } else if (ease >= bounds.optimalMin && ease <= bounds.optimalMax) {
         status = "optimal";
@@ -779,15 +783,28 @@ function chartBasedFitScore(
       }
     }
 
+    if (!sizeHasNegativeEase) {
+      allSizesTooTight = false;
+    }
+
     const avg = sMax > 0 ? sTotal / sMax : 0;
-    if (avg > bestScore) {
+    if (avg > bestScore && sTotal > 0) {
       bestScore = avg;
       bestSize = sizeLabel;
     }
   }
 
+  const isOverExtremeSize = allSizesTooTight || (bestSize === null);
+  const finalRecommendedSize = isOverExtremeSize ? null : bestSize;
+
   const fitScore = computeFitQuality(overall, comparisonRows, selectedSize, availableSizesToUse);
-  return { fitScore, comparisonRows, recommendedSize: bestSize ?? null, chartUnit: unit };
+  return {
+    fitScore,
+    comparisonRows,
+    recommendedSize: finalRecommendedSize,
+    chartUnit: unit,
+    isOverExtremeSize,
+  };
 }
 
 export function calculateFitScore(
@@ -803,6 +820,22 @@ export function calculateFitScore(
       chartData: effectiveChartData,
     };
     const result = chartBasedFitScore(session, effectiveChartData, availableSizes);
+
+    if (result.isOverExtremeSize) {
+      return {
+        ...result,
+        recommendedSize: null,
+        isOverExtremeSize: true,
+        sizeChart: effectiveSizeChart,
+        fitScore: {
+          overall: 20,
+          quality: "too_tight",
+          label: "Exceeds Available Sizes",
+          description: "Your measurements exceed our largest available size for this item.",
+        },
+      };
+    }
+
     return {
       ...result,
       sizeChart: effectiveSizeChart,

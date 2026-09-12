@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ShieldCheck, Check, Info, RotateCcw, Shirt, ShoppingBag, Loader2, ExternalLink, Ruler, Sparkles } from "lucide-react";
+import { ShieldCheck, Check, Info, RotateCcw, Shirt, ShoppingBag, Loader2, ExternalLink, Ruler, Sparkles, Bell, AlertTriangle } from "lucide-react";
 import { GarmentItem } from "../garment-selector/garment-selector";
 import { normalizeCategory } from "@/services/outfit-api";
 import {
@@ -36,6 +36,7 @@ export function StepResult({
   const [addedIndices, setAddedIndices] = useState<number[]>([]);
   const [addingAll, setAddingAll] = useState(false);
   const [addedAll, setAddedAll] = useState(false);
+  const [notifiedMap, setNotifiedMap] = useState<Record<number, boolean>>({});
   const [lastAddedNotice, setLastAddedNotice] = useState<{
     title: string;
     size: string;
@@ -73,59 +74,61 @@ export function StepResult({
       }
       setProductDetailsMap(initialMap);
 
-      for (const g of selectedGarments) {
-        const handle = g.handle || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-        let fetchedVariants: any[] = [];
-        let fetchedSizeChart: ProductSizeChart | null = null;
+      await Promise.all(
+        selectedGarments.map(async (g) => {
+          const handle = g.handle || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+          let fetchedVariants: any[] = [];
+          let fetchedSizeChart: ProductSizeChart | null = null;
 
-        // Fetch variants
-        try {
-          const { data } = await apiClient.get(`/cart/variants/admin/${handle}`);
-          if (data.success && data.data?.variants?.length > 0) {
-            fetchedVariants = data.data.variants;
-          }
-        } catch {
+          // Fetch variants
           try {
-            const { data } = await apiClient.get(`/cart/variants/${handle}`);
+            const { data } = await apiClient.get(`/cart/variants/admin/${handle}`);
             if (data.success && data.data?.variants?.length > 0) {
               fetchedVariants = data.data.variants;
             }
-          } catch {}
-        }
-
-        // Fetch product size chart from backend / Shopify
-        try {
-          const res = await getSizeChart(handle);
-          if (res?.success && res.data) {
-            const d = res.data;
-            let chartData = null;
-            if (d.chart_data) {
-              try {
-                chartData =
-                  typeof d.chart_data === "string"
-                    ? JSON.parse(d.chart_data)
-                    : d.chart_data;
-              } catch {}
-            }
-            fetchedSizeChart = {
-              chartData,
-              image: d.image || null,
-              fitNotes: d.fit_notes || null,
-            };
+          } catch {
+            try {
+              const { data } = await apiClient.get(`/cart/variants/${handle}`);
+              if (data.success && data.data?.variants?.length > 0) {
+                fetchedVariants = data.data.variants;
+              }
+            } catch {}
           }
-        } catch {}
 
-        if (isMounted) {
-          setProductDetailsMap((prev) => ({
-            ...prev,
-            [handle]: {
-              variants: fetchedVariants,
-              sizeChart: fetchedSizeChart,
-              loading: false,
-            },
-          }));
-        }
-      }
+          // Fetch product size chart from backend / Shopify
+          try {
+            const res = await getSizeChart(handle);
+            if (res?.success && res.data) {
+              const d = res.data;
+              let chartData = null;
+              if (d.chart_data) {
+                try {
+                  chartData =
+                    typeof d.chart_data === "string"
+                      ? JSON.parse(d.chart_data)
+                      : d.chart_data;
+                } catch {}
+              }
+              fetchedSizeChart = {
+                chartData,
+                image: d.image || null,
+                fitNotes: d.fit_notes || null,
+              };
+            }
+          } catch {}
+
+          if (isMounted) {
+            setProductDetailsMap((prev) => ({
+              ...prev,
+              [handle]: {
+                variants: fetchedVariants,
+                sizeChart: fetchedSizeChart,
+                loading: false,
+              },
+            }));
+          }
+        })
+      );
     }
 
     if (selectedGarments.length > 0) {
@@ -231,8 +234,18 @@ export function StepResult({
       closestInStockVariant,
       closestSizeLabel,
       sizeChart: fitResult.sizeChart || sizeChart,
+      isOverExtremeSize: fitResult.isOverExtremeSize || recommendedSize === null,
     };
   });
+
+  const handleNotifyAvailable = (gIdx: number, garmentName: string) => {
+    setNotifiedMap((prev) => ({ ...prev, [gIdx]: true }));
+    setLastAddedNotice({
+      title: garmentName,
+      size: "Notify Request Registered",
+      image: "",
+    });
+  };
 
   const [displayUnit, setDisplayUnit] = useState<"cm" | "in">("cm");
 
@@ -300,8 +313,10 @@ export function StepResult({
       let addedCount = 0;
       for (let i = 0; i < garmentResults.length; i++) {
         const res = garmentResults[i];
+        if (res.isOverExtremeSize || !res.recommendedSize) {
+          continue;
+        }
         const targetId = res.variantId || res.closestInStockVariant?.id;
-        const targetSize = res.variantId ? res.recommendedSize : res.closestSizeLabel || res.recommendedSize;
 
         if (targetId) {
           await addToCart(targetId, 1);
@@ -310,10 +325,11 @@ export function StepResult({
       }
       if (addedCount > 0) {
         setAddedAll(true);
+        const validList = garmentResults.filter((r) => !r.isOverExtremeSize && r.recommendedSize);
         setLastAddedNotice({
-          title: `Outfit (${addedCount} items)`,
-          size: garmentResults.map((r) => r.recommendedSize).join(" / "),
-          image: garmentResults[0].garment.image,
+          title: `Outfit (${addedCount} item${addedCount > 1 ? "s" : ""})`,
+          size: validList.map((r) => r.recommendedSize).join(" / "),
+          image: validList[0]?.garment.image || garmentResults[0].garment.image,
         });
         openCart();
       }
@@ -323,6 +339,23 @@ export function StepResult({
       setAddingAll(false);
     }
   };
+
+  const isDetailsLoading =
+    selectedGarments.length > 0 &&
+    (Object.keys(productDetailsMap).length < selectedGarments.length ||
+      Object.values(productDetailsMap).some((d) => d.loading));
+
+  if (isDetailsLoading) {
+    return (
+      <div className="py-16 flex flex-col items-center justify-center space-y-3.5 text-center animate-in fade-in duration-200">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-foreground">Calculating Sizing & Availability...</h4>
+          <p className="text-xs text-muted-foreground">Checking live Shopify size charts for selected items</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 animate-in fade-in duration-300">
@@ -376,48 +409,75 @@ export function StepResult({
                   Complete Outfit Recommended Sizing
                 </p>
                 <div className="flex items-center gap-3 text-xs font-bold mt-0.5 text-white">
-                  {garmentResults.map((res, i) => (
-                    <span key={i} className="flex items-center gap-1">
-                      <span className="text-neutral-300 font-normal">
-                        {i === 0 ? "Top:" : "Bottom:"}
-                      </span>{" "}
-                      Size {res.recommendedSize}
-                    </span>
-                  ))}
+                  {garmentResults.map((res, i) => {
+                    const isExceeded = res.isOverExtremeSize || !res.recommendedSize;
+                    return (
+                      <span key={i} className="flex items-center gap-1">
+                        <span className="text-neutral-300 font-normal">
+                          {i === 0 ? "Top:" : "Bottom:"}
+                        </span>{" "}
+                        {isExceeded ? (
+                          <span className="text-amber-400 font-bold">Unavailable</span>
+                        ) : (
+                          <span>Size {res.recommendedSize}</span>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
             {/* Quick Add Entire Outfit Button */}
-            <button
-              type="button"
-              onClick={handleAddAllToCart}
-              disabled={addingAll}
-              className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all shrink-0"
-            >
-              {addingAll ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Adding Outfit...</span>
-                </>
-              ) : addedAll ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-black font-bold" />
-                  <span>Outfit Added to Cart ✓</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Add Entire Outfit to Cart</span>
-                </>
-              )}
-            </button>
+            {(() => {
+              const validGarments = garmentResults.filter((r) => !r.isOverExtremeSize && r.recommendedSize);
+              const allValid = validGarments.length === garmentResults.length;
+
+              if (validGarments.length === 0) {
+                return (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-neutral-800 text-neutral-400 text-xs font-bold flex items-center justify-center gap-1.5 opacity-60 cursor-not-allowed shrink-0 border border-neutral-700"
+                  >
+                    <span>Sizes Unavailable</span>
+                  </button>
+                );
+              }
+
+              return (
+                <button
+                  type="button"
+                  onClick={handleAddAllToCart}
+                  disabled={addingAll}
+                  className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all shrink-0"
+                >
+                  {addingAll ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Adding Items...</span>
+                    </>
+                  ) : addedAll ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-black font-bold" />
+                      <span>Added to Cart ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>{allValid ? "Add Entire Outfit to Cart" : `Add Available Item (${validGarments.map(r => `Size ${r.recommendedSize}`).join(", ")})`}</span>
+                    </>
+                  )}
+                </button>
+              );
+            })()}
           </div>
 
           {/* Garment Switcher Tabs */}
           <div className="flex items-center gap-2 border-b border-border pb-2">
             {garmentResults.map((res, idx) => {
               const isActive = activeGarmentIndex === idx;
+              const isExceeded = res.isOverExtremeSize || !res.recommendedSize;
               return (
                 <button
                   key={res.garment.id || idx}
@@ -439,7 +499,12 @@ export function StepResult({
                       {idx === 0 ? "Top Garment" : "Bottom Garment"}
                     </p>
                     <p className="text-xs font-bold truncate">
-                      Size {res.recommendedSize} • <span className="font-normal opacity-80">{res.fitScore.label}</span>
+                      {isExceeded ? (
+                        <span className="text-amber-500 font-bold">Size Unavailable</span>
+                      ) : (
+                        `Size ${res.recommendedSize}`
+                      )}{" "}
+                      • <span className="font-normal opacity-80">{isExceeded ? "Exceeds Range" : res.fitScore.label}</span>
                     </p>
                   </div>
                 </button>
@@ -450,7 +515,51 @@ export function StepResult({
       )}
 
       {/* Primary Recommended Size Hero Banner for Active Garment */}
-      {activeResult && (
+      {activeResult && (activeResult.isOverExtremeSize || !activeResult.recommendedSize) ? (
+        <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 dark:bg-amber-950/20 shadow-xs space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 flex-1 min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase tracking-wider">
+                <span>Size Unavailable</span>
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                We don't have a size that fits your measurements
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Your body measurements exceed the largest available size for <strong>{activeResult.garment.name}</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => handleNotifyAvailable(activeGarmentIndex, activeResult.garment.name)}
+              disabled={notifiedMap[activeGarmentIndex]}
+              className={`inline-flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all ${
+                notifiedMap[activeGarmentIndex]
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                  : "bg-amber-600 text-white hover:bg-amber-700 active:scale-95"
+              }`}
+            >
+              {notifiedMap[activeGarmentIndex] ? (
+                <>
+                  <Check className="w-4 h-4 text-white font-bold" />
+                  <span>✓ Notification Requested</span>
+                </>
+              ) : (
+                <>
+                  <Bell className="w-4 h-4" />
+                  <span>Notify Us When Available</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      ) : activeResult && (
         <>
           <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-card via-muted/20 to-accent/10 border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-5">
             <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
@@ -469,14 +578,8 @@ export function StepResult({
                 {activeResult.garment.name}
               </p>
 
-              {/* Add Active Size to Cart Button */}
               <div className="pt-1.5 sm:pt-2">
-                {activeResult.variantData?.loading ? (
-                  <div className="inline-flex items-center gap-2 py-2 px-3.5 sm:py-2.5 sm:px-4 text-[11px] sm:text-xs text-muted-foreground bg-muted/40 rounded-xl">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Checking size availability in Shopify...</span>
-                  </div>
-                ) : activeResult.isAvailable ? (
+                {activeResult.isAvailable ? (
                   <button
                     type="button"
                     onClick={() =>
@@ -587,7 +690,12 @@ export function StepResult({
                 <span>Compare Sizes & Fits</span>
               </label>
               <span className="text-[10px] text-muted-foreground font-medium">
-                AI Optimal Recommendation: <strong className="text-foreground">Size {activeResult.recommendedSize}</strong>
+                AI Optimal Recommendation:{" "}
+                {activeResult.isOverExtremeSize || !activeResult.recommendedSize ? (
+                  <strong className="text-amber-600 dark:text-amber-400">Size Unavailable (Exceeds Range)</strong>
+                ) : (
+                  <strong className="text-foreground">Size {activeResult.recommendedSize}</strong>
+                )}
               </span>
             </div>
 
@@ -979,43 +1087,61 @@ export function StepResult({
 
         {selectedGarments.length > 1 ? (
           /* Multi-garment / Outfit Add to Cart */
-          <button
-            type="button"
-            onClick={handleAddAllToCart}
-            disabled={addingAll}
-            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
-              addedAll
-                ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
-            }`}
-          >
-            {addingAll ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Adding Outfit to Cart...</span>
-              </>
-            ) : addedAll ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-white font-bold" />
-                <span>Outfit Added to Cart ✓</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>
-                  Add Recommended Sizes (
-                  {garmentResults
-                    .map((r) =>
-                      r.isAvailable
-                        ? r.activeSize
-                        : r.closestSizeLabel || r.activeSize
-                    )
-                    .join(", ")}
-                  ) to Cart
-                </span>
-              </>
-            )}
-          </button>
+          (() => {
+            const validGarments = garmentResults.filter((r) => !r.isOverExtremeSize && r.recommendedSize);
+            const allValid = validGarments.length === garmentResults.length;
+
+            if (validGarments.length === 0) {
+              return (
+                <button
+                  type="button"
+                  disabled
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-muted text-muted-foreground text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 opacity-60 cursor-not-allowed"
+                >
+                  <Info className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Outfit Sizes Unavailable (Exceeds Range)</span>
+                </button>
+              );
+            }
+
+            return (
+              <button
+                type="button"
+                onClick={handleAddAllToCart}
+                disabled={addingAll}
+                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+                  addedAll
+                    ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                    : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+                }`}
+              >
+                {addingAll ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Adding to Cart...</span>
+                  </>
+                ) : addedAll ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-white font-bold" />
+                    <span>Added to Cart ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>
+                      {allValid
+                        ? `Add Recommended Sizes (${garmentResults
+                            .map((r) => r.activeSize)
+                            .join(", ")}) to Cart`
+                        : `Add Available Recommended Size (${validGarments
+                            .map((r) => `Size ${r.recommendedSize}`)
+                            .join(", ")}) to Cart`}
+                    </span>
+                  </>
+                )}
+              </button>
+            );
+          })()
         ) : (
           /* Single garment Add to Cart (Recommended or Closest In-Stock) */
           (() => {

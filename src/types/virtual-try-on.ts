@@ -60,4 +60,5 @@ export type TryOnResult = {
   sizeChart?: ProductSizeChart | null;
   recommendedSize?: string | null;
   chartUnit?: "cm" | "in";
+  isOverExtremeSize?: boolean;
 };
