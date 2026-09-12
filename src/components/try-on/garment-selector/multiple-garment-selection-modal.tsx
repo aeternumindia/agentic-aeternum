@@ -115,7 +115,7 @@ export function MultipleGarmentSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-4xl">
         {/* Header */}
         <DialogHeader className="shrink-0 px-5 pt-4 pb-3 border-b border-border/70 text-left">
           <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
@@ -262,7 +262,7 @@ export function MultipleGarmentSelectionModal({
           className="overflow-y-auto p-4 sm:p-5 overscroll-contain shrink-0 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
         >
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
@@ -281,7 +281,7 @@ export function MultipleGarmentSelectionModal({
               No {activeSlot === "top" ? "tops" : "bottoms"} match your filter
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {filteredGarments.map((garment) => {
                 const isSelected =
                   (activeSlot === "top" && selectedTop?.name === garment.name) ||

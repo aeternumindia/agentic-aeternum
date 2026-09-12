@@ -136,13 +136,12 @@ export function GarmentSelector({
 
   return (
     <div
-      style={{ flex: "2 1 480px", minWidth: "320px" }}
       className={cn(
-        "hidden md:flex flex-col justify-between border border-border/80 bg-card/95 rounded-3xl p-4 sm:p-5 md:p-6 shadow-xs gap-4 self-stretch backdrop-blur-sm md:h-full md:min-h-0",
+        "hidden md:flex flex-col justify-between w-full lg:flex-1 border border-border/80 bg-card/95 rounded-3xl p-4 sm:p-5 md:p-6 shadow-xs gap-4 self-stretch backdrop-blur-sm",
         className
       )}
     >
-      <div className="flex-1 flex flex-col min-h-0 gap-3.5 sm:gap-4">
+      <div className="space-y-5">
         {/* Header with Title & Mode Switch */}
         <div className="flex items-center justify-between gap-4 pb-1 shrink-0">
           <div className="space-y-1">
@@ -261,13 +260,13 @@ export function GarmentSelector({
         {/* Garment Grid with Generous Gaps & Full Padding */}
         {isLoading ? (
           <div
-            style={{ maxHeight: "calc(100vh - 21.5rem)", minHeight: "280px", overflowY: "auto" }}
-            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            style={{ minHeight: "280px" }}
+            className="p-1 sm:p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 max-h-[540px] sm:max-h-[600px] lg:max-h-[calc(100vh-18rem)] overflow-y-auto pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
                 key={i}
-                className="border border-border rounded-lg overflow-hidden bg-card animate-pulse"
+                className="border border-border rounded-md overflow-hidden bg-card animate-pulse"
               >
                 <div className="w-full aspect-[3/4] bg-muted/60" />
                 <div className="p-3.5 space-y-2 border-t border-border/40">
@@ -283,8 +282,8 @@ export function GarmentSelector({
           </div>
         ) : (
           <div
-            style={{ maxHeight: "calc(100vh - 21.5rem)", minHeight: "280px", overflowY: "auto" }}
-            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            style={{ minHeight: "280px" }}
+            className="p-1 sm:p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 max-h-[540px] sm:max-h-[600px] lg:max-h-[calc(100vh-18rem)] overflow-y-auto pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {filteredGarments.map((garment, idx) => {
               const selectedIndex = selectedGarments.indexOf(garment.name);

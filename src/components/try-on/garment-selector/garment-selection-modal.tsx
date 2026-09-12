@@ -63,7 +63,7 @@ export function GarmentSelectionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-4xl">
         {/* Header (Fixed) */}
         <DialogHeader className="shrink-0 px-5 pt-4 pb-3 border-b border-border/70 text-left">
           <DialogTitle className="text-base font-semibold tracking-tight text-foreground">
@@ -150,8 +150,7 @@ export function GarmentSelectionModal({
           >
             {isLoading ? (
               <div
-                style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}
-                className="grid grid-cols-2 gap-4"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-4"
               >
                 {[1, 2, 3, 4].map((i) => (
                   <div
@@ -172,8 +171,7 @@ export function GarmentSelectionModal({
               </div>
             ) : (
               <div
-                style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}
-                className="grid grid-cols-2 gap-4"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-4"
               >
                 {filteredGarments.map((garment, idx) => {
                   const selectedIndex = selectedGarments.indexOf(garment.name);

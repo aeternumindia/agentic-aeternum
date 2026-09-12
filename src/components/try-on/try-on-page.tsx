@@ -267,7 +267,7 @@ const TryOnPage = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-8 flex flex-col items-center">
-      <div className="flex flex-col md:flex-row items-center md:items-start justify-center w-full gap-7 lg:gap-8">
+      <div className="flex flex-col lg:flex-row items-center lg:items-start justify-center w-full gap-6 sm:gap-7 lg:gap-8">
         {/* left panel try on uploader */}
         <UserSelector
           activeTab={activeTab}

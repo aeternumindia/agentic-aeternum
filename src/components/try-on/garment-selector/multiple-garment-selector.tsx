@@ -150,9 +150,8 @@ export function MultipleGarmentSelector({
 
   return (
     <div
-      style={{ flex: "2 1 480px", minWidth: "320px" }}
       className={cn(
-        "hidden md:flex flex-col justify-between border border-border/80 bg-card/95 rounded-3xl p-4 sm:p-5 md:p-6 shadow-xs gap-4 sm:gap-5 self-start backdrop-blur-sm overflow-hidden",
+        "hidden md:flex flex-col justify-between w-full lg:flex-1 border border-border/80 bg-card/95 rounded-3xl p-4 sm:p-5 md:p-6 shadow-xs gap-4 sm:gap-5 self-start backdrop-blur-sm overflow-hidden",
         className
       )}
     >
@@ -201,7 +200,7 @@ export function MultipleGarmentSelector({
         </div>
 
         {/* Workflow Slot Selector Tabs (Choose Top / Choose Bottom) */}
-        <div className="grid grid-cols-2 gap-3.5 pt-1 shrink-0">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 pt-1 shrink-0">
           {/* Top Slot Tab */}
           <button
             type="button"
@@ -209,39 +208,39 @@ export function MultipleGarmentSelector({
               setActiveSlot("top");
               setSelectedCategory("All Tops");
             }}
-            className={`p-3.5 rounded-2xl border text-left transition-all duration-300 cursor-pointer relative flex items-center gap-3.5 ${
+            className={`p-2.5 sm:p-3.5 rounded-2xl border text-left transition-all duration-300 cursor-pointer relative flex items-center gap-2.5 sm:gap-3.5 ${
               activeSlot === "top"
                 ? "bg-foreground text-background border-foreground shadow-md ring-2 ring-foreground/20"
                 : "bg-muted/30 border-border/80 hover:border-foreground/40 hover:bg-muted/50"
             }`}
           >
             {selectedTop ? (
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-background shrink-0 border border-border/40 relative">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-background shrink-0 border border-border/40 relative">
                 <img
                   src={selectedTop.image}
                   alt={selectedTop.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-foreground text-background flex items-center justify-center">
-                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-foreground text-background flex items-center justify-center">
+                  <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 stroke-[3]" />
                 </div>
               </div>
             ) : (
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                 activeSlot === "top" ? "bg-background/10 border-background/20 text-background" : "bg-muted/60 border-border/40 text-muted-foreground"
               }`}>
-                <Shirt className="w-6 h-6" />
+                <Shirt className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             )}
-            <div className="space-y-0.5 min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <span className={`text-[10px] uppercase font-bold tracking-wider ${
+            <div className="space-y-0.5 min-w-0 flex-1 overflow-hidden">
+              <div className="flex items-center justify-between gap-1">
+                <span className={`text-[10px] uppercase font-bold tracking-wider shrink-0 ${
                   activeSlot === "top" ? "text-background/80" : "text-muted-foreground"
                 }`}>
                   Slot 1
                 </span>
                 {selectedTop && (
-                  <span className={`text-[10px] font-semibold px-2 py-0.2 rounded-full ${
+                  <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.2 rounded-full truncate ${
                     activeSlot === "top" ? "bg-background/20 text-background" : "bg-accent/10 text-accent"
                   }`}>
                     Selected
@@ -263,39 +262,39 @@ export function MultipleGarmentSelector({
               setActiveSlot("bottom");
               setSelectedCategory("All Bottoms");
             }}
-            className={`p-3.5 rounded-2xl border text-left transition-all duration-300 cursor-pointer relative flex items-center gap-3.5 ${
+            className={`p-2.5 sm:p-3.5 rounded-2xl border text-left transition-all duration-300 cursor-pointer relative flex items-center gap-2.5 sm:gap-3.5 ${
               activeSlot === "bottom"
                 ? "bg-foreground text-background border-foreground shadow-md ring-2 ring-foreground/20"
                 : "bg-muted/30 border-border/80 hover:border-foreground/40 hover:bg-muted/50"
             }`}
           >
             {selectedBottom ? (
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-background shrink-0 border border-border/40 relative">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-background shrink-0 border border-border/40 relative">
                 <img
                   src={selectedBottom.image}
                   alt={selectedBottom.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-foreground text-background flex items-center justify-center">
-                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-foreground text-background flex items-center justify-center">
+                  <Check className="w-2 h-2 sm:w-2.5 sm:h-2.5 stroke-[3]" />
                 </div>
               </div>
             ) : (
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                 activeSlot === "bottom" ? "bg-background/10 border-background/20 text-background" : "bg-muted/60 border-border/40 text-muted-foreground"
               }`}>
-                <Layers className="w-6 h-6" />
+                <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             )}
-            <div className="space-y-0.5 min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <span className={`text-[10px] uppercase font-bold tracking-wider ${
+            <div className="space-y-0.5 min-w-0 flex-1 overflow-hidden">
+              <div className="flex items-center justify-between gap-1">
+                <span className={`text-[10px] uppercase font-bold tracking-wider shrink-0 ${
                   activeSlot === "bottom" ? "text-background/80" : "text-muted-foreground"
                 }`}>
                   Slot 2
                 </span>
                 {selectedBottom && (
-                  <span className={`text-[10px] font-semibold px-2 py-0.2 rounded-full ${
+                  <span className={`text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.2 rounded-full truncate ${
                     activeSlot === "bottom" ? "bg-background/20 text-background" : "bg-accent/10 text-accent"
                   }`}>
                     Selected
@@ -380,13 +379,13 @@ export function MultipleGarmentSelector({
         {/* Garment Grid with Generous Gaps & Full Padding */}
         {isLoading ? (
           <div
-            style={{ maxHeight: "calc(100vh - 25.5rem)", minHeight: "250px", overflowY: "auto" }}
-            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            style={{ minHeight: "260px" }}
+            className="p-1 sm:p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 max-h-[540px] sm:max-h-[600px] lg:max-h-[calc(100vh-22rem)] overflow-y-auto pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
                 key={i}
-                className="border border-border rounded-lg overflow-hidden bg-card animate-pulse"
+                className="border border-border rounded-md overflow-hidden bg-card animate-pulse"
               >
                 <div className="w-full aspect-[3/4] bg-muted/60" />
                 <div className="p-3.5 space-y-2 border-t border-border/40">
@@ -402,8 +401,8 @@ export function MultipleGarmentSelector({
           </div>
         ) : (
           <div
-            style={{ maxHeight: "calc(100vh - 25.5rem)", minHeight: "250px", overflowY: "auto" }}
-            className="p-1 sm:p-2 grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-3.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
+            style={{ minHeight: "260px" }}
+            className="p-1 sm:p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 max-h-[540px] sm:max-h-[600px] lg:max-h-[calc(100vh-22rem)] overflow-y-auto pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/80 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40"
           >
             {filteredGarments.map((garment) => {
               const isSelected =

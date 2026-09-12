@@ -70,8 +70,7 @@ export function UserSelector({
 
   return (
     <div
-      style={{ flex: "1 1 360px", maxWidth: "420px", minWidth: "280px" }}
-      className="w-full border border-border bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 flex flex-col justify-between shadow-xs gap-3 md:gap-5 mx-auto md:mx-0 md:self-start"
+      className="w-full max-w-lg lg:max-w-[420px] lg:w-[380px] xl:w-[420px] shrink-0 border border-border bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 flex flex-col justify-between shadow-xs gap-3 md:gap-5 mx-auto lg:mx-0 lg:self-start"
     >
       <div className="space-y-2.5 sm:space-y-4">
         {/* Header */}
@@ -105,8 +104,8 @@ export function UserSelector({
           </button>
         </div>
 
-        {/* Canvas Preview Viewport (Strict 3:4 Portrait Aspect Ratio Always, Dynamic Height Scaling) */}
-        <div className="border border-border/80 rounded-2xl overflow-hidden bg-muted/20 relative shadow-inner aspect-[3/4] w-full max-h-[calc(100dvh-17.5rem)] md:max-h-[calc(100vh-21.5rem)] min-h-[240px] mx-auto flex items-center justify-center">
+        {/* Canvas Preview Viewport (Strict 3:4 Portrait Aspect Ratio Always, Width Dynamic to Height) */}
+        <div className="border border-border/80 rounded-2xl overflow-hidden bg-muted/20 relative shadow-inner aspect-[3/4] h-[calc(100vh-21rem)] max-h-[440px] min-h-[220px] w-auto max-w-full mx-auto flex items-center justify-center shrink-0">
           <div className="w-full h-full flex items-center justify-center relative">
             {isGenerating ? (
               <div className="absolute inset-0 bg-card/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center gap-4 z-20">

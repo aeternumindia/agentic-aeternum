@@ -88,7 +88,7 @@ export function StepProductBrowser({
           No products found in this category
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
           {products.map((product) => {
             const isSelected = product.id === selectedId;
             return (
@@ -96,7 +96,7 @@ export function StepProductBrowser({
                 key={product.id}
                 type="button"
                 onClick={() => handlePick(product)}
-                className={`group relative rounded-xl border overflow-hidden text-left transition-all ${
+                className={`group relative rounded-md border overflow-hidden text-left transition-all ${
                   isSelected
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-border bg-card hover:border-muted-foreground"

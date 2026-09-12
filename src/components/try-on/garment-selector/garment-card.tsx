@@ -47,7 +47,7 @@ export function GarmentCard({
     <div
       onClick={onSelect}
       className={cn(
-        "group relative border rounded-xl overflow-hidden text-left cursor-pointer transition-all duration-300 bg-card flex flex-col justify-between",
+        "group relative border rounded-md overflow-hidden text-left cursor-pointer transition-all duration-300 bg-card flex flex-col justify-between",
         isSelected
           ? "ring-2 ring-foreground ring-offset-2 ring-offset-background border-foreground shadow-md -translate-y-0.5"
           : "border-border/70 hover:border-foreground/40 hover:shadow-md hover:-translate-y-0.5"
@@ -86,17 +86,17 @@ export function GarmentCard({
       </div>
 
       {/* Card Details */}
-      <div className="px-3.5 py-3 sm:px-4 sm:py-3.5 flex flex-col justify-between flex-1 border-t border-border/40 bg-card/90 gap-2">
+      <div className="px-3 py-2.5 sm:px-3.5 sm:py-3 flex flex-col justify-between flex-1 border-t border-border/40 bg-card/90 gap-1.5">
         <div>
           <p className="text-xs sm:text-[13px] font-medium text-foreground tracking-tight line-clamp-1 group-hover:text-accent transition-colors">
             {garment.name}
           </p>
-          <div className="flex items-center justify-between mt-1.5 pt-1 border-t border-border/30">
-            <span className="text-[10px] uppercase font-medium tracking-wider text-muted-foreground/80">
+          <div className="flex items-center justify-between mt-1 pt-1 border-t border-border/30 gap-1">
+            <span className="text-[10px] uppercase font-medium tracking-wider text-muted-foreground/80 truncate max-w-[60%]">
               {normalizeCategory(garment.category)}
             </span>
             {garment.price && (
-              <span className="text-xs font-semibold text-foreground tracking-tight">
+              <span className="text-xs font-semibold text-foreground tracking-tight shrink-0">
                 ₹{Number(garment.price).toLocaleString("en-IN")}
               </span>
             )}
@@ -106,7 +106,7 @@ export function GarmentCard({
         {/* Interactive Size Selector Row */}
         {garment.sizes && garment.sizes.length > 0 && (
           <div
-            className="mt-1 pt-2 border-t border-border/30"
+            className="mt-0.5 pt-1.5 border-t border-border/30"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-wrap gap-1">
@@ -118,7 +118,7 @@ export function GarmentCard({
                     type="button"
                     onClick={(e) => handleSizeClick(e, sz)}
                     className={cn(
-                      "px-2 py-0.5 text-[10px] font-semibold rounded-md border transition-all cursor-pointer shadow-2xs",
+                      "px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold rounded-md border transition-all cursor-pointer shadow-2xs",
                       isSizeActive
                         ? "bg-foreground text-background border-foreground font-bold scale-105 shadow-xs"
                         : "bg-muted/30 border-border/70 text-foreground hover:border-foreground/50 hover:bg-muted/70 active:scale-95"
