@@ -31,6 +31,7 @@ export function MessageList({ messages, isLoading, onSendMessage }: MessageListP
   const bottomRef = useRef<HTMLDivElement>(null);
   const [modalProduct, setModalProduct] = useState<ModalProduct | null>(null);
   const [cartModalItems, setCartModalItems] = useState<AddToCartItem[] | null>(null);
+  const [cartModalOutfitTitle, setCartModalOutfitTitle] = useState<string | undefined>(undefined);
   const { setState } = useAppState();
   const { startTryOn } = useVirtualTryOn();
 
@@ -51,20 +52,21 @@ export function MessageList({ messages, isLoading, onSendMessage }: MessageListP
   }
 
   function handleShopTheLook(outfit: OutfitRecommendation) {
+    setCartModalOutfitTitle(outfit.title);
     setCartModalItems([
       {
         handle: outfit.shirt.handle,
         title: outfit.shirt.title,
         image: outfit.shirt.image || "",
         price: `₹${Number(outfit.shirt.price).toLocaleString("en-IN")}`,
-        category: "Shirt",
+        category: "Top",
       },
       {
         handle: outfit.trouser.handle,
         title: outfit.trouser.title,
         image: outfit.trouser.image || "",
         price: `₹${Number(outfit.trouser.price).toLocaleString("en-IN")}`,
-        category: "Trouser",
+        category: "Bottom",
       },
     ]);
   }
@@ -280,7 +282,11 @@ export function MessageList({ messages, isLoading, onSendMessage }: MessageListP
       {cartModalItems && (
         <AddToCartModal
           items={cartModalItems}
-          onClose={() => setCartModalItems(null)}
+          outfitTitle={cartModalOutfitTitle}
+          onClose={() => {
+            setCartModalItems(null);
+            setCartModalOutfitTitle(undefined);
+          }}
         />
       )}
     </div>
