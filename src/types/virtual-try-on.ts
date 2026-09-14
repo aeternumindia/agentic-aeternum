@@ -40,6 +40,19 @@ export type ProductSizeChart = {
   fitNotes: string | null;
 };
 
+export type TryOnGarmentItem = {
+  productId: string;
+  productHandle: string;
+  productTitle: string;
+  productImage: string;
+  productCategory: string;
+  price: string;
+  currency: string;
+  selectedSize?: string;
+  selectedColor?: string;
+  sizeChart?: ProductSizeChart | null;
+};
+
 export type TryOnSession = {
   productId: string;
   productHandle: string;
@@ -52,6 +65,7 @@ export type TryOnSession = {
   selectedColor: string;
   measurements: Record<string, number>;
   sizeChart?: ProductSizeChart | null;
+  bottomGarment?: TryOnGarmentItem | null;
 };
 
 export type TryOnResult = {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useChat } from "@/hooks/use-chat";
 import { useAppState } from "@/contexts/app-state";
-import { APP_STATES } from "@/constants";
+import { APP_STATES, SHOPPING_GOALS } from "@/constants";
 import { useRecommendations } from "@/contexts/recommendations";
 import { useVirtualTryOn } from "@/contexts/virtual-try-on";
 import { useShopifyCart } from "@/contexts/shopify-cart";
@@ -88,8 +88,10 @@ export function ChatPanel() {
     prevMessageCount.current = messages.length;
   }, [messages, setProducts]);
 
-  function handleSelectGoal(goalId: string) {
-    sendMessage(goalId);
+  function handleSelectGoal(goalOrPrompt: string) {
+    const matched = SHOPPING_GOALS.find((g) => g.id === goalOrPrompt);
+    const textToSend = matched ? matched.prompt : goalOrPrompt;
+    sendMessage(textToSend);
     setState(APP_STATES.RECOMMENDATIONS);
   }
 
@@ -115,7 +117,11 @@ export function ChatPanel() {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto w-full px-4 sm:px-6">
-              <MessageList messages={messages} isLoading={isLoading} />
+              <MessageList
+                messages={messages}
+                isLoading={isLoading}
+                onSendMessage={sendMessage}
+              />
 
               {error && (
                 <div className="pb-4 animate-fade-in">

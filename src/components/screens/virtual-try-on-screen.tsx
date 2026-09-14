@@ -364,6 +364,19 @@ export function VirtualTryOnScreen({
       formData.append("faceImage", selfieFile);
       formData.append("garmentImage", garmentFile);
 
+      if (session.bottomGarment?.productImage) {
+        try {
+          const bottomRes = await fetch(session.bottomGarment.productImage);
+          const bottomBlob = await bottomRes.blob();
+          const bottomFile = await convertHeicToJpegIfNeeded(
+            new File([bottomBlob], "bottom-garment.jpg", { type: bottomBlob.type || "image/jpeg" })
+          );
+          formData.append("bottomGarmentImage", bottomFile);
+        } catch (e) {
+          console.warn("Failed to load bottom garment for dual try-on:", e);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/api/try-on/image`, {
         method: "POST",
         body: formData,

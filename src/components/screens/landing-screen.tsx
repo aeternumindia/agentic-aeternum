@@ -26,7 +26,7 @@ export function LandingScreen({ onSelectGoal, disabled }: LandingScreenProps) {
       <div className="w-full">
         <PromptCards
           prompts={SHOPPING_GOALS.map((g) => ({
-            id: g.id,
+            id: g.prompt,
             label: g.label,
             description: g.description,
           }))}

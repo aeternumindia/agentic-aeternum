@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ProductResult } from "@/types/chat";
+import type { ProductResult, OutfitRecommendation } from "@/types/chat";
 import type { SkinAnalysisResponse } from "@/types/color-analysis";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -27,6 +27,7 @@ export type ChatApiResponse = {
       title: string;
       handle: string;
     }[];
+    outfits?: OutfitRecommendation[];
     sources: unknown[];
     cartUpdated?: boolean;
     cartId?: string;

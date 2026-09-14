@@ -34,6 +34,7 @@ export async function generateResponse(
       timestamp: new Date(),
       products: result.data.products,
       collections: result.data.collections,
+      outfits: result.data.outfits,
     },
     cartUpdated: result.data.cartUpdated,
     cartId: result.data.cartId,

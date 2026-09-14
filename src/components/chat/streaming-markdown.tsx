@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const PROSE_CLASSES =
-  "prose dark:prose-invert max-w-none marker:text-foreground [&_a]:text-primary [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_h1]:text-xl [&_h1]:font-medium [&_h2]:text-lg [&_h2]:font-medium [&_h3]:text-base [&_h3]:font-medium [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-sm [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:overflow-x-auto";
+  "prose prose-sm sm:prose-base dark:prose-invert max-w-none text-[13px] sm:text-base [&_p]:text-[13px] sm:[&_p]:text-base [&_p]:leading-relaxed [&_p]:my-1.5 sm:[&_p]:my-2.5 marker:text-foreground [&_a]:text-primary [&_a]:underline [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-border [&_th]:px-2 [&_th]:py-1 [&_th]:bg-muted [&_td]:border [&_td]:border-border [&_td]:px-2 [&_td]:py-1 [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_h1]:text-base sm:[&_h1]:text-xl [&_h1]:font-medium [&_h2]:text-sm sm:[&_h2]:text-lg [&_h2]:font-medium [&_h3]:text-xs sm:[&_h3]:text-base [&_h3]:font-medium [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs sm:[&_code]:text-sm [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-2.5 sm:[&_pre]:p-3 [&_pre]:overflow-x-auto";
 
 type StreamingMarkdownProps = {
   content: string;

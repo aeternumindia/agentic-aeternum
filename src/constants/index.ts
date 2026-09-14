@@ -18,21 +18,25 @@ export const SHOPPING_GOALS = [
     id: "wedding",
     label: "Wedding Season",
     description: "Find the perfect outfit for a wedding celebration",
+    prompt: "Recommend a complete outfit for a wedding celebration",
   },
   {
     id: "date-night",
     label: "Date Night",
     description: "Smart casual fits for a night out",
+    prompt: "Recommend a complete outfit for a date night",
   },
   {
     id: "casual",
     label: "Casual Luxe",
     description: "Elevate your everyday style",
+    prompt: "Style an elevated casual outfit for me",
   },
   {
     id: "formal",
     label: "Formal Wear",
     description: "Power dressing for professionals",
+    prompt: "Recommend a sharp formal outfit for business",
   },
 ] as const;
 

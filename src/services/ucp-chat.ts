@@ -32,6 +32,7 @@ export async function generateUcpResponse(
       content: result.data.response,
       timestamp: new Date(),
       products: result.data.products,
+      outfits: result.data.outfits,
     },
     cartId: result.data.cartId,
   };

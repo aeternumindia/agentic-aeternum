@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ProductResult } from "@/types/chat";
+import type { ProductResult, OutfitRecommendation } from "@/types/chat";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -21,6 +21,7 @@ export type UcpChatApiResponse = {
   data: {
     response: string;
     products: ProductResult[];
+    outfits?: OutfitRecommendation[];
     cartId?: string;
     checkoutUrl?: string;
     sources: unknown[];

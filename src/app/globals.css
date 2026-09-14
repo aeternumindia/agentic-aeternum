@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-cursive: var(--font-cursive);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -401,4 +402,8 @@
     font-size: 16px !important;
     transform: translateZ(0);
   }
+}
+
+.font-cursive {
+  font-family: var(--font-cursive), "Caveat", "Brush Script MT", cursive, sans-serif;
 }

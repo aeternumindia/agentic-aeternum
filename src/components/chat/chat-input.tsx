@@ -28,7 +28,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
   }
 
   return (
-    <div className="px-3 sm:px-4 pb-3 sm:pb-5 pt-2">
+    <div className="px-3 sm:px-4 pb-2.5 sm:pb-5 pt-1.5 sm:pt-2">
       <form onSubmit={handleSubmit} className="flex justify-center">
         <div className="relative flex w-full max-w-2xl items-center rounded-xl border border-input bg-card shadow-sm transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
           <input
@@ -37,21 +37,21 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
             onChange={(e) => setValue(e.target.value)}
             placeholder="Tell me what you're looking for..."
             disabled={isLoading}
-            className="min-h-[48px] sm:min-h-[56px] w-full bg-transparent px-3 sm:px-4 py-2 sm:py-3 text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
+            className="min-h-[44px] sm:min-h-[56px] w-full bg-transparent px-3 sm:px-4 py-1.5 sm:py-3 text-[13px] sm:text-sm outline-none placeholder:text-muted-foreground placeholder:text-[13px] sm:placeholder:text-sm disabled:opacity-50"
           />
           {hasText && (
             <button
               type="submit"
               disabled={isLoading}
-              className="mr-2 flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer"
+              className="mr-1.5 sm:mr-2 flex size-7 sm:size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50 cursor-pointer"
               aria-label="Send message"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           )}
         </div>
       </form>
-      <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+      <p className="mt-1 text-center text-[9px] sm:text-[10px] text-muted-foreground">
         AI can make mistakes. Verify product details before purchasing.
       </p>
     </div>
