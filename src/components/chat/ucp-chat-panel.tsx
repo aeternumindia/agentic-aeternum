@@ -11,7 +11,8 @@ import { MessageList } from "./message-list";
 import { ChatInput } from "./chat-input";
 import { LandingScreen } from "@/components/screens/landing-screen";
 import { CheckoutScreen } from "@/components/screens/checkout-screen";
-import { TryOnDrawer } from "@/components/virtual-try-on/try-on-drawer";
+import { VirtualTryOnModal } from "@/components/virtual-try-on/virtual-try-on-modal";
+import { AISizeCheckerModal } from "@/components/try-on/size-checker";
 import apiClient from "@/services/api";
 import type { CartItem } from "@/types/product";
 
@@ -30,6 +31,7 @@ export function UcpChatPanel() {
   const { session, clearTryOn } = useVirtualTryOn();
   const { addToCart } = useShopifyCart();
   const [tryOnAdding, setTryOnAdding] = useState(false);
+  const [isSizeCheckerOpen, setIsSizeCheckerOpen] = useState(false);
   const prevMessageCount = useRef(messages.length);
 
   const handleAddToCartFromTryOn = useCallback(
@@ -135,19 +137,34 @@ export function UcpChatPanel() {
         <ChatInput onSend={sendMessage} isLoading={isLoading} />
       </div>
 
-      {isTryOnActive && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/50" onClick={handleBackFromTryOn} />
-          <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-background shadow-xl animate-slide-in-right overflow-y-auto">
-            <TryOnDrawer
-              productTitle={session.productTitle}
-              onAddToCart={handleAddToCartFromTryOn}
-              onBack={handleBackFromTryOn}
-              onClose={handleBackFromTryOn}
-            />
-          </div>
-        </div>
-      )}
+      <VirtualTryOnModal
+        isOpen={Boolean(isTryOnActive)}
+        onClose={handleBackFromTryOn}
+        productTitle={session?.productTitle || ""}
+        onAddToCart={handleAddToCartFromTryOn}
+        onBack={handleBackFromTryOn}
+        onOpenSizeChecker={() => setIsSizeCheckerOpen(true)}
+      />
+
+      <AISizeCheckerModal
+        isOpen={isSizeCheckerOpen}
+        onClose={() => setIsSizeCheckerOpen(false)}
+        selectedGarments={
+          session
+            ? [
+                {
+                  id: session.productId || "1",
+                  name: session.productTitle || "Selected Product",
+                  category: session.productCategory || "Apparel",
+                  image: session.productImage || "",
+                  price: session.price || "",
+                  handle: session.productHandle || "",
+                  sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +27,11 @@ import { FitScoreGauge } from "@/components/virtual-try-on/fit-score-gauge";
 import { SizeChartModal } from "@/components/virtual-try-on/size-chart-modal";
 import type { TryOnSession, ProductSizeChart } from "@/types/virtual-try-on";
 import type { CartItem } from "@/types/product";
+import { StepMeasurements } from "@/components/try-on/size-checker/step-measurements";
+import { StepCalculating } from "@/components/try-on/size-checker/step-calculating";
+import { StepResult } from "@/components/try-on/size-checker/step-result";
+import type { BodyMeasurements, PresetProfile } from "@/components/try-on/size-checker/types";
+import type { GarmentItem } from "@/components/try-on/garment-selector/garment-selector";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -34,6 +39,8 @@ type VirtualTryOnScreenProps = {
   onAddToCart: (item: CartItem) => void;
   onBack: () => void;
   productSizes?: string[];
+  showFitScoresTab?: boolean;
+  onOpenSizeChecker?: () => void;
 };
 
 type MeasurementField = {
@@ -90,9 +97,53 @@ export function VirtualTryOnScreen({
   onAddToCart,
   onBack,
   productSizes = ["XS", "S", "M", "L", "XL", "XXL"],
+  showFitScoresTab = true,
+  onOpenSizeChecker,
 }: VirtualTryOnScreenProps) {
   const { session, result, startTryOn, updateSize, computeFitScore } = useVirtualTryOn();
   const [tab, setTab] = useState<Tab>("ai");
+
+  // New Step-Based Size Checker State for Fit Scores Tab
+  const [fitStep, setFitStep] = useState<1 | 2 | 3>(1);
+  const [fitMeasurements, setFitMeasurements] = useState<BodyMeasurements>({
+    height: 176,
+    chest: 96,
+    waist: 80,
+    hips: 98,
+  });
+
+  const handleFitChangeMeasurement = (
+    field: keyof BodyMeasurements,
+    value: number
+  ) => {
+    setFitMeasurements((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFitApplyPreset = (preset: PresetProfile) => {
+    setFitMeasurements({
+      height: preset.height,
+      chest: preset.chest,
+      waist: preset.waist,
+      hips: preset.hips,
+    });
+  };
+
+  const selectedGarmentsForFit: GarmentItem[] = useMemo(() => {
+    if (session?.productId || session?.productTitle) {
+      return [
+        {
+          id: session.productId || "1",
+          name: session.productTitle || "Selected Product",
+          category: session.productCategory || "Apparel",
+          image: session.productImage || "",
+          price: session.price || "",
+          handle: session.productHandle || "",
+          sizes: productSizes,
+        },
+      ];
+    }
+    return [];
+  }, [session, productSizes]);
 
   const [fullBodyFile, setFullBodyFile] = useState<File | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -345,504 +396,283 @@ export function VirtualTryOnScreen({
 
   return (
     <div className="space-y-5 px-4 py-5 animate-fade-in">
-      <div className="flex gap-1 rounded-lg bg-muted p-1 w-fit">
-        <button
-          type="button"
-          onClick={() => setTab("ai")}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-            tab === "ai" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          AI Preview
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("fit")}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-            tab === "fit" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Eye className="h-3.5 w-3.5" />
-          Fit Scores
-        </button>
-      </div>
-
-      {/* AI Preview Tab */}
-      <div className={tab === "ai" ? "block" : "hidden"}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Camera className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">Full Body</span>
-                {fullBodyFile && <Check className="h-3 w-3 text-green-500" />}
-              </div>
-              <div
-                onDrop={(e) => handlePhotoDrop(e, "fullBody")}
-                onDragOver={(e) => e.preventDefault()}
-                onClick={() => fullBodyRef.current?.click()}
-                className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all overflow-hidden"
-              >
-                {fullBodyPreview ? (
-                  <img src={fullBodyPreview} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <>
-                    <Upload className="h-6 w-6 text-muted-foreground/40 mb-1" />
-                    <p className="text-[10px] text-muted-foreground text-center px-2">Tap to capture</p>
-                  </>
-                )}
-              </div>
-              <input ref={fullBodyRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handlePhotoSelect(e, "fullBody")} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Camera className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">Selfie</span>
-                {selfieFile && <Check className="h-3 w-3 text-green-500" />}
-              </div>
-              <div
-                onDrop={(e) => handlePhotoDrop(e, "selfie")}
-                onDragOver={(e) => e.preventDefault()}
-                onClick={() => selfieRef.current?.click()}
-                className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 hover:bg-accent/5 transition-all overflow-hidden"
-              >
-                {selfiePreview ? (
-                  <img src={selfiePreview} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <>
-                    <Upload className="h-6 w-6 text-muted-foreground/40 mb-1" />
-                    <p className="text-[10px] text-muted-foreground text-center px-2">Tap to capture</p>
-                  </>
-                )}
-              </div>
-              <input ref={selfieRef} type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => handlePhotoSelect(e, "selfie")} />
-            </div>
-          </div>
-
-          {aiStatus === "generating" && (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="aspect-[4/5] bg-muted flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-8 w-8 animate-spin text-accent" />
-                <p className="text-xs text-foreground font-medium">Generating your try-on...</p>
-                <p className="text-[10px] text-muted-foreground">15-30 seconds</p>
-              </div>
-            </div>
-          )}
-
-          {aiStatus === "done" && aiResultUrl && (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="aspect-[4/5] bg-muted relative">
-                <img src={aiResultUrl} alt="AI try-on" className="h-full w-full object-cover" />
-                <span className="absolute top-2 left-2 bg-accent/80 text-accent-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">AI Generated</span>
-              </div>
-              <div className="p-2 flex gap-2 justify-center">
-                <Button size="lg" variant="outline" className="text-xs h-9" onClick={() => {
-                  const a = document.createElement("a");
-                  a.href = aiResultUrl;
-                  a.download = "aeternum-try-on.png";
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                }}>
-                  <Download className="mr-1 h-3 w-3" /> Download
-                </Button>
-                <Button size="lg" variant="outline" className="text-xs h-9" onClick={generateAiTryOn}>
-                  <RefreshCw className="mr-1 h-3 w-3" /> Regenerate
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {aiStatus === "error" && (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-center">
-              <p className="text-xs text-destructive mb-2">{aiError || "Failed to generate"}</p>
-              <Button size="lg" variant="outline" className="text-xs h-9" onClick={generateAiTryOn}>
-                <RefreshCw className="mr-1 h-3 w-3" /> Try Again
-              </Button>
-            </div>
-          )}
-
-          <Button
-            size="lg"
-            className="w-full"
-            disabled={!fullBodyFile || !selfieFile || aiStatus === "generating"}
-            onClick={generateAiTryOn}
-          >
-            <Sparkles className="mr-2 h-3 w-3" />
-            {aiStatus === "generating" ? "Generating..." : "Generate AI Try-On"}
-          </Button>
-
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-            Stand against a plain background with good lighting
-          </div>
-        </div>
-      </div>
-
-      {/* Fit Scores Tab */}
-      <div className={tab === "fit" ? "block" : "hidden"}>
-        <div className="space-y-4">
-          {/* ════════════ Measurements Card ════════════ */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-            {/* Header row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Ruler className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">Your Measurements</span>
-              </div>
-              <div className="flex rounded-lg bg-muted p-0.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (unit === "in") {
-                      setMeasurementValues((prev) => {
-                        const next: Record<string, string> = {};
-                        for (const [k, v] of Object.entries(prev)) {
-                          const n = parseFloat(v);
-                          next[k] = isNaN(n) ? "" : Math.round(n * 2.54).toString();
-                        }
-                        return next;
-                      });
-                    }
-                    setUnit("cm");
-                  }}
-                  className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-all ${
-                    unit === "cm" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-                  }`}
-                >
-                  cm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (unit === "cm") {
-                      setMeasurementValues((prev) => {
-                        const next: Record<string, string> = {};
-                        for (const [k, v] of Object.entries(prev)) {
-                          const n = parseFloat(v);
-                          next[k] = isNaN(n) ? "" : Math.round(n / 2.54).toString();
-                        }
-                        return next;
-                      });
-                    }
-                    setUnit("in");
-                  }}
-                  className={`rounded-md px-2 py-0.5 text-[10px] font-medium transition-all ${
-                    unit === "in" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-                  }`}
-                >
-                  in
-                </button>
-              </div>
-            </div>
-
-            {/* Stale banner */}
-            {isStale && (
-              <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50/80 dark:border-amber-800/40 dark:bg-amber-900/20 px-4 py-3">
-                <span className="mt-0.5 text-amber-600 dark:text-amber-400 text-xs font-medium">△</span>
-                <p className="text-xs text-amber-700 dark:text-amber-300">
-                  Measurements changed — tap <strong>Recalculate</strong> for updated scores.
-                </p>
-              </div>
-            )}
-
-            {/* Always-editable measurement inputs */}
-            <div className="grid grid-cols-2 gap-2">
-              {fields.map((field) => (
-                <div key={field.key}>
-                  <label className="mb-1 block text-[10px] text-muted-foreground">
-                    {field.label} ({unit})
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder={field.placeholder}
-                    value={measurementValues[field.key] ?? ""}
-                    onChange={(e) => setMeasurementValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Size selector — always visible before/beside calculation */}
-            <div>
-              <label className="mb-1 block text-[10px] text-muted-foreground">Size</label>
-              <div className="relative inline-flex w-full">
-                <select
-                  value={session?.selectedSize || ""}
-                  onChange={(e) => updateSize(e.target.value)}
-                  className="w-full rounded-md border border-border bg-background px-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent min-h-[44px] cursor-pointer appearance-none"
-                >
-                  <option value="" disabled>Select a size</option>
-                  {productSizes.map((s) => (
-                    <option key={s} value={s}>
-                      Size {s}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Calculate button */}
-            <Button
-              size="lg"
-              className="w-full"
-              variant={hasCalculatedOnce.current ? "outline" : "default"}
-              disabled={
-                calculating ||
-                !hasAnyMeasurements ||
-                !session?.selectedSize
-              }
-              onClick={handleCalculate}
+      {showFitScoresTab && (
+        <div className="flex justify-center pb-1">
+          <div className="inline-flex items-center p-1 rounded-xl bg-muted/60 border border-border/40 gap-1 w-full max-w-sm">
+            <button
+              type="button"
+              onClick={() => setTab("ai")}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                tab === "ai"
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {calculating ? (
-                <>
-                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                  Calculating...
-                </>
-              ) : hasCalculatedOnce.current ? (
-                <>
-                  <RefreshCw className="mr-1.5 h-3 w-3" />
-                  Recalculate Fit Scores
-                </>
-              ) : (
-                <>
-                  <Ruler className="mr-1.5 h-3 w-3" />
-                  Calculate Fit Score
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* ════════════ Fit Score Card ════════════ */}
-          {result && fitScore && (
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-              {/* Gauge + Label row */}
-              <div className="flex flex-row items-center gap-3">
-                <FitScoreGauge score={fitScore.overall} size="sm" />
-                <div className="text-left min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-foreground">{fitScore.label}</p>
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wide ${
-                        fitScore.overall >= 90
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : fitScore.overall >= 70
-                            ? "text-teal-600 dark:text-teal-400"
-                            : fitScore.overall >= 50
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {fitScore.overall >= 90
-                        ? "Great"
-                        : fitScore.overall >= 70
-                          ? "Good"
-                          : fitScore.overall >= 50
-                            ? "Fair"
-                            : "Poor"}
-                    </span>
-                    {result.chartUnit && (
-                      <span className="text-[9px] text-muted-foreground/60 border border-border rounded px-1 py-0.5 uppercase tracking-wider">
-                        {result.chartUnit === "in" ? "in" : "cm"}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{session?.productTitle}</p>
-                  {result.chartUnit && result.chartUnit !== unit && (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
-                      Chart in inches — toggle input to <span className="font-medium">in</span> for matching values
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Size selector row */}
-              <div className="flex flex-row items-stretch sm:items-center gap-2">
-                <div className="flex-1 relative inline-flex">
-                  <select
-                    value={session?.selectedSize || ""}
-                    onChange={(e) => updateSize(e.target.value)}
-                    className="w-full rounded-md border border-border bg-background px-2 pr-6 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent min-h-[44px] cursor-pointer appearance-none"
-                  >
-                    {productSizes.map((s) => (
-                      <option key={s} value={s}>
-                        Size {s}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-                </div>
-                {result.recommendedSize && result.recommendedSize !== session?.selectedSize && (
-                  <button
-                    type="button"
-                    onClick={() => updateSize(result.recommendedSize!)}
-                    className="rounded-md bg-teal-50 dark:bg-teal-900/30 border border-teal-200 dark:border-teal-800/40 px-3 py-1.5 text-xs font-medium text-teal-700 dark:text-teal-300 whitespace-nowrap hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors min-h-[44px] flex items-center justify-center gap-1"
-                  >
-                    Try {result.recommendedSize}
-                    <Check className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-
-              {/* Description */}
-              <p className="text-xs text-muted-foreground leading-relaxed">{fitScore.description}</p>
-
-              {/* Fit Details */}
-              {result.comparisonRows.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                    Fit Details
-                  </p>
-                  {result.comparisonRows.map((row) => (
-                    <div
-                      key={row.label}
-                      className="flex items-center justify-between rounded-md bg-muted/50 px-2.5 py-1.5"
-                    >
-                      <span className="text-xs text-foreground capitalize">{row.label}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-muted-foreground">
-                          {fromCm(Math.round(row.userValue * 10) / 10, unit)} {unit}
-                          {row.sizeRange.min !== row.sizeRange.max
-                            ? ` (${fromCm(row.sizeRange.min, unit)}-${fromCm(row.sizeRange.max, unit)} ${unit})`
-                            : ` (${fromCm(row.sizeRange.min, unit)} ${unit})`}
-                        </span>
-                        <span
-                          className={`text-[11px] font-medium ${
-                            row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus)
-                              ? "text-green-600"
-                              : row.fitStatus === "acceptable"
-                              ? "text-amber-600"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus)
-                            ? "✓"
-                            : row.fitStatus === "acceptable"
-                            ? "△"
-                            : "✗"}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Size chart section */}
-              {result.sizeChart ? (
-                <>
-                  {!result.sizeChart.chartData && !result.sizeChart.image && !result.sizeChart.fitNotes ? (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 italic leading-relaxed">
-                      Scores estimated without size chart data — may be less accurate.
-                    </p>
-                  ) : (
-                    <div className="pt-1 border-t border-border">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedChart(expandedChart === "size" ? null : "size")}
-                        className="flex items-center gap-1.5 w-full rounded-md border border-border bg-background px-2 py-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
-                      >
-                        <Ruler className="h-3.5 w-3.5" />
-                        Size Chart
-                        <ChevronDown
-                          className={`h-3 w-3 ml-auto transition-transform ${
-                            expandedChart === "size" ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-                      {expandedChart === "size" && (
-                        <SizeChartModal
-                          title={session?.productTitle || ""}
-                          chartData={result.sizeChart.chartData}
-                          image={result.sizeChart.image}
-                          fitNotes={result.sizeChart.fitNotes}
-                          onClose={() => setExpandedChart(null)}
-                        />
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 italic leading-relaxed">
-                  Scores estimated without size chart data — may be less accurate.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* ════════════ Loading State ════════════ */}
-          {calculating && !result && (
-            <div className="rounded-xl border border-border bg-card p-6 text-center space-y-3">
-              <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Fetching size chart data...</p>
-            </div>
-          )}
-
-          {/* ════════════ Error State ════════════ */}
-          {error && (
-            <div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
-              <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-xs text-destructive">{error}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Product card — shown in both tabs ── */}
-      {session?.productTitle && (
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
-          {session.productImage && (
-            <div className="h-16 w-16 rounded-lg overflow-hidden bg-muted shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={session.productImage}
-                alt={session.productTitle}
-                className="h-full w-full object-cover"
-              />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground truncate">
-              {session.productTitle}
-            </p>
-            <div className="flex items-center gap-2 mt-0.5">
-              {session.selectedSize && (
-                <p className="text-xs text-muted-foreground">Size: {session.selectedSize}</p>
-              )}
-              {session.price && (
-                <p className="text-xs font-medium text-foreground">
-                  {session.currency === "INR" ? "₹" : ""}{session.price}
-                </p>
-              )}
-            </div>
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Virtual Try-On</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("fit")}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                tab === "fit"
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Ruler className="h-3.5 w-3.5" />
+              <span>Size Recommendation</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* ── Add to Cart — visible from both tabs once a size is selected ── */}
-      {session?.selectedSize && (
-        <div className="sticky bottom-0 pt-2 pb-1 bg-background">
+      {/* AI Preview Tab */}
+      <div className={tab === "ai" ? "block" : "hidden"}>
+        <div className="space-y-3">
+          {/* Top 2-Column Upload Grid */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Full Body Photo Button */}
+            <button
+              type="button"
+              onClick={() => fullBodyRef.current?.click()}
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-border bg-card text-xs font-medium text-foreground hover:border-primary/40 hover:bg-accent/5 transition-all shadow-2xs cursor-pointer"
+            >
+              {fullBodyPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={fullBodyPreview} alt="Full Body" className="h-5 w-5 rounded-md object-cover" />
+              ) : (
+                <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+              <span className="truncate">{fullBodyFile ? "Full Body" : "Upload Full Body"}</span>
+              {fullBodyFile && <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />}
+            </button>
+            <input ref={fullBodyRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handlePhotoSelect(e, "fullBody")} />
+
+            {/* Selfie Photo Button */}
+            <button
+              type="button"
+              onClick={() => selfieRef.current?.click()}
+              className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-border bg-card text-xs font-medium text-foreground hover:border-primary/40 hover:bg-accent/5 transition-all shadow-2xs cursor-pointer"
+            >
+              {selfiePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={selfiePreview} alt="Selfie" className="h-5 w-5 rounded-md object-cover" />
+              ) : (
+                <Camera className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
+              <span className="truncate">{selfieFile ? "Selfie" : "Upload Selfie"}</span>
+              {selfieFile && <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />}
+            </button>
+            <input ref={selfieRef} type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => handlePhotoSelect(e, "selfie")} />
+          </div>
+
+          {/* Full-width Generate Button */}
           <Button
-            size="lg"
-            className="w-full"
-            disabled={adding || addDone || !session?.selectedSize}
-            onClick={handleAddToCart}
+            size="sm"
+            disabled={!fullBodyFile || !selfieFile || aiStatus === "generating"}
+            onClick={generateAiTryOn}
+            className="w-full rounded-xl text-xs h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs"
           >
-            {addDone ? (
-              <>
-                <Check className="mr-1.5 h-4 w-4" />
-                Added to Cart!
-              </>
-            ) : adding ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <ShoppingBag className="mr-1.5 h-4 w-4" />
-                Add to Cart
-              </>
-            )}
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+            {aiStatus === "generating" ? "Generating Try-On..." : "Generate Virtual Try-On"}
           </Button>
+
+          {/* Main Studio Try-On Canvas */}
+          <div className="relative mx-auto w-full max-w-sm aspect-[3/4] max-h-[380px] rounded-2xl border border-border/60 bg-[#FAF8F5] dark:bg-stone-950 overflow-hidden flex flex-col items-center justify-center shadow-md">
+            {aiStatus === "generating" ? (
+              <div className="flex flex-col items-center justify-center p-6 text-center gap-3">
+                <Loader2 className="h-9 w-9 animate-spin text-accent" />
+                <p className="text-sm font-medium text-foreground">Generating your AI Try-On...</p>
+                <p className="text-xs text-muted-foreground">This takes about 15-30 seconds</p>
+              </div>
+            ) : aiStatus === "done" && aiResultUrl ? (
+              <div className="relative w-full h-full group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={aiResultUrl} alt="AI Try-On Canvas" className="w-full h-full object-contain" />
+                <span className="absolute top-3 left-3 bg-background/80 backdrop-blur-md border border-border/40 text-foreground text-[10px] uppercase font-semibold tracking-wider px-2.5 py-0.5 rounded-full shadow-2xs">
+                  AI Try-On Canvas
+                </span>
+
+                {/* Floating Glass Actions Overlay */}
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = aiResultUrl;
+                      a.download = "aeternum-try-on.png";
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-md text-foreground text-xs font-medium shadow-sm hover:bg-white transition-all cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generateAiTryOn}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 dark:bg-black/90 backdrop-blur-md text-foreground text-xs font-medium shadow-sm hover:bg-white transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                  </button>
+                </div>
+              </div>
+            ) : fullBodyPreview ? (
+              <div className="relative w-full h-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={fullBodyPreview} alt="Full Body Preview Canvas" className="w-full h-full object-contain" />
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 via-black/20 to-transparent text-white text-center">
+                  <p className="text-xs font-medium">
+                    {selfieFile ? "Ready! Tap 'Generate Virtual Try-On' above" : "Please upload a selfie photo to continue"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="relative w-full h-full">
+                {session?.productImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={session.productImage} alt={session.productTitle} className="w-full h-full object-contain" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-6 text-center text-muted-foreground">
+                    <Shirt className="h-8 w-8 mb-2 opacity-50" />
+                  </div>
+                )}
+                <span className="absolute top-3 left-3 bg-background/80 backdrop-blur-md border border-border/40 text-foreground text-[10px] uppercase font-semibold tracking-wider px-2.5 py-0.5 rounded-full shadow-2xs">
+                  Original Item
+                </span>
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent text-white text-center">
+                  <p className="text-xs font-medium">
+                    Upload Full Body & Selfie photos above to try on this garment
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {aiStatus === "error" && (
+            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-center">
+              <p className="text-xs text-destructive mb-2">{aiError || "Failed to generate try-on"}</p>
+              <Button size="sm" variant="outline" className="text-xs h-8 rounded-full" onClick={generateAiTryOn}>
+                <RefreshCw className="mr-1 h-3 w-3" /> Retry
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Fit Scores Tab (New AI Size & Fit Recommender) */}
+      <div className={tab === "fit" ? "block space-y-4" : "hidden"}>
+        {/* Wizard Step Indicator */}
+        <div className="flex items-center gap-2 pt-1 pb-3 border-b border-border/60">
+          <div className="flex-1 flex items-center gap-1.5">
+            <div className={`h-1.5 flex-1 rounded-full transition-colors ${fitStep >= 1 ? "bg-accent" : "bg-muted/50"}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-colors ${fitStep >= 2 ? "bg-accent" : "bg-muted/50"}`} />
+            <div className={`h-1.5 flex-1 rounded-full transition-colors ${fitStep >= 3 ? "bg-accent" : "bg-muted/50"}`} />
+          </div>
+          <span className="text-[11px] font-semibold text-muted-foreground shrink-0">
+            {fitStep === 1
+              ? "Step 1/2: Body Profile"
+              : fitStep === 2
+              ? "Calculating..."
+              : "Step 2/2: Sizing Result"}
+          </span>
+        </div>
+
+        {/* Step Views */}
+        {fitStep === 1 && (
+          <div className="space-y-4">
+            <StepMeasurements
+              selectedGarments={selectedGarmentsForFit}
+              measurements={fitMeasurements}
+              onChangeMeasurement={handleFitChangeMeasurement}
+              onApplyPreset={handleFitApplyPreset}
+              onCalculate={() => setFitStep(2)}
+            />
+            <button
+              type="submit"
+              form="size-checker-form"
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs hover:opacity-90 active:scale-95 transition-all"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Calculate AI Recommended Size</span>
+            </button>
+          </div>
+        )}
+
+        {fitStep === 2 && (
+          <StepCalculating onComplete={() => setFitStep(3)} />
+        )}
+
+        {fitStep === 3 && (
+          <StepResult
+            selectedGarments={selectedGarmentsForFit}
+            measurements={fitMeasurements}
+            onRecalculate={() => setFitStep(1)}
+            onClose={() => {}}
+          />
+        )}
+      </div>
+
+      {/* Integrated Compact Product Footer + Add to Cart */}
+      {session?.productTitle && (
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/60">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            {session.productImage && (
+              <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={session.productImage}
+                  alt={session.productTitle}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-foreground truncate">
+                {session.productTitle}
+              </p>
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                {session.selectedSize && <span>Size: {session.selectedSize}</span>}
+                {(onOpenSizeChecker || showFitScoresTab) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenSizeChecker) onOpenSizeChecker();
+                      else setTab("fit");
+                    }}
+                    className="text-[10px] text-primary hover:underline font-semibold cursor-pointer inline-flex items-center gap-0.5"
+                  >
+                    <Ruler className="h-3 w-3" />
+                    <span>Check Fit</span>
+                  </button>
+                )}
+                {session.price && <span className="font-semibold text-foreground">{session.currency === "INR" ? "₹" : ""}{session.price}</span>}
+              </div>
+            </div>
+          </div>
+
+          {session?.selectedSize && (
+            <Button
+              size="sm"
+              className="h-9 px-4 rounded-xl text-xs shrink-0 font-medium"
+              disabled={adding || addDone || !session?.selectedSize}
+              onClick={handleAddToCart}
+            >
+              {addDone ? (
+                <>
+                  <Check className="mr-1 h-3.5 w-3.5" /> Added
+                </>
+              ) : adding ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <>
+                  <ShoppingBag className="mr-1.5 h-3.5 w-3.5" /> Add to Cart
+                </>
+              )}
+            </Button>
+          )}
         </div>
       )}
     </div>
