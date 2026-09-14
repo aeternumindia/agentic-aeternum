@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import apiClient from "@/services/api";
 
 const CART_STORAGE_KEY = "aeternum_cart_id";
@@ -81,6 +81,8 @@ type ShopifyCartContextValue = {
   dismissUpsell: () => void;
   /** Close cart and navigate to AI shopping */
   openAiShopping: () => void;
+  /** Line IDs currently syncing with server */
+  updatingLineIds: string[];
 };
 
 const ShopifyCartContext = createContext<ShopifyCartContextValue | null>(null);
@@ -88,6 +90,109 @@ const ShopifyCartContext = createContext<ShopifyCartContextValue | null>(null);
 function getStoredCartId(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(CART_STORAGE_KEY);
+}
+
+const CHECKOUT_URL_STORAGE_KEY = "aeternum_checkout_url";
+
+function getStoredCheckoutUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(CHECKOUT_URL_STORAGE_KEY);
+}
+
+function storeCheckoutUrl(url?: string | null) {
+  if (typeof window === "undefined" || !url) return;
+  try {
+    localStorage.setItem(CHECKOUT_URL_STORAGE_KEY, url);
+  } catch {}
+}
+
+export function resolveCheckoutUrl(
+  rawUrl?: string | null,
+  cartId?: string | null,
+  prevUrl?: string | null
+): string {
+  if (rawUrl && typeof rawUrl === "string" && rawUrl.startsWith("http")) {
+    storeCheckoutUrl(rawUrl);
+    return rawUrl;
+  }
+  if (prevUrl && typeof prevUrl === "string" && prevUrl.startsWith("http")) {
+    return prevUrl;
+  }
+  const stored = getStoredCheckoutUrl();
+  if (stored && stored.startsWith("http")) {
+    return stored;
+  }
+  if (cartId) {
+    const match = cartId.match(/Cart\/([^?]+)(?:\?key=([^&]+))?/);
+    if (match) {
+      const token = match[1];
+      const key = match[2];
+      const url = key
+        ? `https://www.aeternumindia.com/cart/c/${token}?key=${key}`
+        : `https://www.aeternumindia.com/cart/c/${token}`;
+      storeCheckoutUrl(url);
+      return url;
+    }
+  }
+  return "https://www.aeternumindia.com/cart";
+}
+
+function normalizeCart(rawCart: ShopifyCart, prevCart?: ShopifyCart | null): ShopifyCart {
+  const checkoutUrl = resolveCheckoutUrl(
+    rawCart.checkoutUrl,
+    rawCart.id,
+    prevCart?.checkoutUrl
+  );
+  return {
+    ...rawCart,
+    checkoutUrl,
+  };
+}
+
+function computeOptimisticCart(
+  currentCart: ShopifyCart,
+  lineId: string,
+  newQuantity: number
+): ShopifyCart {
+  const updatedLines =
+    newQuantity <= 0
+      ? currentCart.lines.filter((l) => l.id !== lineId)
+      : currentCart.lines.map((l) =>
+          l.id === lineId ? { ...l, quantity: newQuantity } : l
+        );
+
+  const totalQuantity = updatedLines.reduce((sum, l) => sum + l.quantity, 0);
+
+  let newSubtotal = 0;
+  for (const l of updatedLines) {
+    const price = Number(l.merchandise.price.amount) || 0;
+    newSubtotal += price * l.quantity;
+  }
+
+  const oldSubtotal = Number(currentCart.cost.subtotalAmount.amount) || newSubtotal;
+  const oldTotal = Number(currentCart.cost.totalAmount.amount) || oldSubtotal;
+  const discountDiff = Math.max(0, oldSubtotal - oldTotal);
+  const newTotal = Math.max(0, newSubtotal - discountDiff);
+
+  const currencyCode = currentCart.cost.subtotalAmount.currencyCode || "INR";
+  const checkoutUrl = resolveCheckoutUrl(currentCart.checkoutUrl, currentCart.id);
+
+  return {
+    ...currentCart,
+    checkoutUrl,
+    totalQuantity,
+    lines: updatedLines,
+    cost: {
+      subtotalAmount: {
+        amount: newSubtotal.toFixed(2),
+        currencyCode,
+      },
+      totalAmount: {
+        amount: newTotal.toFixed(2),
+        currencyCode,
+      },
+    },
+  };
 }
 
 /** Friendly messages for each error code, shown below the coupon input */
@@ -114,6 +219,16 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<ShopifyCart | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [discount, setDiscount] = useState<DiscountState>(initialDiscountState);
+  const [updatingLineIds, setUpdatingLineIds] = useState<string[]>([]);
+
+  const updateTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const previousConfirmedCartRef = useRef<ShopifyCart | null>(null);
+
+  useEffect(() => {
+    return () => {
+      Object.values(updateTimersRef.current).forEach(clearTimeout);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,7 +249,9 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
           if (data.success && data.data.cart) {
             localStorage.setItem(CART_STORAGE_KEY, cartId);
             setCartId(cartId);
-            setCart(data.data.cart);
+            const normalized = normalizeCart(data.data.cart);
+            previousConfirmedCartRef.current = normalized;
+            setCart(normalized);
             return;
           }
         } catch {}
@@ -147,7 +264,9 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
           const { data } = await apiClient.get(`/cart/${encodeURIComponent(stored)}`);
           if (cancelled) return;
           if (data.success && data.data.cart) {
-            setCart(data.data.cart);
+            const normalized = normalizeCart(data.data.cart);
+            previousConfirmedCartRef.current = normalized;
+            setCart(normalized);
             return;
           }
         } catch {
@@ -163,9 +282,13 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
           const newCartId = data.data.cart.id;
           localStorage.setItem(CART_STORAGE_KEY, newCartId);
           setCartId(newCartId);
-          setCart(data.data.cart);
+          const normalized = normalizeCart(data.data.cart);
+          previousConfirmedCartRef.current = normalized;
+          setCart(normalized);
         }
-      } catch {}
+      } catch (err) {
+        console.error("Failed to initialize Shopify cart:", err);
+      }
     }
 
     initCart();
@@ -174,9 +297,12 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function discoverStorefrontCart(): Promise<string | null> {
+    if (typeof document === "undefined") return null;
+
     // Read cart token from cookie (works on same domain, may fail cross-subdomain)
     try {
-      const cartCookie = document.cookie.split("; ").find((c) => c.startsWith("cart="));
+      const cookies = document.cookie.split(";").map((c) => c.trim());
+      const cartCookie = cookies.find((c) => c.startsWith("cart="));
       if (cartCookie) {
         const token = cartCookie.slice(5);
         if (token && token.length > 10) return token;
@@ -192,11 +318,14 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
     try {
       const { data } = await apiClient.get(`/cart/${encodeURIComponent(id)}`);
       if (data.success && data.data.cart) {
-        setCart(data.data.cart);
+        const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+        previousConfirmedCartRef.current = normalized;
+        setCart(normalized);
       }
     } catch {
       localStorage.removeItem(CART_STORAGE_KEY);
       setCartId(null);
+      previousConfirmedCartRef.current = null;
       setCart(null);
     }
   }, [cartId]);
@@ -217,7 +346,9 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
     const newCartId = data.data.cart.id;
     localStorage.setItem(CART_STORAGE_KEY, newCartId);
     setCartId(newCartId);
-    setCart(data.data.cart);
+    const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+    previousConfirmedCartRef.current = normalized;
+    setCart(normalized);
     return newCartId;
   }, [cartId]);
 
@@ -228,20 +359,90 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
       lines: [{ merchandiseId: variantId, quantity }],
     });
     if (data.success && data.data.cart) {
-      setCart(data.data.cart);
+      const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+      previousConfirmedCartRef.current = normalized;
+      setCart(normalized);
     }
   }, [ensureCart]);
 
-  const updateLine = useCallback(async (lineId: string, quantity: number) => {
-    if (!cartId) return;
-    const { data } = await apiClient.post("/cart/update", {
-      cartId,
-      lines: [{ id: lineId, quantity }],
-    });
-    if (data.success && data.data.cart) {
-      setCart(data.data.cart);
-    }
-  }, [cartId]);
+  const updateLine = useCallback(
+    async (lineId: string, quantity: number) => {
+      const activeCartId = cartId || getStoredCartId();
+      if (!activeCartId) return;
+
+      // 1. Optimistic immediate state update (0ms UI latency)
+      setCart((prevCart) => {
+        if (!prevCart) return prevCart;
+        if (!previousConfirmedCartRef.current) {
+          previousConfirmedCartRef.current = prevCart;
+        }
+        return computeOptimisticCart(prevCart, lineId, quantity);
+      });
+
+      setUpdatingLineIds((prev) => (prev.includes(lineId) ? prev : [...prev, lineId]));
+
+      // 2. Immediate deletion without debounce
+      if (quantity <= 0) {
+        if (updateTimersRef.current[lineId]) {
+          clearTimeout(updateTimersRef.current[lineId]);
+          delete updateTimersRef.current[lineId];
+        }
+
+        try {
+          const { data } = await apiClient.post("/cart/update", {
+            cartId: activeCartId,
+            lines: [{ id: lineId, quantity: 0 }],
+          });
+          if (data.success && data.data?.cart) {
+            const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+            previousConfirmedCartRef.current = normalized;
+            setCart(normalized);
+          }
+        } catch (err) {
+          console.error("Failed to delete cart line:", err);
+          if (previousConfirmedCartRef.current) {
+            setCart(previousConfirmedCartRef.current);
+          }
+        } finally {
+          setUpdatingLineIds((prev) => prev.filter((id) => id !== lineId));
+        }
+        return;
+      }
+
+      // 3. Debounce quantity updates by 300ms to coalesce fast clicks
+      if (updateTimersRef.current[lineId]) {
+        clearTimeout(updateTimersRef.current[lineId]);
+      }
+
+      updateTimersRef.current[lineId] = setTimeout(async () => {
+        delete updateTimersRef.current[lineId];
+
+        try {
+          const { data } = await apiClient.post("/cart/update", {
+            cartId: activeCartId,
+            lines: [{ id: lineId, quantity }],
+          });
+
+          if (data.success && data.data?.cart) {
+            const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+            previousConfirmedCartRef.current = normalized;
+            // Only overwrite if no newer update timer is active for this line
+            if (!updateTimersRef.current[lineId]) {
+              setCart(normalized);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to update cart line quantity:", err);
+          if (previousConfirmedCartRef.current) {
+            setCart(previousConfirmedCartRef.current);
+          }
+        } finally {
+          setUpdatingLineIds((prev) => prev.filter((id) => id !== lineId));
+        }
+      }, 300);
+    },
+    [cartId]
+  );
 
   const handleSetCartId = useCallback((id: string) => {
     localStorage.setItem(CART_STORAGE_KEY, id);
@@ -270,7 +471,9 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
       });
 
       if (data.success && data.data?.cart) {
-        setCart(data.data.cart);
+        const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+        previousConfirmedCartRef.current = normalized;
+        setCart(normalized);
         setDiscount({ status: "applied", code: trimmed, error: null, minimumAmount: undefined, upsellDismissed: false });
       } else {
         // Backend returned structured error
@@ -294,7 +497,11 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
         }
 
         // If the backend still returned a cart (e.g., partial state), update it
-        if (data.cart) setCart(data.cart);
+        if (data.cart) {
+          const normalized = normalizeCart(data.cart, previousConfirmedCartRef.current);
+          previousConfirmedCartRef.current = normalized;
+          setCart(normalized);
+        }
       }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; error?: string } }; message?: string };
@@ -316,7 +523,9 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
       });
 
       if (data.success && data.data?.cart) {
-        setCart(data.data.cart);
+        const normalized = normalizeCart(data.data.cart, previousConfirmedCartRef.current);
+        previousConfirmedCartRef.current = normalized;
+        setCart(normalized);
       }
 
       setDiscount(initialDiscountState);
@@ -367,6 +576,7 @@ export function ShopifyCartProvider({ children }: { children: ReactNode }) {
         discountSavings,
         dismissUpsell,
         openAiShopping,
+        updatingLineIds,
       }}
     >
       {children}

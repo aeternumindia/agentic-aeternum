@@ -1,6 +1,6 @@
 "use client";
 
-import { X, ShoppingBag, ExternalLink, Trash2, Percent } from "lucide-react";
+import { X, ShoppingBag, ExternalLink, Trash2, Percent, Minus, Plus } from "lucide-react";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import { CouponSection } from "./coupon-section";
 import { UpsellBanner } from "./upsell-banner";
@@ -43,7 +43,7 @@ export function CartDrawer() {
                     return (
                       <div
                         key={line.id}
-                        className="flex gap-3 rounded-xl border border-border bg-card p-3"
+                        className="flex gap-3 rounded-xl border border-border bg-card p-3 items-center"
                       >
                         <div className="h-16 w-16 shrink-0 rounded-lg bg-muted overflow-hidden">
                           {img?.url ? (
@@ -69,11 +69,48 @@ export function CartDrawer() {
                             ₹{Number(line.merchandise.price.amount).toLocaleString("en-IN")}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">×{line.quantity}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {/* Quantity Stepper with min 1 limit */}
+                          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (line.quantity > 1) {
+                                  updateLine(line.id, line.quantity - 1);
+                                }
+                              }}
+                              disabled={line.quantity <= 1}
+                              className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-background disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all cursor-pointer"
+                              aria-label="Decrease quantity"
+                              title={
+                                line.quantity <= 1
+                                  ? "Minimum quantity is 1 (use trash button to remove)"
+                                  : "Decrease quantity"
+                              }
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="w-5 text-center text-xs font-mono font-medium text-foreground select-none">
+                              {line.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateLine(line.id, line.quantity + 1)}
+                              className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition-all cursor-pointer"
+                              aria-label="Increase quantity"
+                              title="Increase quantity"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          {/* Delete Button */}
                           <button
+                            type="button"
                             onClick={() => updateLine(line.id, 0)}
-                            className="text-muted-foreground hover:text-destructive transition-colors"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                            aria-label="Remove item"
+                            title="Remove item"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -113,10 +150,17 @@ export function CartDrawer() {
 
                   {/* Checkout button */}
                   <a
-                    href={cart.checkoutUrl}
+                    href={cart.checkoutUrl || "https://www.aeternumindia.com/cart"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 text-sm font-medium hover:opacity-90 transition-opacity"
+                    onClick={(e) => {
+                      const targetUrl = cart.checkoutUrl || "https://www.aeternumindia.com/cart";
+                      if (targetUrl) {
+                        window.open(targetUrl, "_blank", "noopener,noreferrer");
+                        e.preventDefault();
+                      }
+                    }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground py-3 text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer select-none"
                   >
                     <ExternalLink className="h-4 w-4" />
                     Checkout
