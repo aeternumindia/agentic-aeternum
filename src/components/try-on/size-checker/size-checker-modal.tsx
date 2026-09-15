@@ -63,7 +63,7 @@ export function AISizeCheckerModal({
         <DialogHeader className="shrink-0 px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border/70 text-left pr-10 sm:pr-12">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#8C3A3F]/10 flex items-center justify-center text-[#8C3A3F] shrink-0">
                 <Ruler className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
@@ -90,9 +90,9 @@ export function AISizeCheckerModal({
           {/* Wizard Step Indicator */}
           <div className="flex items-center gap-2 sm:gap-3 pt-2.5 sm:pt-3">
             <div className="flex-1 flex items-center gap-1.5">
-              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-accent" : "bg-muted/50"}`} />
-              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-accent" : "bg-muted/50"}`} />
-              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 3 ? "bg-accent" : "bg-muted/50"}`} />
+              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-[#8C3A3F]" : "bg-stone-200 dark:bg-stone-800"}`} />
+              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-[#8C3A3F]" : "bg-stone-200 dark:bg-stone-800"}`} />
+              <div className={`h-1.5 flex-1 rounded-full transition-colors ${step >= 3 ? "bg-[#8C3A3F]" : "bg-stone-200 dark:bg-stone-800"}`} />
             </div>
             <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground shrink-0">
               {step === 1

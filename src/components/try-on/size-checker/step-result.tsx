@@ -15,6 +15,7 @@ import { useShopifyCart } from "@/contexts/shopify-cart";
 import apiClient, { getSizeChart } from "@/services/api";
 import { BodyMeasurements } from "./types";
 import { ProductSizeChart, TryOnSession } from "@/types/virtual-try-on";
+import { cn } from "@/lib/utils";
 
 interface StepResultProps {
   selectedGarments: GarmentItem[];
@@ -399,27 +400,27 @@ export function StepResult({
       {garmentResults.length > 1 && (
         <div className="space-y-3">
           {/* Complete Outfit Sizing Summary Card */}
-          <div className="p-4 rounded-2xl bg-neutral-900 border border-neutral-800 text-white shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                <Shirt className="w-4 h-4" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#F4EFEA] dark:bg-stone-900/90 border border-stone-200/90 dark:border-stone-800 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#8C3A3F]/10 border border-[#8C3A3F]/20 flex items-center justify-center text-[#8C3A3F] shrink-0">
+                <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
-                  Complete Outfit Recommended Sizing
+                <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#8C3A3F]">
+                  Outfit Recommended Sizing
                 </p>
-                <div className="flex items-center gap-3 text-xs font-bold mt-0.5 text-white">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold mt-1 text-stone-900 dark:text-stone-100 flex-wrap">
                   {garmentResults.map((res, i) => {
                     const isExceeded = res.isOverExtremeSize || !res.recommendedSize;
                     return (
-                      <span key={i} className="flex items-center gap-1">
-                        <span className="text-neutral-300 font-normal">
+                      <span key={i} className="inline-flex items-center gap-1.5 bg-white/90 dark:bg-stone-800/90 px-2.5 py-0.5 rounded-md border border-stone-200/80 dark:border-stone-700/60 font-mono text-xs">
+                        <span className="text-stone-500 font-normal">
                           {i === 0 ? "Top:" : "Bottom:"}
-                        </span>{" "}
+                        </span>
                         {isExceeded ? (
-                          <span className="text-amber-400 font-bold">Unavailable</span>
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">Unavailable</span>
                         ) : (
-                          <span>Size {res.recommendedSize}</span>
+                          <span className="font-bold text-stone-900 dark:text-stone-100">Size {res.recommendedSize}</span>
                         )}
                       </span>
                     );
@@ -438,7 +439,7 @@ export function StepResult({
                   <button
                     type="button"
                     disabled
-                    className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-neutral-800 text-neutral-400 text-xs font-bold flex items-center justify-center gap-1.5 opacity-60 cursor-not-allowed shrink-0 border border-neutral-700"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-200 dark:bg-stone-800 text-stone-400 text-xs font-semibold flex items-center justify-center gap-1.5 opacity-60 cursor-not-allowed shrink-0 border border-stone-300 dark:border-stone-700"
                   >
                     <span>Sizes Unavailable</span>
                   </button>
@@ -450,7 +451,7 @@ export function StepResult({
                   type="button"
                   onClick={handleAddAllToCart}
                   disabled={addingAll}
-                  className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all shrink-0"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#8C3A3F] hover:bg-[#772F34] text-white text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-[0.99] transition-all shrink-0"
                 >
                   {addingAll ? (
                     <>
@@ -459,7 +460,7 @@ export function StepResult({
                     </>
                   ) : addedAll ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-black font-bold" />
+                      <Check className="w-3.5 h-3.5 text-white font-bold" />
                       <span>Added to Cart ✓</span>
                     </>
                   ) : (
@@ -474,7 +475,7 @@ export function StepResult({
           </div>
 
           {/* Garment Switcher Tabs */}
-          <div className="flex items-center gap-2 border-b border-border pb-2">
+          <div className="flex items-center gap-2 sm:gap-2.5 pb-1">
             {garmentResults.map((res, idx) => {
               const isActive = activeGarmentIndex === idx;
               const isExceeded = res.isOverExtremeSize || !res.recommendedSize;
@@ -483,28 +484,34 @@ export function StepResult({
                   key={res.garment.id || idx}
                   type="button"
                   onClick={() => setActiveGarmentIndex(idx)}
-                  className={`flex-1 p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${
+                  className={`flex-1 p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2.5 sm:gap-3 ${
                     isActive
-                      ? "bg-foreground text-background border-foreground font-semibold shadow-xs"
-                      : "bg-card hover:bg-muted/30 border-border/70 text-muted-foreground hover:text-foreground"
+                      ? "bg-[#1C1917] text-white border-[#1C1917] shadow-sm ring-1 ring-black/10"
+                      : "bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border-stone-200/90 dark:border-stone-800 text-stone-700 dark:text-stone-300"
                   }`}
                 >
-                  <img
-                    src={res.garment.image}
-                    alt={res.garment.name}
-                    className="w-7 h-8 rounded-lg object-cover bg-muted/40 shrink-0"
-                  />
+                  <div className="w-8 h-10 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 shrink-0 border border-black/10">
+                    <img
+                      src={res.garment.image}
+                      alt={res.garment.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] uppercase font-bold tracking-wider truncate opacity-80">
+                    <p className={`text-[9px] sm:text-[10px] uppercase font-mono tracking-widest font-semibold truncate ${
+                      isActive ? "text-[#EAE3D6]" : "text-stone-500"
+                    }`}>
                       {idx === 0 ? "Top Garment" : "Bottom Garment"}
                     </p>
-                    <p className="text-xs font-bold truncate">
+                    <p className="text-xs sm:text-[13px] font-bold truncate mt-0.5">
                       {isExceeded ? (
-                        <span className="text-amber-500 font-bold">Size Unavailable</span>
+                        <span className="text-amber-400 font-bold">Unavailable</span>
                       ) : (
                         `Size ${res.recommendedSize}`
                       )}{" "}
-                      • <span className="font-normal opacity-80">{isExceeded ? "Exceeds Range" : res.fitScore.label}</span>
+                      <span className={`font-normal text-[11px] ${isActive ? "text-stone-300" : "text-stone-500"}`}>
+                        · {isExceeded ? "Exceeds Range" : res.fitScore.label}
+                      </span>
                     </p>
                   </div>
                 </button>
@@ -561,140 +568,165 @@ export function StepResult({
         </div>
       ) : activeResult && (
         <>
-          <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-card via-muted/20 to-accent/10 border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-5">
-            <div className="space-y-1 text-center sm:text-left flex-1 min-w-0">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent/15 text-accent text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
-                <ShieldCheck className="w-3 h-3" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800 shadow-2xs space-y-3.5">
+            {/* Top Bar: Category Pill on Left, Refined Fit Status Badge on Right */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF8F5] dark:bg-stone-800 border border-stone-200/80 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-[10px] font-mono uppercase tracking-wider font-semibold">
+                <ShieldCheck className="w-3 h-3 text-[#8C3A3F]" />
                 <span>
                   {isSizeMatch(activeResult.activeSize, activeResult.recommendedSize)
-                    ? `AI Optimal Sizing for ${activeResult.category}`
-                    : `Inspecting Size ${activeResult.activeSize} (AI Rec: Size ${activeResult.recommendedSize})`}
+                    ? `AI Optimal Sizing · ${activeResult.category}`
+                    : `Inspecting Size ${activeResult.activeSize} · AI Rec: Size ${activeResult.recommendedSize}`}
                 </span>
               </div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                Size {activeResult.activeSize}
-              </h3>
-              <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                {activeResult.garment.name}
-              </p>
 
-              <div className="pt-1.5 sm:pt-2">
-                {activeResult.isAvailable ? (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleAddSingleToCart(
-                        activeResult.garment,
-                        activeResult.variantId,
-                        activeResult.activeSize,
-                        activeGarmentIndex
-                      )
-                    }
-                    disabled={addingIndex === activeGarmentIndex}
-                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-4 sm:px-5 rounded-xl text-[11px] sm:text-xs font-semibold cursor-pointer shadow-xs transition-all disabled:opacity-50 ${
-                      addedIndices.includes(activeGarmentIndex)
-                        ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                        : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
-                    }`}
-                  >
-                    {addingIndex === activeGarmentIndex ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>Adding Size {activeResult.activeSize}...</span>
-                      </>
-                    ) : addedIndices.includes(activeGarmentIndex) ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-white font-bold" />
-                        <span>Size {activeResult.activeSize} Added to Cart ✓</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span>Add Size {activeResult.activeSize} to Cart</span>
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium border border-amber-500/20">
-                      <Info className="w-4 h-4 shrink-0 text-amber-500" />
-                      <span>
-                        {activeResult.isOffered
-                          ? `Size ${activeResult.activeSize} is currently out of stock.`
-                          : `Size ${activeResult.activeSize} is not offered for this item.`}
-                      </span>
-                    </div>
-
-                    {activeResult.closestInStockVariant && activeResult.closestSizeLabel && (
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleAddSingleToCart(
-                              activeResult.garment,
-                              activeResult.closestInStockVariant.id,
-                              activeResult.closestSizeLabel,
-                              activeGarmentIndex
-                            )
-                          }
-                          disabled={addingIndex === activeGarmentIndex}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold cursor-pointer transition-all"
-                        >
-                          {addingIndex === activeGarmentIndex ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              <span>Adding Size {activeResult.closestSizeLabel}...</span>
-                            </>
-                          ) : (
-                            <>
-                              <ShoppingBag className="w-3.5 h-3.5" />
-                              <span>Add Closest Available Size ({activeResult.closestSizeLabel}) to Cart</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+              {/* Editorial Luxury Fit Status Pill */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FAF8F5] dark:bg-stone-800 border border-stone-200/90 dark:border-stone-700 text-[10px] sm:text-[11px] font-mono shadow-2xs">
+                <span
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full shrink-0",
+                    !activeResult.isAvailable
+                      ? "bg-stone-400"
+                      : activeResult.fitScore.quality === "perfect" ||
+                        activeResult.fitScore.quality === "great" ||
+                        activeResult.fitScore.quality === "good"
+                      ? "bg-emerald-600"
+                      : activeResult.fitScore.quality === "acceptable"
+                      ? "bg-[#8C3A3F]"
+                      : "bg-amber-500"
+                  )}
+                />
+                <span className="font-sans font-semibold tracking-tight text-stone-900 dark:text-stone-100">
+                  {!activeResult.isAvailable
+                    ? activeResult.isOffered
+                      ? "Out of Stock"
+                      : "Not Offered"
+                    : activeResult.fitScore.label}
+                </span>
               </div>
             </div>
 
-            {!activeResult.isAvailable ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-semibold shrink-0">
-                <Info className="w-3.5 h-3.5 text-amber-600" />
-                <span>{activeResult.isOffered ? "Out of Stock" : "Not Offered"}</span>
+            {/* Main Row: Size, Title, Cart Action (left) & Garment Image Thumbnail (right) */}
+            <div className="flex items-center justify-between gap-3 sm:gap-4">
+              <div className="space-y-1.5 text-left flex-1 min-w-0">
+                <h3 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
+                  Size {activeResult.activeSize}
+                </h3>
+                <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400 truncate">
+                  {activeResult.garment.name}
+                </p>
+
+                <div className="pt-1 sm:pt-1.5">
+                  {activeResult.isAvailable ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddSingleToCart(
+                          activeResult.garment,
+                          activeResult.variantId,
+                          activeResult.activeSize,
+                          activeGarmentIndex
+                        )
+                      }
+                      disabled={addingIndex === activeGarmentIndex}
+                      className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-4 sm:px-5 rounded-xl text-[11px] sm:text-xs font-semibold cursor-pointer shadow-xs transition-all disabled:opacity-50 ${
+                        addedIndices.includes(activeGarmentIndex)
+                          ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                          : "bg-[#8C3A3F] hover:bg-[#772F34] text-white active:scale-[0.99]"
+                      }`}
+                    >
+                      {addingIndex === activeGarmentIndex ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Adding Size {activeResult.activeSize}...</span>
+                        </>
+                      ) : addedIndices.includes(activeGarmentIndex) ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-white font-bold" />
+                          <span>Size {activeResult.activeSize} Added to Cart ✓</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          <span>Add Size {activeResult.activeSize} to Cart</span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-medium border border-amber-500/20">
+                        <Info className="w-4 h-4 shrink-0 text-amber-500" />
+                        <span>
+                          {activeResult.isOffered
+                            ? `Size ${activeResult.activeSize} is currently out of stock.`
+                            : `Size ${activeResult.activeSize} is not offered for this item.`}
+                        </span>
+                      </div>
+
+                      {activeResult.closestInStockVariant && activeResult.closestSizeLabel && (
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleAddSingleToCart(
+                                activeResult.garment,
+                                activeResult.closestInStockVariant.id,
+                                activeResult.closestSizeLabel,
+                                activeGarmentIndex
+                              )
+                            }
+                            disabled={addingIndex === activeGarmentIndex}
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[#8C3A3F] hover:bg-[#772F34] text-white text-xs font-semibold cursor-pointer transition-all"
+                          >
+                            {addingIndex === activeGarmentIndex ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Adding Size {activeResult.closestSizeLabel}...</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingBag className="w-3.5 h-3.5" />
+                                <span>Add Closest Available Size ({activeResult.closestSizeLabel}) to Cart</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            ) : activeResult.fitScore.quality === "too_loose" || activeResult.fitScore.quality === "consider_sizing_down" ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-semibold shrink-0">
-                <Info className="w-3.5 h-3.5 text-amber-600" />
-                <span>{activeResult.fitScore.label}</span>
-              </div>
-            ) : activeResult.fitScore.quality === "too_tight" || activeResult.fitScore.quality === "consider_sizing_up" ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 text-red-800 dark:text-red-300 border border-red-500/30 text-xs font-semibold shrink-0">
-                <Info className="w-3.5 h-3.5 text-red-600" />
-                <span>{activeResult.fitScore.label}</span>
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold shrink-0">
-                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>{activeResult.fitScore.label}</span>
-              </div>
-            )}
+
+              {/* Garment Image Thumbnail */}
+              {activeResult.garment.image ? (
+                <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden bg-[#FAF8F5] dark:bg-stone-800 border border-stone-200/80 dark:border-stone-700 shrink-0 shadow-2xs">
+                  <img
+                    src={activeResult.garment.image}
+                    alt={activeResult.garment.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-xl bg-[#FAF8F5] dark:bg-stone-800 border border-stone-200/80 dark:border-stone-700 shrink-0 flex items-center justify-center shadow-2xs">
+                  <Shirt className="w-7 h-7 text-stone-400" />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Size Comparison & Selection Tabs Bar */}
-          <div className="space-y-2 p-3.5 bg-card rounded-2xl border border-border/70 shadow-2xs">
+          <div className="space-y-2 p-3.5 bg-[#FAF8F5] dark:bg-stone-900/60 rounded-2xl border border-stone-200/90 dark:border-stone-800 shadow-2xs">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-accent" />
+              <label className="text-[11px] font-mono font-bold uppercase tracking-widest text-stone-600 dark:text-stone-400 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#8C3A3F]" />
                 <span>Compare Sizes & Fits</span>
               </label>
-              <span className="text-[10px] text-muted-foreground font-medium">
-                AI Optimal Recommendation:{" "}
+              <span className="text-[10px] text-stone-500 font-mono">
+                AI Optimal:{" "}
                 {activeResult.isOverExtremeSize || !activeResult.recommendedSize ? (
-                  <strong className="text-amber-600 dark:text-amber-400">Size Unavailable (Exceeds Range)</strong>
+                  <strong className="text-amber-600 dark:text-amber-400">Unavailable</strong>
                 ) : (
-                  <strong className="text-foreground">Size {activeResult.recommendedSize}</strong>
+                  <strong className="text-stone-900 dark:text-stone-100">Size {activeResult.recommendedSize}</strong>
                 )}
               </span>
             </div>
@@ -716,31 +748,29 @@ export function StepResult({
                         [activeGarmentIndex]: sz,
                       }))
                     }
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
-                      isSelected && isRec
-                        ? "bg-black text-white border-2 border-amber-600 shadow-sm scale-102"
-                        : isSelected
-                        ? "bg-black text-white border-2 border-neutral-800 shadow-sm scale-102"
+                    className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
+                      isSelected
+                        ? "bg-[#1C1917] text-white border-[#1C1917] shadow-xs"
                         : isRec
-                        ? "bg-amber-500/10 border border-amber-500/40 text-amber-900 dark:text-amber-300 hover:bg-amber-500/20"
-                        : "bg-card border-border/80 text-muted-foreground hover:border-foreground/40 hover:text-foreground hover:bg-muted/30"
+                        ? "bg-white dark:bg-stone-800 border-stone-300 dark:border-stone-700 text-stone-900 dark:text-stone-100 hover:border-stone-400"
+                        : "bg-white dark:bg-stone-800 border-stone-200/80 dark:border-stone-700/60 text-stone-600 dark:text-stone-400 hover:border-stone-300 hover:text-stone-900"
                     }`}
                   >
                     <span>Size {sz}</span>
                     {isRec && (
                       <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                        className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-bold uppercase tracking-wider ${
                           isSelected
-                            ? "bg-amber-500/30 text-amber-300"
-                            : "bg-accent/25 text-accent"
+                            ? "bg-[#8C3A3F] text-white"
+                            : "bg-[#8C3A3F]/15 text-[#8C3A3F]"
                         }`}
                       >
                         AI Rec
                       </span>
                     )}
                     {isSelected && !isRec && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/20 text-white font-bold uppercase">
-                        Selected
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/20 text-white font-bold uppercase">
+                        Active
                       </span>
                     )}
                   </button>
@@ -755,19 +785,19 @@ export function StepResult({
           {activeResult.comparisonRows.length > 0 && (
             <div className="space-y-2.5">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                <h4 className="text-xs font-mono font-bold text-stone-900 dark:text-stone-100 uppercase tracking-widest">
                   Fit Analysis Breakdown ({activeResult.category})
                 </h4>
 
                 {/* Inches / CM Toggle Tabs */}
-                <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-lg border border-border/60 text-xs shrink-0">
+                <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-0.5 rounded-lg border border-stone-200/80 dark:border-stone-700 text-xs shrink-0">
                   <button
                     type="button"
                     onClick={() => setDisplayUnit("cm")}
                     className={`px-2.5 py-0.5 rounded-md font-semibold text-[11px] transition-all cursor-pointer ${
                       displayUnit === "cm"
-                        ? "bg-card text-foreground shadow-2xs border border-border/80"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-2xs"
+                        : "text-stone-500 hover:text-stone-900"
                     }`}
                   >
                     cm
@@ -777,8 +807,8 @@ export function StepResult({
                     onClick={() => setDisplayUnit("in")}
                     className={`px-2.5 py-0.5 rounded-md font-semibold text-[11px] transition-all cursor-pointer ${
                       displayUnit === "in"
-                        ? "bg-card text-foreground shadow-2xs border border-border/80"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-2xs"
+                        : "text-stone-500 hover:text-stone-900"
                     }`}
                   >
                     inches
@@ -790,35 +820,35 @@ export function StepResult({
                 {activeResult.comparisonRows.map((row) => (
                   <div
                     key={row.label}
-                    className="p-3.5 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-2.5"
+                    className="p-3.5 rounded-xl border border-stone-200/90 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-2xs space-y-2"
                   >
                     {/* Card Header: Measurement Name & Fit Status Badge */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                      <span className="text-xs font-mono font-bold text-stone-900 dark:text-stone-100 uppercase tracking-wider">
                         {row.label}
                       </span>
                       <div>
                         {!activeResult.isAvailable ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-[10px] font-semibold">
                             <Info className="w-3 h-3" />
                             {activeResult.isOffered ? "Out of Stock" : "Not Offered"}
                           </span>
                         ) : row.fitStatus === "optimal" || (row.withinRange && !row.fitStatus) ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
-                            <Check className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 text-[10px] font-semibold">
+                            <Check className="w-3 h-3 text-emerald-600" />
                             Optimal Fit
                           </span>
                         ) : row.fitStatus === "too_tight" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-300 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200/80 text-[10px] font-semibold">
                             Too Tight
                           </span>
                         ) : row.fitStatus === "too_loose" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-700 dark:text-red-300 text-[10px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200/80 text-[10px] font-semibold">
                             Too Loose
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-bold">
-                            <Info className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-stone-200 border border-stone-200/80 text-[10px] font-semibold">
+                            <Info className="w-3 h-3 text-stone-500" />
                             Acceptable Fit
                           </span>
                         )}
@@ -826,24 +856,24 @@ export function StepResult({
                     </div>
 
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-stone-100 dark:border-stone-800 text-xs">
                       {/* Metric 1: User Body Measurement */}
-                      <div className="bg-muted/30 p-2.5 rounded-xl border border-border/50">
-                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block">
+                      <div className="bg-[#FAF8F5] dark:bg-stone-800/60 p-2.5 rounded-lg border border-stone-200/70 dark:border-stone-700/60">
+                        <span className="text-[10px] text-stone-500 font-mono uppercase font-semibold block">
                           Your Body
                         </span>
-                        <span className="font-bold text-foreground text-xs mt-0.5 block">
+                        <span className="font-mono font-bold text-stone-900 dark:text-stone-100 text-xs mt-0.5 block">
                           {formatVal(row.userValue)}
                         </span>
                       </div>
 
                       {/* Metric 2: Garment Spec */}
                       {row.garmentValue ? (
-                        <div className="bg-accent/10 p-2.5 rounded-xl border border-accent/25">
-                          <span className="text-[10px] text-accent uppercase font-bold block">
+                        <div className="bg-[#FAF8F5] dark:bg-stone-800/60 p-2.5 rounded-lg border border-stone-200/70 dark:border-stone-700/60">
+                          <span className="text-[10px] text-[#8C3A3F] font-mono uppercase font-semibold block">
                             Garment Spec ({activeResult.activeSize})
                           </span>
-                          <span className="font-bold text-foreground text-xs mt-0.5 block">
+                          <span className="font-mono font-bold text-stone-900 dark:text-stone-100 text-xs mt-0.5 block">
                             {formatVal(row.garmentValue)}
                           </span>
                         </div>
@@ -1075,13 +1105,13 @@ export function StepResult({
       )}
 
       {/* Sticky Bottom Action Bar */}
-      <div className="sticky bottom-0 -mx-4 sm:-mx-6 p-3 sm:p-4 border-t border-border bg-card shadow-md flex items-center justify-between gap-2.5 sm:gap-3 shrink-0 z-20">
+      <div className="sticky bottom-0 -mx-4 sm:-mx-6 p-3 sm:p-4 border-t border-stone-200/90 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md shadow-md flex items-center justify-between gap-2.5 sm:gap-3 shrink-0 z-20">
         <button
           type="button"
           onClick={onRecalculate}
-          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-border/80 bg-card hover:bg-muted/40 text-foreground text-[11px] sm:text-xs font-medium transition-all cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 text-[11px] sm:text-xs font-semibold transition-all cursor-pointer shrink-0"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3.5 h-3.5 text-stone-500" />
           <span>Recalculate</span>
         </button>
 
@@ -1096,7 +1126,7 @@ export function StepResult({
                 <button
                   type="button"
                   disabled
-                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-muted text-muted-foreground text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 opacity-60 cursor-not-allowed"
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 opacity-60 cursor-not-allowed border border-stone-200 dark:border-stone-700"
                 >
                   <Info className="w-3.5 h-3.5 text-amber-500" />
                   <span>Outfit Sizes Unavailable (Exceeds Range)</span>
@@ -1109,10 +1139,10 @@ export function StepResult({
                 type="button"
                 onClick={handleAddAllToCart}
                 disabled={addingAll}
-                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
                   addedAll
                     ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                    : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+                    : "bg-[#8C3A3F] hover:bg-[#772F34] text-white active:scale-[0.99]"
                 }`}
               >
                 {addingAll ? (
@@ -1153,7 +1183,7 @@ export function StepResult({
                 <button
                   type="button"
                   disabled
-                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-muted text-muted-foreground text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 opacity-70 cursor-not-allowed"
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 opacity-70 cursor-not-allowed"
                 >
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Checking Availability...</span>
@@ -1178,10 +1208,10 @@ export function StepResult({
                     )
                   }
                   disabled={isAdding}
-                  className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
                     isAdded
                       ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+                      : "bg-[#8C3A3F] hover:bg-[#772F34] text-white active:scale-[0.99]"
                   }`}
                 >
                   {isAdding ? (
@@ -1221,10 +1251,10 @@ export function StepResult({
                     )
                   }
                   disabled={isAdding}
-                  className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-xs transition-all ${
                     isAdded
                       ? "bg-emerald-600 text-white hover:bg-emerald-700"
-                      : "bg-amber-600 hover:bg-amber-500 text-white active:scale-95"
+                      : "bg-[#8C3A3F] hover:bg-[#772F34] text-white active:scale-[0.99]"
                   }`}
                 >
                   {isAdding ? (
@@ -1252,7 +1282,7 @@ export function StepResult({
               <button
                 type="button"
                 disabled
-                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-muted text-muted-foreground text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 opacity-60 cursor-not-allowed"
+                className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 sm:gap-2 opacity-60 cursor-not-allowed border border-stone-200 dark:border-stone-700"
               >
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>Size {activeResult.activeSize} Out of Stock</span>
