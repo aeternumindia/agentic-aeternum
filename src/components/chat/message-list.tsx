@@ -9,6 +9,7 @@ import { getProductUrl } from "@/lib/shopify";
 import { AddToCartModal, type AddToCartItem } from "@/components/cart/add-to-cart-modal";
 import { OutfitCard } from "@/components/recommendations/outfit-card";
 import { OutfitCarousel } from "@/components/recommendations/outfit-carousel";
+import { SoloProductCarousel } from "@/components/recommendations/solo-product-carousel";
 import { APP_STATES } from "@/constants";
 import { useAppState } from "@/contexts/app-state";
 import { useVirtualTryOn } from "@/contexts/virtual-try-on";
@@ -194,67 +195,19 @@ export function MessageList({ messages, isLoading, onSendMessage }: MessageListP
           )}
 
           {message.products && message.products.length > 0 && (!message.outfits || message.outfits.length === 0) && (
-            <div className="mt-3 flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 animate-fade-in">
-              {message.products.slice(0, 6).map((product) => (
-                <div
-                  key={product.id}
-                  className="w-[145px] sm:w-[180px] shrink-0 rounded-xl border border-border bg-card overflow-hidden"
-                >
-                  <button
-                    type="button"
-                    onClick={() => window.open(getProductUrl(product.handle), "_blank", "noopener")}
-                    className="block w-full text-left"
-                  >
-                    <div className="aspect-[4/5] bg-muted flex items-center justify-center">
-                      {product.image ? (
-                        <img
-                          src={product.image}
-                          alt={product.imageAlt || product.title}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          {product.title.charAt(0)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-2.5 sm:p-3 pb-1.5 sm:pb-2">
-                      <p className="text-[11px] sm:text-xs font-medium text-card-foreground truncate">
-                        {product.title}
-                      </p>
-                      <p className="mt-0.5 sm:mt-1 text-[11px] sm:text-xs text-accent">
-                        ₹{Number(product.price).toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                  </button>
-                  <div className="px-2.5 pb-2.5 sm:px-3 sm:pb-3 flex flex-col gap-1 sm:gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setModalProduct({
-                          handle: product.handle,
-                          title: product.title,
-                          image: product.image || "",
-                          price: `₹${Number(product.price).toLocaleString("en-IN")}`,
-                          sizeChart: product.sizeChart,
-                        })
-                      }
-                      className="w-full rounded-lg bg-primary text-primary-foreground py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium hover:opacity-90 transition-opacity"
-                    >
-                      Add to Cart
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleTryOn(product)}
-                      className="w-full rounded-lg border border-accent/30 text-accent py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium hover:bg-accent/5 transition-colors"
-                    >
-                      Virtual Try-On
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SoloProductCarousel
+              products={message.products}
+              onAddToCart={(product) =>
+                setModalProduct({
+                  handle: product.handle,
+                  title: product.title,
+                  image: product.image || "",
+                  price: `₹${Number(product.price).toLocaleString("en-IN")}`,
+                  sizeChart: product.sizeChart,
+                })
+              }
+              onTryOn={handleTryOn}
+            />
           )}
         </div>
       ))}

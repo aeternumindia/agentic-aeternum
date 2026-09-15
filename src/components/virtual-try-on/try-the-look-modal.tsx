@@ -75,13 +75,16 @@ export function TryTheLookModal({
   const selfieRef = useRef<HTMLInputElement>(null);
 
   // Garment info from session
-  const topName = cleanTitle(session?.productTitle) || "Top Garment";
+  const hasBottom = Boolean(session?.bottomGarment);
+  const isBottomSolo = !hasBottom && (session?.productCategory?.toLowerCase() === "trouser" || session?.productCategory?.toLowerCase() === "bottom");
+  const primaryCategory = isBottomSolo ? "Bottom" : (hasBottom ? "Top" : (session?.productCategory || "Garment"));
+  const topName = cleanTitle(session?.productTitle) || (isBottomSolo ? "Bottom Garment" : "Garment");
   const bottomName = cleanTitle(session?.bottomGarment?.productTitle) || "Bottom Garment";
-  const outfitName = session?.outfitTitle || `${topName} & ${bottomName}`;
+  const outfitName = session?.outfitTitle || (hasBottom ? `${topName} & ${bottomName}` : topName);
 
   const topPrice = parsePrice(session?.price);
   const bottomPrice = parsePrice(session?.bottomGarment?.price);
-  const totalPrice = topPrice + bottomPrice;
+  const totalPrice = hasBottom ? topPrice + bottomPrice : topPrice;
 
   const handleFullBody = useCallback(async (file: File) => {
     const converted = await convertHeicToJpegIfNeeded(file);
@@ -171,7 +174,7 @@ export function TryTheLookModal({
         title: session.productTitle,
         image: session.productImage || "",
         price: fmtPrice(topPrice),
-        category: "Top",
+        category: primaryCategory,
       },
     ];
     if (session.bottomGarment) {
@@ -250,7 +253,9 @@ export function TryTheLookModal({
               See it on you
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Upload your photos and instantly visualize how this outfit looks on you.
+              {hasBottom
+                ? "Upload your photos and instantly visualize how this outfit looks on you."
+                : "Upload your photos and instantly visualize how this piece looks on you."}
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -447,10 +452,14 @@ export function TryTheLookModal({
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Generating your outfit try-on...
+                  {hasBottom
+                    ? "Generating your outfit try-on..."
+                    : "Generating your try-on..."}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Our AI is draping both garments onto your body profile (15–30 sec)
+                  {hasBottom
+                    ? "Our AI is draping both garments onto your body profile (15–30 sec)"
+                    : "Our AI is draping the garment onto your body profile (15–30 sec)"}
                 </p>
               </div>
             </div>
@@ -480,8 +489,8 @@ export function TryTheLookModal({
             <Sparkles className="w-4 h-4" />
             <span>
               {aiStatus === "generating"
-                ? "Generating Outfit Try-On..."
-                : "Generate Outfit Try-On (Top & Bottom)"}
+                ? (hasBottom ? "Generating Outfit Try-On..." : "Generating Try-On...")
+                : (hasBottom ? "Generate Outfit Try-On (Top & Bottom)" : "Generate Try-On")}
             </span>
             {aiStatus !== "generating" && <ArrowRight className="w-4 h-4" />}
           </button>
@@ -497,9 +506,68 @@ export function TryTheLookModal({
         <div className="shrink-0 border-t border-border/60 bg-background/98 backdrop-blur-md">
           {/* Garments row */}
           <div className="px-4 sm:px-6 pt-3 pb-2.5">
-            <div className="flex items-center gap-3">
-              {/* Top Garment Card */}
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {hasBottom ? (
+              <div className="flex items-center gap-3">
+                {/* Top Garment Card */}
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  {session?.productImage && (
+                    <div className="h-11 w-11 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={session.productImage}
+                        alt={topName}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+                        Top
+                      </span>
+                      <p className="text-xs font-semibold text-foreground truncate leading-tight">
+                        {topName}
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                      {fmtPrice(topPrice)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Vertical divider */}
+                <div className="w-px h-10 bg-border/60 shrink-0" />
+
+                {/* Bottom Garment Card */}
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  {session?.bottomGarment?.productImage && (
+                    <div className="h-11 w-11 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={session.bottomGarment.productImage}
+                        alt={bottomName}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+                        Bottom
+                      </span>
+                      <p className="text-xs font-semibold text-foreground truncate leading-tight">
+                        {bottomName}
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                      {fmtPrice(bottomPrice)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Solo Garment Card */
+              <div className="flex items-center gap-2.5 min-w-0">
                 {session?.productImage && (
                   <div className="h-11 w-11 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -513,7 +581,7 @@ export function TryTheLookModal({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                      Top
+                      {primaryCategory}
                     </span>
                     <p className="text-xs font-semibold text-foreground truncate leading-tight">
                       {topName}
@@ -524,44 +592,14 @@ export function TryTheLookModal({
                   </p>
                 </div>
               </div>
-
-              {/* Vertical divider */}
-              <div className="w-px h-10 bg-border/60 shrink-0" />
-
-              {/* Bottom Garment Card */}
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                {session?.bottomGarment?.productImage && (
-                  <div className="h-11 w-11 rounded-lg overflow-hidden bg-muted shrink-0 border border-border/60">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={session.bottomGarment.productImage}
-                      alt={bottomName}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-stone-200/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
-                      Bottom
-                    </span>
-                    <p className="text-xs font-semibold text-foreground truncate leading-tight">
-                      {bottomName}
-                    </p>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
-                    {fmtPrice(bottomPrice)}
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Total & Action Button row */}
           <div className="px-4 sm:px-6 pb-4 pt-1 flex items-center justify-between gap-4 border-t border-border/40">
             <div className="shrink-0">
               <span className="text-[9px] text-muted-foreground font-mono uppercase tracking-widest block leading-none mb-1">
-                Total for Look
+                {hasBottom ? "Total for Look" : "Price"}
               </span>
               <span className="text-base sm:text-lg font-bold text-foreground font-mono leading-tight">
                 {fmtPrice(totalPrice)}
@@ -574,7 +612,7 @@ export function TryTheLookModal({
               className="flex-1 max-w-[240px] h-10 rounded-xl bg-[#8C3A3F] hover:bg-[#772F34] active:scale-[0.98] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Shop This Look</span>
+              <span>{hasBottom ? "Shop This Look" : "Add to Cart"}</span>
             </button>
           </div>
         </div>

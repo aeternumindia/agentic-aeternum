@@ -157,24 +157,13 @@ export function UcpChatPanel() {
         <ChatInput onSend={sendMessage} isLoading={isLoading} />
       </div>
 
-      {session?.bottomGarment ? (
-        <TryTheLookModal
-          isOpen={Boolean(isTryOnActive)}
-          onClose={handleBackFromTryOn}
-          onAddToCart={handleAddToCartFromTryOn}
-          onBack={handleBackFromTryOn}
-          onShopTheLook={handleShopTheLookFromTryOn}
-        />
-      ) : (
-        <VirtualTryOnModal
-          isOpen={Boolean(isTryOnActive)}
-          onClose={handleBackFromTryOn}
-          productTitle={session?.productTitle || ""}
-          onAddToCart={handleAddToCartFromTryOn}
-          onBack={handleBackFromTryOn}
-          onOpenSizeChecker={() => setIsSizeCheckerOpen(true)}
-        />
-      )}
+      <TryTheLookModal
+        isOpen={Boolean(isTryOnActive)}
+        onClose={handleBackFromTryOn}
+        onAddToCart={handleAddToCartFromTryOn}
+        onBack={handleBackFromTryOn}
+        onShopTheLook={handleShopTheLookFromTryOn}
+      />
 
       {cartModalItems && (
         <AddToCartModal
