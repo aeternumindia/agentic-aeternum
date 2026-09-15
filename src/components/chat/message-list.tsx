@@ -83,15 +83,18 @@ export function MessageList({ messages, isLoading, onSendMessage }: MessageListP
       selectedSize: "",
       selectedColor: "",
       measurements: {},
-      bottomGarment: {
-        productId: outfit.trouser.id,
-        productHandle: outfit.trouser.handle,
-        productTitle: outfit.trouser.title,
-        productImage: outfit.trouser.image || "",
-        productCategory: outfit.trouser.productType || "Trouser",
-        price: outfit.trouser.price,
-        currency: outfit.trouser.currency,
-      },
+      outfitTitle: outfit.title,
+      bottomGarment: outfit.trouser
+        ? {
+            productId: outfit.trouser.id,
+            productHandle: outfit.trouser.handle,
+            productTitle: outfit.trouser.title,
+            productImage: outfit.trouser.image || "",
+            productCategory: outfit.trouser.productType || "Trouser",
+            price: outfit.trouser.price,
+            currency: outfit.trouser.currency,
+          }
+        : undefined,
     });
     setState(APP_STATES.VIRTUAL_TRY_ON);
   }

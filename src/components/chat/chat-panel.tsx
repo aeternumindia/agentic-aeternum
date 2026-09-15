@@ -12,6 +12,8 @@ import { ChatInput } from "./chat-input";
 import { LandingScreen } from "@/components/screens/landing-screen";
 import { CheckoutScreen } from "@/components/screens/checkout-screen";
 import { VirtualTryOnModal } from "@/components/virtual-try-on/virtual-try-on-modal";
+import { TryTheLookModal } from "@/components/virtual-try-on/try-the-look-modal";
+import { AddToCartModal, type AddToCartItem } from "@/components/cart/add-to-cart-modal";
 import { AISizeCheckerModal } from "@/components/try-on/size-checker";
 import apiClient from "@/services/api";
 import type { CartItem } from "@/types/product";
@@ -73,10 +75,22 @@ export function ChatPanel() {
     [session, tryOnAdding, addToCart, clearTryOn, setState]
   );
 
+  const [cartModalItems, setCartModalItems] = useState<AddToCartItem[] | null>(null);
+  const [cartModalOutfitTitle, setCartModalOutfitTitle] = useState<string | undefined>();
+
   const handleBackFromTryOn = useCallback(() => {
     clearTryOn();
     setState(APP_STATES.CUSTOMIZATION);
   }, [clearTryOn, setState]);
+
+  const handleShopTheLookFromTryOn = useCallback(
+    (items: AddToCartItem[], outfitTitle?: string) => {
+      setCartModalItems(items);
+      setCartModalOutfitTitle(outfitTitle);
+      handleBackFromTryOn();
+    },
+    [handleBackFromTryOn]
+  );
 
   useEffect(() => {
     if (messages.length > prevMessageCount.current) {
@@ -143,14 +157,32 @@ export function ChatPanel() {
         <ChatInput onSend={sendMessage} isLoading={isLoading} />
       </div>
 
-      <VirtualTryOnModal
-        isOpen={Boolean(isTryOnActive)}
-        onClose={handleBackFromTryOn}
-        productTitle={session?.productTitle || ""}
-        onAddToCart={handleAddToCartFromTryOn}
-        onBack={handleBackFromTryOn}
-        onOpenSizeChecker={() => setIsSizeCheckerOpen(true)}
-      />
+      {session?.bottomGarment ? (
+        <TryTheLookModal
+          isOpen={Boolean(isTryOnActive)}
+          onClose={handleBackFromTryOn}
+          onAddToCart={handleAddToCartFromTryOn}
+          onBack={handleBackFromTryOn}
+          onShopTheLook={handleShopTheLookFromTryOn}
+        />
+      ) : (
+        <VirtualTryOnModal
+          isOpen={Boolean(isTryOnActive)}
+          onClose={handleBackFromTryOn}
+          productTitle={session?.productTitle || ""}
+          onAddToCart={handleAddToCartFromTryOn}
+          onBack={handleBackFromTryOn}
+          onOpenSizeChecker={() => setIsSizeCheckerOpen(true)}
+        />
+      )}
+
+      {cartModalItems && (
+        <AddToCartModal
+          items={cartModalItems}
+          outfitTitle={cartModalOutfitTitle}
+          onClose={() => setCartModalItems(null)}
+        />
+      )}
 
       <AISizeCheckerModal
         isOpen={isSizeCheckerOpen}
@@ -161,12 +193,25 @@ export function ChatPanel() {
                 {
                   id: session.productId || "1",
                   name: session.productTitle || "Selected Product",
-                  category: session.productCategory || "Apparel",
+                  category: session.productCategory || "Top",
                   image: session.productImage || "",
                   price: session.price || "",
                   handle: session.productHandle || "",
                   sizes: ["XS", "S", "M", "L", "XL", "XXL"],
                 },
+                ...(session.bottomGarment
+                  ? [
+                      {
+                        id: session.bottomGarment.productId || "2",
+                        name: session.bottomGarment.productTitle || "Bottom Garment",
+                        category: session.bottomGarment.productCategory || "Bottom",
+                        image: session.bottomGarment.productImage || "",
+                        price: session.bottomGarment.price || "",
+                        handle: session.bottomGarment.productHandle || "",
+                        sizes: ["XS", "S", "M", "L", "XL", "XXL"],
+                      },
+                    ]
+                  : []),
               ]
             : []
         }

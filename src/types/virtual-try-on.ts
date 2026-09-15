@@ -66,6 +66,7 @@ export type TryOnSession = {
   measurements: Record<string, number>;
   sizeChart?: ProductSizeChart | null;
   bottomGarment?: TryOnGarmentItem | null;
+  outfitTitle?: string;
 };
 
 export type TryOnResult = {
