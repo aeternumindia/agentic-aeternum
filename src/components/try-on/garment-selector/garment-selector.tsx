@@ -10,6 +10,7 @@ export interface GarmentItem {
   name: string;
   category: string;
   image: string;
+  ghostMannequinImage?: string;
   price?: string | number;
   handle?: string;
   images?: string[];

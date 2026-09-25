@@ -98,18 +98,20 @@ const TryOnPage = () => {
               const rawSizes = p.variants
                 ? Array.from(new Set(p.variants.map((v) => v.size).filter(Boolean)))
                 : [];
+              const originalImage = p.image || p.images?.[0] || "";
               const ghostUrl =
                 getGhostMannequinUrl({
                   productId: p.id,
                   productTitle: p.title,
                   productHandle: p.handle,
-                  fallbackUrl: p.image || p.images?.[0] || "",
-                }) || (p.image || p.images?.[0] || "");
+                  fallbackUrl: originalImage,
+                }) || originalImage;
               return {
                 id: p.id,
                 name: p.title,
                 category: normalizeCategory(p.productType || "Apparel"),
-                image: ghostUrl,
+                image: originalImage,
+                ghostMannequinImage: ghostUrl,
                 price: p.price,
                 handle: p.handle,
                 images: p.images,
@@ -231,6 +233,7 @@ const TryOnPage = () => {
           : null;
 
       const cleanTopImage =
+        topGarment.ghostMannequinImage ||
         getGhostMannequinUrl({
           productId: topGarment.id,
           productTitle: topGarment.name,
@@ -239,12 +242,13 @@ const TryOnPage = () => {
         }) || topGarment.image;
 
       const cleanBottomImage = bottomGarment
-        ? getGhostMannequinUrl({
-            productId: bottomGarment.id,
-            productTitle: bottomGarment.name,
-            productHandle: bottomGarment.handle,
-            fallbackUrl: bottomGarment.image,
-          }) || bottomGarment.image
+        ? (bottomGarment.ghostMannequinImage ||
+           getGhostMannequinUrl({
+             productId: bottomGarment.id,
+             productTitle: bottomGarment.name,
+             productHandle: bottomGarment.handle,
+             fallbackUrl: bottomGarment.image,
+           }) || bottomGarment.image)
         : null;
 
       const resultUrl = await generateTryOnImage({
