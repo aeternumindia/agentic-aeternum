@@ -405,6 +405,7 @@ export function StepTryOnPreview({
                     garmentName={pair.top.title}
                     bottomGarmentImageUrl={pair.bottom?.image}
                     bottomGarmentName={pair.bottom?.title}
+                    measurements={computedMeasurements || measurements}
                   />
                 </div>
               ) : (

@@ -20,6 +20,9 @@ import {
   ShoppingBag,
   ArrowRight,
   Lock,
+  Maximize2,
+  ZoomIn,
+  X,
 } from "lucide-react";
 import { useVirtualTryOn } from "@/contexts/virtual-try-on";
 import { convertHeicToJpegIfNeeded } from "@/utils/heic-converter";
@@ -68,6 +71,7 @@ export function TryTheLookModal({
   const [aiStatus, setAiStatus] = useState<"idle" | "generating" | "done" | "error">("idle");
   const [aiResultUrl, setAiResultUrl] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   const [cartModalItems, setCartModalItems] = useState<AddToCartItem[] | null>(null);
 
@@ -128,6 +132,10 @@ export function TryTheLookModal({
       formData.append("personImage", fullBodyFile);
       formData.append("faceImage", selfieFile);
       formData.append("garmentImage", garmentFile);
+
+      if (session.measurements && Object.keys(session.measurements).length > 0) {
+        formData.append("userMeasurements", JSON.stringify(session.measurements));
+      }
 
       if (session.bottomGarment?.productImage) {
         try {
@@ -409,40 +417,87 @@ export function TryTheLookModal({
 
           {/* Only show AI Canvas when generating or result is ready — avoids empty placeholder scrolling */}
           {aiStatus === "done" && aiResultUrl && (
-            <div className="relative w-full rounded-2xl border border-border/60 bg-[#FAF8F5] dark:bg-stone-950 overflow-hidden aspect-[3/4] max-h-[420px] shadow-xs">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={aiResultUrl}
-                alt="AI Try-On Result"
-                className="w-full h-full object-contain"
-              />
-              <span className="absolute top-3 left-3 bg-background/85 backdrop-blur-md border border-border/40 text-foreground text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md shadow-2xs">
-                AI Try-On Result
-              </span>
-              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-center justify-center gap-2.5">
+            <>
+              <div className="relative w-full rounded-2xl border border-border/60 bg-[#FAF8F5] dark:bg-stone-950 overflow-hidden aspect-[3/4] max-h-[440px] shadow-xs group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={aiResultUrl}
+                  alt="AI Try-On Result"
+                  className="w-full h-full object-contain cursor-zoom-in"
+                  onClick={() => setIsZoomOpen(true)}
+                />
+                <span className="absolute top-3 left-3 bg-background/90 backdrop-blur-md border border-border/40 text-foreground text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md shadow-2xs">
+                  AI Try-On Result (2K)
+                </span>
                 <button
                   type="button"
-                  onClick={() => {
-                    const a = document.createElement("a");
-                    a.href = aiResultUrl;
-                    a.download = "aeternum-outfit-try-on.png";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-stone-900 text-xs font-semibold shadow-sm hover:bg-stone-100 transition-all cursor-pointer"
+                  onClick={() => setIsZoomOpen(true)}
+                  className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-semibold shadow-sm transition-all cursor-pointer flex items-center gap-1 px-2"
+                  title="Zoom into high-res fabric details"
                 >
-                  <Download className="h-3.5 w-3.5" /> Download
+                  <ZoomIn className="h-3.5 w-3.5" />
+                  <span className="text-[10px] hidden sm:inline">Inspect Weave</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleGenerateTryOn}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/90 backdrop-blur-md text-stone-900 text-xs font-semibold shadow-sm hover:bg-white transition-all cursor-pointer"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" /> Regenerate
-                </button>
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/75 via-black/35 to-transparent flex items-center justify-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsZoomOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/70 hover:bg-black/90 backdrop-blur-md text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" /> Fullscreen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = aiResultUrl;
+                      a.download = "aeternum-outfit-try-on.png";
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-stone-900 text-xs font-semibold shadow-sm hover:bg-stone-100 transition-all cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGenerateTryOn}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/90 backdrop-blur-md text-stone-900 text-xs font-semibold shadow-sm hover:bg-white transition-all cursor-pointer"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                  </button>
+                </div>
               </div>
-            </div>
+
+              {/* High-Resolution Zoom Lightbox Modal */}
+              {isZoomOpen && (
+                <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+                  <div className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center">
+                    <div className="w-full flex items-center justify-between pb-3 text-white">
+                      <span className="text-xs font-mono tracking-wider uppercase font-semibold text-stone-300">
+                        2K Studio Master · Fabric & Tailoring Inspector
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsZoomOpen(false)}
+                        className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="relative overflow-auto max-h-[80vh] w-full rounded-2xl bg-stone-950 flex items-center justify-center border border-white/10 shadow-2xl">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={aiResultUrl}
+                        alt="High Resolution AI Try-On Result"
+                        className="max-h-[80vh] w-auto object-contain rounded-xl select-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {aiStatus === "generating" && (
