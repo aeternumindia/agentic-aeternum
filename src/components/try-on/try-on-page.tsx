@@ -12,7 +12,13 @@ import { UserSelector } from "./user-selector";
 import { AISizeCheckerModal, NoGarmentSelectedModal } from "./size-checker";
 import { fetchAllCatalogProducts, normalizeCategory } from "@/services/outfit-api";
 import apiClient, { generateTryOnImage } from "@/services/api";
-import { getGhostMannequinUrl } from "@/lib/ghostMannequin";
+import {
+  getGhostMannequinUrl,
+  DEFAULT_AETERNUM_BOTTOM,
+  DEFAULT_AETERNUM_TOP,
+  isBottomCategory,
+  isTopCategory,
+} from "@/lib/ghostMannequin";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import { AddToCartModal, type AddToCartItem } from "@/components/cart/add-to-cart-modal";
 
@@ -226,30 +232,79 @@ const TryOnPage = () => {
           ? faceFile || faceImage
           : null;
 
-      const topGarment = selectedGarmentItems[0];
-      const bottomGarment =
-        garmentMode === "multiple" && selectedGarmentItems.length > 1
-          ? selectedGarmentItems[1]
-          : null;
+      let topItem: GarmentItem | null = null;
+      let bottomItem: GarmentItem | null = null;
+
+      if (selectedGarmentItems.length === 1) {
+        const item = selectedGarmentItems[0];
+        if (isBottomCategory(item.category, item.name)) {
+          // User chose ONLY trousers/pants -> pair with default Aeternum shirt
+          bottomItem = item;
+          topItem = {
+            id: DEFAULT_AETERNUM_TOP.product_id,
+            name: DEFAULT_AETERNUM_TOP.product_name,
+            category: "Shirts",
+            image: DEFAULT_AETERNUM_TOP.original_shopify_image,
+            ghostMannequinImage: DEFAULT_AETERNUM_TOP.image_url,
+            handle: DEFAULT_AETERNUM_TOP.handle,
+          };
+        } else {
+          // User chose ONLY shirt/top -> pair with default Aeternum trousers
+          topItem = item;
+          bottomItem = {
+            id: DEFAULT_AETERNUM_BOTTOM.product_id,
+            name: DEFAULT_AETERNUM_BOTTOM.product_name,
+            category: "Trousers",
+            image: DEFAULT_AETERNUM_BOTTOM.original_shopify_image,
+            ghostMannequinImage: DEFAULT_AETERNUM_BOTTOM.image_url,
+            handle: DEFAULT_AETERNUM_BOTTOM.handle,
+          };
+        }
+      } else {
+        const topCandidate = selectedGarmentItems.find((g) => isTopCategory(g.category, g.name));
+        const bottomCandidate = selectedGarmentItems.find((g) => isBottomCategory(g.category, g.name));
+
+        topItem = topCandidate || selectedGarmentItems[0];
+        bottomItem = bottomCandidate || (selectedGarmentItems.length > 1 ? selectedGarmentItems[1] : null);
+
+        if (!topItem && bottomItem) {
+          topItem = {
+            id: DEFAULT_AETERNUM_TOP.product_id,
+            name: DEFAULT_AETERNUM_TOP.product_name,
+            category: "Shirts",
+            image: DEFAULT_AETERNUM_TOP.original_shopify_image,
+            ghostMannequinImage: DEFAULT_AETERNUM_TOP.image_url,
+            handle: DEFAULT_AETERNUM_TOP.handle,
+          };
+        } else if (topItem && !bottomItem) {
+          bottomItem = {
+            id: DEFAULT_AETERNUM_BOTTOM.product_id,
+            name: DEFAULT_AETERNUM_BOTTOM.product_name,
+            category: "Trousers",
+            image: DEFAULT_AETERNUM_BOTTOM.original_shopify_image,
+            ghostMannequinImage: DEFAULT_AETERNUM_BOTTOM.image_url,
+            handle: DEFAULT_AETERNUM_BOTTOM.handle,
+          };
+        }
+      }
 
       const cleanTopImage =
-        topGarment.ghostMannequinImage ||
+        topItem?.ghostMannequinImage ||
         getGhostMannequinUrl({
-          productId: topGarment.id,
-          productTitle: topGarment.name,
-          productHandle: topGarment.handle,
-          fallbackUrl: topGarment.image,
-        }) || topGarment.image;
+          productId: topItem?.id,
+          productTitle: topItem?.name,
+          productHandle: topItem?.handle,
+          fallbackUrl: topItem?.image,
+        }) || topItem?.image || DEFAULT_AETERNUM_TOP.image_url;
 
-      const cleanBottomImage = bottomGarment
-        ? (bottomGarment.ghostMannequinImage ||
-           getGhostMannequinUrl({
-             productId: bottomGarment.id,
-             productTitle: bottomGarment.name,
-             productHandle: bottomGarment.handle,
-             fallbackUrl: bottomGarment.image,
-           }) || bottomGarment.image)
-        : null;
+      const cleanBottomImage =
+        bottomItem?.ghostMannequinImage ||
+        getGhostMannequinUrl({
+          productId: bottomItem?.id,
+          productTitle: bottomItem?.name,
+          productHandle: bottomItem?.handle,
+          fallbackUrl: bottomItem?.image,
+        }) || bottomItem?.image || DEFAULT_AETERNUM_BOTTOM.image_url;
 
       const resultUrl = await generateTryOnImage({
         personImage: personSource,

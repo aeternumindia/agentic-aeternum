@@ -32,7 +32,12 @@ import { StepCalculating } from "@/components/try-on/size-checker/step-calculati
 import { StepResult } from "@/components/try-on/size-checker/step-result";
 import type { BodyMeasurements, PresetProfile } from "@/components/try-on/size-checker/types";
 import type { GarmentItem } from "@/components/try-on/garment-selector/garment-selector";
-import { getGhostMannequinUrl } from "@/lib/ghostMannequin";
+import {
+  getGhostMannequinUrl,
+  DEFAULT_AETERNUM_BOTTOM,
+  DEFAULT_AETERNUM_TOP,
+  isBottomCategory,
+} from "@/lib/ghostMannequin";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -354,13 +359,48 @@ export function VirtualTryOnScreen({
     setAiResultUrl(null);
 
     try {
-      const topGarmentUrl =
-        getGhostMannequinUrl({
-          productId: session.productId,
-          productHandle: session.productHandle,
-          productTitle: session.productTitle,
-          fallbackUrl: session.productImage,
-        }) || session.productImage;
+      const isProductBottom = isBottomCategory(session.productCategory, session.productTitle);
+
+      let topGarmentUrl: string;
+      let bottomGarmentUrl: string | null = null;
+
+      if (isProductBottom) {
+        // Main item is bottom (trousers) -> pair with default Aeternum shirt
+        topGarmentUrl = DEFAULT_AETERNUM_TOP.image_url;
+        bottomGarmentUrl =
+          getGhostMannequinUrl({
+            productId: session.productId,
+            productHandle: session.productHandle,
+            productTitle: session.productTitle,
+            fallbackUrl: session.productImage,
+          }) || session.productImage;
+      } else {
+        // Main item is top (shirt/polo/t-shirt)
+        topGarmentUrl =
+          getGhostMannequinUrl({
+            productId: session.productId,
+            productHandle: session.productHandle,
+            productTitle: session.productTitle,
+            fallbackUrl: session.productImage,
+          }) || session.productImage;
+
+        const rawBottomImageUrl =
+          session.bottomGarment?.productImage ||
+          (session.bottomGarment as any)?.image;
+
+        if (session.bottomGarment && rawBottomImageUrl) {
+          bottomGarmentUrl =
+            getGhostMannequinUrl({
+              productId: session.bottomGarment?.productId,
+              productHandle: session.bottomGarment?.productHandle,
+              productTitle: session.bottomGarment?.productTitle,
+              fallbackUrl: rawBottomImageUrl,
+            }) || rawBottomImageUrl;
+        } else {
+          // No bottom chosen with top -> use default Aeternum trousers
+          bottomGarmentUrl = DEFAULT_AETERNUM_BOTTOM.image_url;
+        }
+      }
 
       const garmentRes = await fetch(topGarmentUrl);
       const garmentBlob = await garmentRes.blob();
@@ -373,20 +413,8 @@ export function VirtualTryOnScreen({
       formData.append("faceImage", selfieFile);
       formData.append("garmentImage", garmentFile);
 
-      const rawBottomImageUrl =
-        session.bottomGarment?.productImage ||
-        (session.bottomGarment as any)?.image;
-
-      if (session.bottomGarment && rawBottomImageUrl) {
+      if (bottomGarmentUrl) {
         try {
-          const bottomGarmentUrl =
-            getGhostMannequinUrl({
-              productId: session.bottomGarment?.productId,
-              productHandle: session.bottomGarment?.productHandle,
-              productTitle: session.bottomGarment?.productTitle,
-              fallbackUrl: rawBottomImageUrl,
-            }) || rawBottomImageUrl;
-
           const bottomRes = await fetch(bottomGarmentUrl);
           if (!bottomRes.ok) {
             throw new Error(`Failed to load bottom garment image (${bottomRes.status})`);
@@ -399,10 +427,7 @@ export function VirtualTryOnScreen({
           );
           formData.append("bottomGarmentImage", bottomFile);
         } catch (e) {
-          console.error("Failed to load bottom garment for dual try-on:", e);
-          throw new Error(
-            "Could not load bottom garment image for outfit try-on. Please retry."
-          );
+          console.error("Failed to load bottom garment for try-on:", e);
         }
       }
 

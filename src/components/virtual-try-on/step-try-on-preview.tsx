@@ -26,7 +26,7 @@ import { SizeChartModal } from "./size-chart-modal";
 import { AiPreviewPanel } from "./ai-preview-panel";
 import apiClient, { getTryOnStatus, type TryOnStatus } from "@/services/api";
 import type { TryOnSession, TryOnResult, ProductSizeChart, SizeChartData } from "@/types/virtual-try-on";
-import { getGhostMannequinUrl } from "@/lib/ghostMannequin";
+import { getGhostMannequinUrl, DEFAULT_AETERNUM_BOTTOM } from "@/lib/ghostMannequin";
 
 type Variant = {
   id: string;
@@ -414,7 +414,7 @@ export function StepTryOnPreview({
                           productHandle: pair.bottom.handle,
                           fallbackUrl: pair.bottom.image,
                         }) || pair.bottom.image
-                      : undefined;
+                      : DEFAULT_AETERNUM_BOTTOM.image_url;
 
                     return (
                       <AiPreviewPanel
