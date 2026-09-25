@@ -12,6 +12,7 @@ import { UserSelector } from "./user-selector";
 import { AISizeCheckerModal, NoGarmentSelectedModal } from "./size-checker";
 import { fetchAllCatalogProducts, normalizeCategory } from "@/services/outfit-api";
 import apiClient, { generateTryOnImage } from "@/services/api";
+import { getGhostMannequinUrl } from "@/lib/ghostMannequin";
 import { useShopifyCart } from "@/contexts/shopify-cart";
 import { AddToCartModal, type AddToCartItem } from "@/components/cart/add-to-cart-modal";
 
@@ -97,11 +98,18 @@ const TryOnPage = () => {
               const rawSizes = p.variants
                 ? Array.from(new Set(p.variants.map((v) => v.size).filter(Boolean)))
                 : [];
+              const ghostUrl =
+                getGhostMannequinUrl({
+                  productId: p.id,
+                  productTitle: p.title,
+                  productHandle: p.handle,
+                  fallbackUrl: p.image || p.images?.[0] || "",
+                }) || (p.image || p.images?.[0] || "");
               return {
                 id: p.id,
                 name: p.title,
                 category: normalizeCategory(p.productType || "Apparel"),
-                image: p.image || p.images?.[0] || "",
+                image: ghostUrl,
                 price: p.price,
                 handle: p.handle,
                 images: p.images,
@@ -222,21 +230,28 @@ const TryOnPage = () => {
           ? selectedGarmentItems[1]
           : null;
 
-      const topReferences = topGarment?.images && topGarment.images.length > 1
-        ? topGarment.images.slice(1, 3)
-        : undefined;
+      const cleanTopImage =
+        getGhostMannequinUrl({
+          productId: topGarment.id,
+          productTitle: topGarment.name,
+          productHandle: topGarment.handle,
+          fallbackUrl: topGarment.image,
+        }) || topGarment.image;
 
-      const bottomReferences = bottomGarment?.images && bottomGarment.images.length > 1
-        ? bottomGarment.images.slice(1, 3)
-        : undefined;
+      const cleanBottomImage = bottomGarment
+        ? getGhostMannequinUrl({
+            productId: bottomGarment.id,
+            productTitle: bottomGarment.name,
+            productHandle: bottomGarment.handle,
+            fallbackUrl: bottomGarment.image,
+          }) || bottomGarment.image
+        : null;
 
       const resultUrl = await generateTryOnImage({
         personImage: personSource,
         faceImage: faceSource,
-        garmentImage: topGarment.image,
-        topReferenceImages: topReferences,
-        bottomGarmentImage: bottomGarment?.image || null,
-        bottomReferenceImages: bottomReferences,
+        garmentImage: cleanTopImage,
+        bottomGarmentImage: cleanBottomImage,
       });
 
       setTryOnResultImage(resultUrl);
