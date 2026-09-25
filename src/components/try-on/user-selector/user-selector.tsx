@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Sparkles, Shirt, Camera, UserPlus, Image as ImageIcon, Loader2, Download, RotateCcw, AlertCircle, Ruler, ShoppingBag } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sparkles, Shirt, Camera, UserPlus, Image as ImageIcon, Loader2, Download, RotateCcw, AlertCircle, Ruler, ShoppingBag, Maximize2, X } from "lucide-react";
 import { ModelOption } from "../model-selection-modal";
 
 export interface UserSelectorProps {
@@ -44,6 +44,18 @@ export function UserSelector({
   maxTries = 5,
 }: UserSelectorProps) {
   const selectedModelObj = models.find((m) => m.name === selectedModel);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isExpanded]);
 
   const handleDownload = async () => {
     if (!tryOnResultImage) return;
@@ -129,6 +141,16 @@ export function UserSelector({
                   alt="AI Try-On Result"
                   className="w-full h-full object-cover"
                 />
+
+                {/* Top Right Expand Icon Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(true)}
+                  className="absolute top-3 right-3 p-2 rounded-xl bg-background/90 hover:bg-background text-foreground border border-border shadow-lg backdrop-blur-md transition-all cursor-pointer hover:scale-105 active:scale-95 z-10"
+                  title="Expand image / Fullscreen preview"
+                >
+                  <Maximize2 className="w-3.5 h-3.5 text-accent shrink-0" />
+                </button>
 
                 {/* Floating action buttons over the bottom corner of generated image */}
                 <div className="absolute bottom-3 right-3 flex items-center gap-2 z-10">
@@ -280,6 +302,45 @@ export function UserSelector({
               } selected (${triesRemaining} ${triesRemaining === 1 ? "try" : "tries"} left today)`}
         </p>
       </div>
+
+      {/* Fullscreen Expand Lightbox Modal */}
+      {isExpanded && tryOnResultImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setIsExpanded(false)}
+        >
+          <div
+            className="relative max-w-5xl max-h-[92vh] flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={tryOnResultImage}
+              alt="AI Try-On Result Expanded"
+              className="max-h-[85vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain border border-white/10"
+            />
+
+            {/* Top right action controls inside lightbox */}
+            <div className="absolute top-3 right-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg"
+                title="Download High-Res Image"
+              >
+                <Download className="w-4 h-4 text-white" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsExpanded(false)}
+                className="p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg"
+                title="Close (Esc)"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
