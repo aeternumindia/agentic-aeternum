@@ -62,6 +62,9 @@ export function AiPreviewPanel({
       // Fetch and convert bottom garment image if provided
       if (bottomGarmentImageUrl) {
         const bottomRes = await fetch(bottomGarmentImageUrl);
+        if (!bottomRes.ok) {
+          throw new Error(`Failed to load bottom garment image (${bottomRes.status})`);
+        }
         const bottomBlob = await bottomRes.blob();
         const bottomFile = await convertHeicToJpegIfNeeded(
           new File([bottomBlob], "bottom-garment.jpg", {

@@ -137,16 +137,28 @@ export function TryTheLookModal({
         formData.append("userMeasurements", JSON.stringify(session.measurements));
       }
 
-      if (session.bottomGarment?.productImage) {
+      const bottomImageUrl =
+        session.bottomGarment?.productImage ||
+        (session.bottomGarment as any)?.image;
+
+      if (hasBottom && bottomImageUrl) {
         try {
-          const bottomRes = await fetch(session.bottomGarment.productImage);
+          const bottomRes = await fetch(bottomImageUrl);
+          if (!bottomRes.ok) {
+            throw new Error(`Failed to load bottom garment image (${bottomRes.status})`);
+          }
           const bottomBlob = await bottomRes.blob();
           const bottomFile = await convertHeicToJpegIfNeeded(
-            new File([bottomBlob], "bottom-garment.jpg", { type: bottomBlob.type || "image/jpeg" })
+            new File([bottomBlob], "bottom-garment.jpg", {
+              type: bottomBlob.type || "image/jpeg",
+            })
           );
           formData.append("bottomGarmentImage", bottomFile);
         } catch (e) {
-          console.warn("Failed to load bottom garment for dual try-on:", e);
+          console.error("Failed to load bottom garment for dual try-on:", e);
+          throw new Error(
+            "Could not load bottom garment image for outfit try-on. Please retry."
+          );
         }
       }
 
@@ -172,7 +184,7 @@ export function TryTheLookModal({
       setAiError(err instanceof Error ? err.message : "Failed to generate try-on");
       setAiStatus("error");
     }
-  }, [fullBodyFile, selfieFile, session?.productImage, session?.bottomGarment?.productImage]);
+  }, [fullBodyFile, selfieFile, session, hasBottom]);
 
   const handleOpenShopTheLook = () => {
     if (!session) return;
