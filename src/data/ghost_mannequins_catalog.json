@@ -1,0 +1,488 @@
+[
+  {
+    "product_name": "Classic Fit Stripes 100% Cotton Shirt | White & Dark Blue",
+    "product_id": "15130842956144",
+    "shopify_gid": "gid://shopify/Product/15130842956144",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Stripes%20100%25%20Cotton%20Shirt%20-%20White%20%26%20Dark%20Blue.webp?alt=media&token=37e7f135-2917-4b6d-a106-4f4e2d4b34c0",
+    "handle": "aeternum-classic-fit-stripe-shirt-white-dark-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Dark-Blue-Stripes-aeternum-Dark-Blue-Stripes-2.webp?v=1780737860"
+  },
+  {
+    "product_name": "Relaxed Fit 100% Linen Shirt | White",
+    "product_id": "15130842857840",
+    "shopify_gid": "gid://shopify/Product/15130842857840",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20100%25%20Linen%20Shirt%20-%20White.webp?alt=media&token=388f5e51-6097-4519-8690-bbb29b28f942",
+    "handle": "aeternum-relaxed-fit-linen-shirt-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/100_-White-Linen-aeternum-100_-White-Linen-1.webp?v=1780737743"
+  },
+  {
+    "product_name": "Classic Fit Check 100% Cotton Shirt | Sea Blue & White",
+    "product_id": "15130842890608",
+    "shopify_gid": "gid://shopify/Product/15130842890608",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Check%20100%25%20Cotton%20Shirt%20-%20Sea%20Blue%20%26%20White.webp?alt=media&token=acc98385-5162-4817-b7b1-a09370e646e2",
+    "handle": "aeternum-classic-fit-check-shirt-blue-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/B.-Grey-Checks-aeternum-B.-Grey-Checks-2.webp?v=1780737743"
+  },
+  {
+    "product_name": "Classic Fit Check 100% Cotton Shirt | Yellow & Grey",
+    "product_id": "15130842923376",
+    "shopify_gid": "gid://shopify/Product/15130842923376",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Check%20100%25%20Cotton%20Shirt%20-%20Yellow%20%26%20Grey.webp?alt=media&token=0a724cfc-0181-4da8-a381-7f95ebc5bbde",
+    "handle": "aeternum-classic-fit-stripe-shirt-yellow-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Yellow-Grey-Checks-aeternum-Yellow-Grey-Checks-7.webp?v=1780737746"
+  },
+  {
+    "product_name": "Classic Fit Stripes 100% Cotton Shirt | White & Light Blue",
+    "product_id": "15130842988912",
+    "shopify_gid": "gid://shopify/Product/15130842988912",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Stripes%20100%25%20Cotton%20Shirt%20-%20White%20%26%20Light%20Blue.webp?alt=media&token=f7cd1d83-58e2-4bb6-a83e-9106bd3ddb4d",
+    "handle": "aeternum-classic-fit-stripe-shirt-white-light-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Light-Blue-Stripes-Aeternum-light-blue-striped-shirt-2.webp?v=1780737632"
+  },
+  {
+    "product_name": "Classic Fit Striped Poly-Viscose Shirt | Green-Blue",
+    "product_id": "15130843021680",
+    "shopify_gid": "gid://shopify/Product/15130843021680",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Striped%20Poly-Viscose%20Shirt%20-%20Green-Blue.webp?alt=media&token=3f168e0f-3176-4343-8169-ad98dde0af1a",
+    "handle": "aeternum-classic-fit-stripe-shirt-green-blue-poly-viscose",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Green-Blue-Stripes-aeternum-Green-Blue-Stripes-1.webp?v=1780737746"
+  },
+  {
+    "product_name": "Classic Fit Striped Poly-Viscose Shirt | Yellow-Grey",
+    "product_id": "15130843054448",
+    "shopify_gid": "gid://shopify/Product/15130843054448",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Striped%20Poly-Viscose%20Shirt%20-%20Yellow-Grey.webp?alt=media&token=22ad45bf-5b10-4b55-b9b9-3cb6b787337d",
+    "handle": "aeternum-classic-fit-stripe-shirt-yellow-grey-poly-viscose",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Yellow-Grey-Stripes-aeternum-yellow-grey-stripes-full-shirt-2.webp?v=1780737636"
+  },
+  {
+    "product_name": "Classic Fit Check 100% Cotton Shirt | White & Grey",
+    "product_id": "15130843087216",
+    "shopify_gid": "gid://shopify/Product/15130843087216",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Check%20100%25%20Cotton%20Shirt%20-%20White%20%26%20Grey.webp?alt=media&token=70343d27-a8a3-44ad-8598-6d7183a06522",
+    "handle": "aeternum-classic-fit-check-shirt-white-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Grey-Checks-aeternum-Grey-Checks-8.webp?v=1780737861"
+  },
+  {
+    "product_name": "Classic Fit Check 100% Cotton Shirt | White & Pink",
+    "product_id": "15130843119984",
+    "shopify_gid": "gid://shopify/Product/15130843119984",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Check%20100%25%20Cotton%20Shirt%20-%20White%20%26%20Pink.webp?alt=media&token=e8529624-a781-42bf-92b3-cdeee5718dcf",
+    "handle": "aeternum-classic-fit-check-shirt-white-pink",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Pink-Checks-aeternum-Pink-Checks-2.webp?v=1780737860"
+  },
+  {
+    "product_name": "Relaxed Fit Linen Rose Half Sleeve Shirt | Light Grey",
+    "product_id": "15130843152752",
+    "shopify_gid": "gid://shopify/Product/15130843152752",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20Linen%20Rose%20Half%20Sleeve%20Shirt%20-%20Light%20Grey.webp?alt=media&token=e095f2d2-193d-4a9e-b0ed-1754b42a1465",
+    "handle": "aeternum-relaxed-fit-linen-rose-shirt-light-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Grey-Linen-aeternum-Grey-Linen-2.webp?v=1780737857"
+  },
+  {
+    "product_name": "Classic Fit Cotton Blend Shirt | Pistachio",
+    "product_id": "15130843185520",
+    "shopify_gid": "gid://shopify/Product/15130843185520",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Cotton%20Blend%20Shirt%20-%20Pistachio.webp?alt=media&token=d437b4b3-ca18-4c5c-ac04-8e063f631e5c",
+    "handle": "aeternum-classic-fit-cotton-blend-shirt-pistachio",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Pistachio-Green-aeternum-Pistachio-Green-2.webp?v=1780737738"
+  },
+  {
+    "product_name": "Classic Fit Printed French Cotton-Viscose Shirt | Abstract Print",
+    "product_id": "15130843218288",
+    "shopify_gid": "gid://shopify/Product/15130843218288",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Printed%20French%20Cotton-Viscose%20Shirt%20-%20Abstract%20Print.webp?alt=media&token=09ed1a2d-a3c9-47a4-ae3e-21f77c1ba7ce",
+    "handle": "aeternum-classic-fit-abstract-print-shirt",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Aeternum-printed-light-blue-full-sleeves1.webp?v=1780739622"
+  },
+  {
+    "product_name": "Relaxed Fit Heritage Print 100% Cotton Half Sleeve Shirt | Ivory Gold",
+    "product_id": "15130843251056",
+    "shopify_gid": "gid://shopify/Product/15130843251056",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20Heritage%20Print%20100%25%20Cotton%20Half%20Sleeve%20Shirt%20-%20Ivory%20Gold.webp?alt=media&token=ba86f8a4-b3c4-49f0-bceb-2ec889b0a98f",
+    "handle": "aeternum-relaxed-fit-heritage-print-shirt-ivory-gold",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Printed-Half-Gold-aeternum-Printed-Half-Gold-1.webp?v=1780737747"
+  },
+  {
+    "product_name": "Relaxed Fit Heritage Print 100% Cotton Half Sleeve Shirt | Ivory Green",
+    "product_id": "15130843283824",
+    "shopify_gid": "gid://shopify/Product/15130843283824",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20Heritage%20Print%20100%25%20Cotton%20Half%20Sleeve%20Shirt%20-%20Ivory%20Green.webp?alt=media&token=64e03880-152f-4d3d-b7ef-09d1aa20855e",
+    "handle": "aeternum-relaxed-fit-heritage-print-shirt-ivory-green",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Printed-Half-Green-aeternum-printed-half-green-5.webp?v=1780737637"
+  },
+  {
+    "product_name": "Classic Fit 100% Cotton Shirt | Sky Blue",
+    "product_id": "15130843316592",
+    "shopify_gid": "gid://shopify/Product/15130843316592",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20100%25%20Cotton%20Shirt%20-%20Sky%20Blue.webp?alt=media&token=fd40de53-7b2d-414d-ad38-c20e3cbaa802",
+    "handle": "aeternum-classic-fit-cotton-shirt-sky-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Sky-Blue-Cotton-aeternum-Sky-Blue-Cotton-2.webp?v=1780737738"
+  },
+  {
+    "product_name": "Classic Fit Bamboo Blend Shirt | White",
+    "product_id": "15130843382128",
+    "shopify_gid": "gid://shopify/Product/15130843382128",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Bamboo%20Blend%20Shirt%20-%20White.webp?alt=media&token=29355b6b-e021-4fd1-8164-137f4f2e70a9",
+    "handle": "aeternum-classic-fit-bamboo-blend-shirt-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/White-Bamboo-aeternum-White-Bamboo-8.webp?v=1780737739"
+  },
+  {
+    "product_name": "Pleated Tailored Fit Terry-Rayon Trousers | Light Grey",
+    "product_id": "15128399053168",
+    "shopify_gid": "gid://shopify/Product/15128399053168",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPleated%20Tailored%20Fit%20Terry-Rayon%20Trousers%20-%20Light%20Grey.webp?alt=media&token=5f220c8a-7964-4612-a00c-21944abfc04c",
+    "handle": "aeternum-right-grey-pleated-tailored-fit-terry-rayon-trousers",
+    "category": "bottom",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Light-Grey-Pants-aeternum-Light-Grey-Pants-2.webp?v=1780737739"
+  },
+  {
+    "product_name": "Pleated Tailored Fit Terry-Rayon Trousers | Light Brown",
+    "product_id": "15128399020400",
+    "shopify_gid": "gid://shopify/Product/15128399020400",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPleated%20Tailored%20Fit%20Terry-Rayon%20Trousers%20-%20Light%20Brown.webp?alt=media&token=b6150344-d834-4e2b-8aa8-905ca09e43c8",
+    "handle": "aeternum-light-brown-pleated-tailored-fit-terry-rayon-trousers",
+    "category": "bottom",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Brown-Pants-2.webp?v=1780737634"
+  },
+  {
+    "product_name": "Pleated Tailored Fit Terry-Rayon Trousers | Dark Grey",
+    "product_id": "15128398987632",
+    "shopify_gid": "gid://shopify/Product/15128398987632",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPleated%20Tailored%20Fit%20Terry-Rayon%20Trousers%20-%20Dark%20Grey.webp?alt=media&token=2b9fa8a5-4ba7-4bb2-b7b7-0fba3f8adf69",
+    "handle": "aeternum-dark-grey-pleated-tailored-fit-terry-rayon-trousers",
+    "category": "bottom",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Dark-Grey-Pants-aeternum-Dark-Grey-Pants-1.webp?v=1780737744"
+  },
+  {
+    "product_name": "Pleated Tailored Fit Terry-Rayon Trousers | Navy Blue",
+    "product_id": "15128398954864",
+    "shopify_gid": "gid://shopify/Product/15128398954864",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPleated%20Tailored%20Fit%20Terry-Rayon%20Trousers%20-%20Navy%20Blue.webp?alt=media&token=8a44ae9d-a370-4848-a9e9-665de95d5eb8",
+    "handle": "aeternum-navy-blue-pleated-tailored-fit-terry-rayon-trousers",
+    "category": "bottom",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Navy-Blue-Pants-aeternum-Navy-Blue-Pants-2.webp?v=1780737741"
+  },
+  {
+    "product_name": "Pleated Tailored Fit Terry-Rayon Trousers | Black",
+    "product_id": "15128398922096",
+    "shopify_gid": "gid://shopify/Product/15128398922096",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPleated%20Tailored%20Fit%20Terry-Rayon%20Trousers%20-%20Black.webp?alt=media&token=11b0e925-583d-4e26-accc-1cd1a9386825",
+    "handle": "aeternum-black-pleated-tailored-fit-terry-rayon-trousers",
+    "category": "bottom",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Black-Pants-Aeternum-black-pants-2.webp?v=1780737632"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | Dark Grey | Woman",
+    "product_id": "14934292136304",
+    "shopify_gid": "gid://shopify/Product/14934292136304",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20Dark%20Grey%20-%20Woman.webp?alt=media&token=6951b4ee-4a44-4c8b-bc54-c47d457da9c2",
+    "handle": "ae-oversized-french-terry-t-shirt-for-women-dark-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00075.jpg?v=1769685922"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | Black | Woman",
+    "product_id": "14934292103536",
+    "shopify_gid": "gid://shopify/Product/14934292103536",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20Black%20-%20Woman.webp?alt=media&token=ffa55d80-2976-4b7c-854f-c1bbe1e0cefb",
+    "handle": "aeternum-womens-oversized-t-shirt-black",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00130.jpg?v=1769685929"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | White | Woman",
+    "product_id": "14934292070768",
+    "shopify_gid": "gid://shopify/Product/14934292070768",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20White%20-%20Woman.webp?alt=media&token=3a561408-36ba-4a40-942a-9e766c8e3dc7",
+    "handle": "ae-oversized-french-terry-crew-neck-t-shirt-white-woman",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00296.jpg?v=1769685922"
+  },
+  {
+    "product_name": "Oversized Waffle Knit Round Neck T-Shirt | Coffee Brown | Woman",
+    "product_id": "14934292038000",
+    "shopify_gid": "gid://shopify/Product/14934292038000",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FOversized%20Waffle%20Knit%20Round%20Neck%20T-Shirt%20-%20Coffee%20Brown%20-%20Woman.webp?alt=media&token=87696888-e386-4403-8f66-4653e737b281",
+    "handle": "oversized-waffle-knit-round-neck-t-shirt-coffee-brown-woman",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00345.jpg?v=1769515357"
+  },
+  {
+    "product_name": "Oversized Cotton Slub V-Neck T-Shirt | Red | Woman",
+    "product_id": "14934292005232",
+    "shopify_gid": "gid://shopify/Product/14934292005232",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FOversized%20Cotton%20Slub%20V-Neck%20T-Shirt%20-%20Red%20-%20Woman.webp?alt=media&token=51a408af-9fba-4a3b-84f7-280bb5a7dd66",
+    "handle": "oversized-cotton-slub-v-neck-t-shirt-red-woman",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00245.jpg?v=1769515376"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | Navy Blue | Woman",
+    "product_id": "14934291972464",
+    "shopify_gid": "gid://shopify/Product/14934291972464",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20Navy%20Blue%20-%20Woman.webp?alt=media&token=75b5e485-9084-437d-ba0e-9ed15011e63a",
+    "handle": "ae-oversized-french-terry-crew-neck-t-shirt-navy-blue-woman",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00178.jpg?v=1769685922"
+  },
+  {
+    "product_name": "Oversized Jacquard Round Neck T-Shirt | Dark Green | Woman",
+    "product_id": "14934291939696",
+    "shopify_gid": "gid://shopify/Product/14934291939696",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FOversized%20Jacquard%20Round%20Neck%20T-Shirt%20-%20Dark%20Green%20-%20Woman.webp?alt=media&token=b5de14f3-bba9-4306-8237-ac27685d6282",
+    "handle": "oversized-jacquard-round-neck-t-shirt-dark-green-woman",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00368.jpg?v=1769515414"
+  },
+  {
+    "product_name": "Premium Classic Fit Women’s Cotton Polo | Black",
+    "product_id": "14934287155568",
+    "shopify_gid": "gid://shopify/Product/14934287155568",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPremium%20Classic%20Fit%20Women%E2%80%99s%20Cotton%20Polo%20-%20Black.webp?alt=media&token=48a604ea-1c1e-4b5a-945e-5a8bce3bca52",
+    "handle": "premium-classic-fit-women-s-cotton-polo-black",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00395_96ccb1b6-5ece-4176-9fcf-4aa09f4eb9a1.jpg?v=1769515434"
+  },
+  {
+    "product_name": "Oversized Jacquard Round Neck T-Shirt | Dark Green | Men",
+    "product_id": "14886283870576",
+    "shopify_gid": "gid://shopify/Product/14886283870576",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FOversized%20Jacquard%20Round%20Neck%20T-Shirt%20-%20Dark%20Green%20-%20Men.webp?alt=media&token=72c57d86-809e-448a-a848-ab3aa1c33338",
+    "handle": "oversized-jacquard-round-neck-t-shirt-dark-green",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00028_2.jpg?v=1769515552"
+  },
+  {
+    "product_name": "Oversized Cotton Slub V-Neck T-Shirt | Red | Men",
+    "product_id": "14886283837808",
+    "shopify_gid": "gid://shopify/Product/14886283837808",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FOversized%20Cotton%20Slub%20V-Neck%20T-Shirt%20-%20Red%20-%20Men.webp?alt=media&token=eca79182-37d4-4568-b21d-e7e22cd73825",
+    "handle": "oversized-cotton-slub-v-neck-t-shirt-red",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00186.jpg?v=1762162065"
+  },
+  {
+    "product_name": "Oversized Waffle Knit Round Neck T-Shirt | Coffee Brown | Men",
+    "product_id": "14886283805040",
+    "shopify_gid": "gid://shopify/Product/14886283805040",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FOversized%20Waffle%20Knit%20Round%20Neck%20T-Shirt%20-%20Coffee%20Brown%20-%20Men.webp?alt=media&token=3097f5f6-f950-40e1-9929-7e478b5ee4df",
+    "handle": "oversized-waffle-knit-round-neck-t-shirt-coffee-brown",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025-vika-igor00006-3-_1.jpg?v=1769515976"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | Navy Blue | Men",
+    "product_id": "14886283772272",
+    "shopify_gid": "gid://shopify/Product/14886283772272",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20Navy%20Blue%20-%20Men.webp?alt=media&token=9e082c23-655f-4a5e-ad0b-5894d0006fa0",
+    "handle": "ae-oversized-french-terry-crew-neck-t-shirt-navy-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00256.jpg?v=1769685887"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | White | | Men",
+    "product_id": "14886283739504",
+    "shopify_gid": "gid://shopify/Product/14886283739504",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20White%20-%20-%20Men.webp?alt=media&token=12fe40e4-0101-48eb-b82e-dc3217b5e7fc",
+    "handle": "ae-oversized-french-terry-crew-neck-t-shirt-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00137.jpg?v=1769685887"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | Black | Men",
+    "product_id": "14886283706736",
+    "shopify_gid": "gid://shopify/Product/14886283706736",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20Black%20-%20Men.webp?alt=media&token=bc41b0d6-b4ab-4d8f-9571-556bf7e2040c",
+    "handle": "ae-oversized-french-terry-crew-neck-t-shirt-black",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00301.jpg?v=1769685895"
+  },
+  {
+    "product_name": "AE Oversized French Terry Crew Neck T-Shirt | Dark Grey | Men",
+    "product_id": "14886283673968",
+    "shopify_gid": "gid://shopify/Product/14886283673968",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FAE%20Oversized%20French%20Terry%20Crew%20Neck%20T-Shirt%20-%20Dark%20Grey%20-%20Men.webp?alt=media&token=ebf4841c-39bd-4d90-8281-22f18207e748",
+    "handle": "ae-oversized-french-terry-crew-neck-t-shirt-dark-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00083.jpg?v=1769685895"
+  },
+  {
+    "product_name": "Classic Fit Belgium Giza Cotton Shirt | Dark Grey",
+    "product_id": "14886283641200",
+    "shopify_gid": "gid://shopify/Product/14886283641200",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Belgium%20Giza%20Cotton%20Shirt%20-%20Dark%20Grey.webp?alt=media&token=f714f0cd-60f3-41a0-be97-26fdfc39dd97",
+    "handle": "classic-fit-giza-cotton-oxford-shirt-dark-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/D_Grey_Shirt_25-10-2025--vika_igor00552.jpg?v=1769685895"
+  },
+  {
+    "product_name": "Classic Fit Corded Cotton-Blend Shirt | Sky Blue",
+    "product_id": "14886283608432",
+    "shopify_gid": "gid://shopify/Product/14886283608432",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Corded%20Cotton-Blend%20Shirt%20-%20Sky%20Blue.webp?alt=media&token=57dee6f0-bdae-4092-83ba-ff9e115f6c99",
+    "handle": "classic-fit-corded-cotton-blend-shirt-sky-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/S_Blue_Formal_25-10-2025--vika_igor00482.jpg?v=1769685888"
+  },
+  {
+    "product_name": "Classic Fit Oxford Cotton Shirt | White",
+    "product_id": "14886283575664",
+    "shopify_gid": "gid://shopify/Product/14886283575664",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Oxford%20Cotton%20Shirt%20-%20White.webp?alt=media&token=06f9b6f0-62cf-4206-90d9-d2fc3d72dbaa",
+    "handle": "classic-fit-oxford-cotton-shirt",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/White_Oxford_25-10-2025--vika_igor00411.jpg?v=1769685887"
+  },
+  {
+    "product_name": "Classic Fit Textured Cotton-Blend Shirt | Grey",
+    "product_id": "14886283510128",
+    "shopify_gid": "gid://shopify/Product/14886283510128",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Textured%20Cotton-Blend%20Shirt%20-%20Grey.webp?alt=media&token=0673b384-8689-4617-9e94-38f9116f51f3",
+    "handle": "classic-fit-textured-cotton-blend-shirt-grey",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Grey-Shirt-PC-25-10-2025-vika-igor00620-_1.jpg?v=1769516016"
+  },
+  {
+    "product_name": "Classic Fit Printed French Cotton-Viscose Shirt",
+    "product_id": "14886283411824",
+    "shopify_gid": "gid://shopify/Product/14886283411824",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Printed%20French%20Cotton-Viscose%20Shirt.webp?alt=media&token=94f80ed0-5941-44b2-98ec-9290ccbb05b5",
+    "handle": "classic-fit-printed-french-cotton-viscose-shirt",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/1_986bf607-e3f5-4211-bdd1-e263498b328e.png?v=1782410815"
+  },
+  {
+    "product_name": "Classic Fit Supima Cotton Shirt | White",
+    "product_id": "14886283379056",
+    "shopify_gid": "gid://shopify/Product/14886283379056",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Supima%20Cotton%20Shirt%20-%20White.webp?alt=media&token=70206edf-78fb-4b90-8013-a841278976f6",
+    "handle": "classic-fit-supima-cotton-shirt-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/White_Tex_Shirt_25-10-2025--vika_igor00463.jpg?v=1769685887"
+  },
+  {
+    "product_name": "Classic Fit Checked Cotton Shirt | White & Brown",
+    "product_id": "14886283346288",
+    "shopify_gid": "gid://shopify/Product/14886283346288",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Checked%20Cotton%20Shirt%20-%20White%20%26%20Brown.webp?alt=media&token=7570a5f0-57c8-4701-9e1a-eb42e3ca4776",
+    "handle": "classic-fit-checked-cotton-shirt-white-brown",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Check-Shirt-25-10-2025-vika-igor00641-_1.jpg?v=1769685895"
+  },
+  {
+    "product_name": "Relaxed Fit Italian Cotton-Linen Shirt | Dark Green",
+    "product_id": "14886283313520",
+    "shopify_gid": "gid://shopify/Product/14886283313520",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20Italian%20Cotton-Linen%20Shirt%20-%20Dark%20Green.webp?alt=media&token=db756d3f-612d-48bd-92ef-425c287f61b9",
+    "handle": "relaxed-fit-italian-cotton-linen-shirt-dark-green",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Bottle_Green_Linen_25-10-2025--vika_igor00506.jpg?v=1761900584"
+  },
+  {
+    "product_name": "Classic Fit Giza Cotton Satin Shirt | White",
+    "product_id": "14886283280752",
+    "shopify_gid": "gid://shopify/Product/14886283280752",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Giza%20Cotton%20Satin%20Shirt%20-%20White.webp?alt=media&token=e0486ef9-4317-442b-828a-60ef1abd672f",
+    "handle": "classic-fit-giza-cotton-satin-shirt-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/White_Giza_25-10-2025--vika_igor00529.jpg?v=1769685887"
+  },
+  {
+    "product_name": "Relaxed Fit Salerno Cotton-Linen Shirt | Beige",
+    "product_id": "14886283247984",
+    "shopify_gid": "gid://shopify/Product/14886283247984",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20Salerno%20Cotton-Linen%20Shirt%20-%20Beige.webp?alt=media&token=7e8b0fd0-10d5-43a2-87a7-8dc195c9e900",
+    "handle": "relaxed-fit-salerno-cotton-linen-shirt-beige",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Neutral_Linen_25-10-2025--vika_igor00688.jpg?v=1761900585"
+  },
+  {
+    "product_name": "Classic Fit Giza Cotton Satin Shirt | Black",
+    "product_id": "14886283215216",
+    "shopify_gid": "gid://shopify/Product/14886283215216",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Giza%20Cotton%20Satin%20Shirt%20-%20Black.webp?alt=media&token=9ba74f59-e13f-49f4-8521-46c126220630",
+    "handle": "classic-fit-giza-cotton-satin-shirt-black",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Black_Shirt_25-10-2025--vika_igor00599.jpg?v=1769685887"
+  },
+  {
+    "product_name": "Relaxed Fit Italian Cotton-Linen Shirt | Sky Blue",
+    "product_id": "14886283182448",
+    "shopify_gid": "gid://shopify/Product/14886283182448",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FRelaxed%20Fit%20Italian%20Cotton-Linen%20Shirt%20-%20Sky%20Blue.webp?alt=media&token=b4e86fb2-c17b-4268-a3e6-2621c7d19946",
+    "handle": "relaxed-fit-italian-cotton-linen-shirt-sky-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/S_Blue_Linen_25-10-2025--vika_igor00709.jpg?v=1761900591"
+  },
+  {
+    "product_name": "Slim Fit Stretch Blend Shirt | Navy Blue",
+    "product_id": "14886283149680",
+    "shopify_gid": "gid://shopify/Product/14886283149680",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FSlim%20Fit%20Stretch%20Blend%20Shirt%20-%20Navy%20Blue.webp?alt=media&token=ec058a5d-30ed-4cb9-97c1-02c8b0dcc3cc",
+    "handle": "slim-fit-stretch-blend-shirt-navy-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/N_Blue_Shirt_25-10-2025--vika_igor00575.jpg?v=1761900575"
+  },
+  {
+    "product_name": "Classic Fit Textured Cotton Shirt | Light Pink",
+    "product_id": "14886283116912",
+    "shopify_gid": "gid://shopify/Product/14886283116912",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FClassic%20Fit%20Textured%20Cotton%20Shirt%20-%20Light%20Pink.webp?alt=media&token=1501593c-9ee1-4074-bcae-395b1745c1f9",
+    "handle": "classic-fit-textured-cotton-shirt-light-pink",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/Light_Pink_Shirt.jpg?v=1771687965"
+  },
+  {
+    "product_name": "Premium Classic Fit Rib Knit Polo | Sky Blue",
+    "product_id": "14886283084144",
+    "shopify_gid": "gid://shopify/Product/14886283084144",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPremium%20Classic%20Fit%20Rib%20Knit%20Polo%20-%20Sky%20Blue.webp?alt=media&token=08a8ec7d-e54b-4178-8b77-2d66f8ada2ae",
+    "handle": "premium-classic-fit-rib-knit-polo-sky-blue",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025-vika-igor00012-_1.jpg?v=1769516070"
+  },
+  {
+    "product_name": "Premium Classic Fit Cotton Polo | Yellow & White",
+    "product_id": "14886283051376",
+    "shopify_gid": "gid://shopify/Product/14886283051376",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPremium%20Classic%20Fit%20Cotton%20Polo%20-%20Yellow%20%26%20White.webp?alt=media&token=73dd3875-e4c1-46f1-9f00-407995dabb28",
+    "handle": "premium-classic-fit-cotton-polo-yellow-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00010_1.jpg?v=1765907305"
+  },
+  {
+    "product_name": "Premium Classic Fit Cotton Polo | Black",
+    "product_id": "14886282985840",
+    "shopify_gid": "gid://shopify/Product/14886282985840",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPremium%20Classic%20Fit%20Cotton%20Polo%20-%20Black.webp?alt=media&token=9640cd01-f627-457d-80f0-4fdb17d40808",
+    "handle": "premium-classic-fit-cotton-polo-black",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00004_3_20b8a0c8-2af4-466e-a6ce-5cd2823c5eb4.jpg?v=1765980306"
+  },
+  {
+    "product_name": "Premium Classic Fit Cotton Polo | White",
+    "product_id": "14886282920304",
+    "shopify_gid": "gid://shopify/Product/14886282920304",
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/aeternum-app-45c5c.firebasestorage.app/o/ghost_mannequins%2FPremium%20Classic%20Fit%20Cotton%20Polo%20-%20White.webp?alt=media&token=087eeb1e-3286-430f-947e-425e1c111ca5",
+    "handle": "premium-classic-fit-cotton-polo-white",
+    "category": "top",
+    "original_shopify_image": "https://cdn.shopify.com/s/files/1/0968/0270/1680/files/25-10-2025--vika_igor00041.jpg?v=1762155381"
+  }
+]

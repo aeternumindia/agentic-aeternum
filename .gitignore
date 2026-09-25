@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local assets
+aeternum_ghost_mannequins/
+aeternum_ghost_mannequins_webp/

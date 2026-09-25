@@ -26,6 +26,7 @@ import { SizeChartModal } from "./size-chart-modal";
 import { AiPreviewPanel } from "./ai-preview-panel";
 import apiClient, { getTryOnStatus, type TryOnStatus } from "@/services/api";
 import type { TryOnSession, TryOnResult, ProductSizeChart, SizeChartData } from "@/types/virtual-try-on";
+import { getGhostMannequinUrl } from "@/lib/ghostMannequin";
 
 type Variant = {
   id: string;
@@ -398,15 +399,35 @@ export function StepTryOnPreview({
             <div className={tab === "ai" ? "block" : "hidden"}>
               {pair.top ? (
                 <div className="mx-auto w-full max-w-sm">
-                  <AiPreviewPanel
-                    fullBodyFile={fullBodyFile}
-                    selfieFile={selfieFile}
-                    garmentImageUrl={pair.top.image}
-                    garmentName={pair.top.title}
-                    bottomGarmentImageUrl={pair.bottom?.image}
-                    bottomGarmentName={pair.bottom?.title}
-                    measurements={computedMeasurements || measurements}
-                  />
+                  {(() => {
+                    const cleanTopUrl = getGhostMannequinUrl({
+                      productId: pair.top.id,
+                      productTitle: pair.top.title,
+                      productHandle: pair.top.handle,
+                      fallbackUrl: pair.top.image,
+                    }) || pair.top.image;
+
+                    const cleanBottomUrl = pair.bottom
+                      ? getGhostMannequinUrl({
+                          productId: pair.bottom.id,
+                          productTitle: pair.bottom.title,
+                          productHandle: pair.bottom.handle,
+                          fallbackUrl: pair.bottom.image,
+                        }) || pair.bottom.image
+                      : undefined;
+
+                    return (
+                      <AiPreviewPanel
+                        fullBodyFile={fullBodyFile}
+                        selfieFile={selfieFile}
+                        garmentImageUrl={cleanTopUrl}
+                        garmentName={pair.top.title}
+                        bottomGarmentImageUrl={cleanBottomUrl}
+                        bottomGarmentName={pair.bottom?.title}
+                        measurements={computedMeasurements || measurements}
+                      />
+                    );
+                  })()}
                 </div>
               ) : (
                 <div className="rounded-xl border-2 border-dashed border-border p-8 text-center">

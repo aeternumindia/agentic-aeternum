@@ -32,6 +32,7 @@ import { StepCalculating } from "@/components/try-on/size-checker/step-calculati
 import { StepResult } from "@/components/try-on/size-checker/step-result";
 import type { BodyMeasurements, PresetProfile } from "@/components/try-on/size-checker/types";
 import type { GarmentItem } from "@/components/try-on/garment-selector/garment-selector";
+import { getGhostMannequinUrl } from "@/lib/ghostMannequin";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -353,10 +354,18 @@ export function VirtualTryOnScreen({
     setAiResultUrl(null);
 
     try {
-      const garmentRes = await fetch(session.productImage);
+      const topGarmentUrl =
+        getGhostMannequinUrl({
+          productId: session.productId,
+          productHandle: session.productHandle,
+          productTitle: session.productTitle,
+          fallbackUrl: session.productImage,
+        }) || session.productImage;
+
+      const garmentRes = await fetch(topGarmentUrl);
       const garmentBlob = await garmentRes.blob();
       const garmentFile = await convertHeicToJpegIfNeeded(
-        new File([garmentBlob], "garment.jpg", { type: garmentBlob.type || "image/jpeg" })
+        new File([garmentBlob], "garment.webp", { type: garmentBlob.type || "image/webp" })
       );
 
       const formData = new FormData();
@@ -364,20 +373,28 @@ export function VirtualTryOnScreen({
       formData.append("faceImage", selfieFile);
       formData.append("garmentImage", garmentFile);
 
-      const bottomImageUrl =
+      const rawBottomImageUrl =
         session.bottomGarment?.productImage ||
         (session.bottomGarment as any)?.image;
 
-      if (session.bottomGarment && bottomImageUrl) {
+      if (session.bottomGarment && rawBottomImageUrl) {
         try {
-          const bottomRes = await fetch(bottomImageUrl);
+          const bottomGarmentUrl =
+            getGhostMannequinUrl({
+              productId: session.bottomGarment?.productId,
+              productHandle: session.bottomGarment?.productHandle,
+              productTitle: session.bottomGarment?.productTitle,
+              fallbackUrl: rawBottomImageUrl,
+            }) || rawBottomImageUrl;
+
+          const bottomRes = await fetch(bottomGarmentUrl);
           if (!bottomRes.ok) {
             throw new Error(`Failed to load bottom garment image (${bottomRes.status})`);
           }
           const bottomBlob = await bottomRes.blob();
           const bottomFile = await convertHeicToJpegIfNeeded(
-            new File([bottomBlob], "bottom-garment.jpg", {
-              type: bottomBlob.type || "image/jpeg",
+            new File([bottomBlob], "bottom-garment.webp", {
+              type: bottomBlob.type || "image/webp",
             })
           );
           formData.append("bottomGarmentImage", bottomFile);
